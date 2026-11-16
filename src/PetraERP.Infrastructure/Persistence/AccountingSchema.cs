@@ -25,6 +25,7 @@ public static class AccountingSchema
     public const string PurchaseInvoiceReversalLinksMigration = "20261102054622_PurchaseInvoiceReversalLinks";
     public const string InvoiceAccountAndPartyParentsMigration = "20261112005607_InvoiceAccountAndPartyParents";
     public const string BankReconciliationMigration = "20261115071856_BankReconciliation";
+    public const string LedgerCoveringIndexesMigration = "20261116112228_LedgerCoveringIndexes";
     public static readonly string[] ApprovedMigrations = [
         InitialMigration,
         FxRevaluationRequestsMigration,
@@ -46,6 +47,7 @@ public static class AccountingSchema
         AmeenDailyVoucherMigration,
         PurchaseInvoiceReversalLinksMigration,
         InvoiceAccountAndPartyParentsMigration,
-        BankReconciliationMigration
+        BankReconciliationMigration,
+        LedgerCoveringIndexesMigration
     ];
 }

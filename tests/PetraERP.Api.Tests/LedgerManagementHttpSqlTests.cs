@@ -209,6 +209,14 @@ public sealed partial class LedgerManagementHttpSqlTests
             var ledger = await SendAsync<AccountLedgerResponse>(host, client, HttpMethod.Get, root + $"/reports/account-ledger/{cashLine.AccountId}?from=2026-01-01", admin.AccessToken).ConfigureAwait(true);
             Assert.Equal("0.0000", ledger.Body!.OpeningBalance);
             Assert.Equal("250.5000", Assert.Single(ledger.Body.Lines).RunningBalance);
+            // A cursor is trusted only if the server signed it for this exact request: garbage and forged tokens are client errors, not paging.
+            foreach (var bad in new[] { "garbage", "AAAA", new string('A', 5000) })
+            {
+                var refused = await SendAsync<AccountLedgerResponse>(host, client, HttpMethod.Get,
+                    root + $"/reports/account-ledger/{cashLine.AccountId}?from=2026-01-01&cursor={Uri.EscapeDataString(bad)}", admin.AccessToken).ConfigureAwait(true);
+                Assert.Equal((HttpStatusCode.BadRequest, "ledger.cursor_invalid"), (refused.Status, refused.Code));
+            }
+
             var usedAccount = await SendAsync<AccountResponse>(host, client, HttpMethod.Get, root + $"/chart/accounts/{cashLine.AccountId}", admin.AccessToken).ConfigureAwait(true);
             var deleteUsed = await SendAsync<object>(host, client, HttpMethod.Post, root + $"/chart/accounts/{cashLine.AccountId}/deletion", admin.AccessToken,
                 new DeleteAccountRequest { ExpectedVersion = usedAccount.Body!.Version, Reason = "محاولة حذف حساب مستخدم" }).ConfigureAwait(true);
