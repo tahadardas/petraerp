@@ -90,7 +90,10 @@ public sealed class SqlDocumentSaveAndProcessService(
         {
             try
             {
-                created = await sales.CreateInvoiceAsync(companyId, branchId, userId, command with { DocumentId = documentId }, cancellationToken).ConfigureAwait(false);
+                // The next step reads only status and version; the enriched detail is built once, for what the client receives.
+                // A draft is itself the answer (its credit snapshot warns the user), so only a request that goes on to approve/post skips it.
+                using (saveAsDraft ? null : PetraERP.Infrastructure.Sales.SalesDetailEnrichment.Suppress())
+                    created = await sales.CreateInvoiceAsync(companyId, branchId, userId, command with { DocumentId = documentId }, cancellationToken).ConfigureAwait(false);
             }
             catch (DbUpdateException) when (documentId is not null)
             {
@@ -132,7 +135,9 @@ public sealed class SqlDocumentSaveAndProcessService(
         }
         await BindAsync(AccountingOperation.ManageSalesInvoices, "SalesInvoice.Update", companyId, branchId, userId, posting?.IdempotencyKey, invoiceId,
             () => DocumentRequestHash.Of("SalesInvoice.Update", command), cancellationToken).ConfigureAwait(false);
-        var updated = await sales.UpdateInvoiceAsync(companyId, branchId, invoiceId, command, cancellationToken).ConfigureAwait(false);
+        SalesInvoiceDetailResult updated;
+        using (saveAsDraft ? null : PetraERP.Infrastructure.Sales.SalesDetailEnrichment.Suppress())
+            updated = await sales.UpdateInvoiceAsync(companyId, branchId, invoiceId, command, cancellationToken).ConfigureAwait(false);
         return saveAsDraft
             ? Draft(updated, policy)
             : await AdvanceSalesAsync(companyId, branchId, userId, permissions, updated, policy, posting, cancellationToken).ConfigureAwait(false);
@@ -523,13 +528,14 @@ public sealed class SqlDocumentSaveAndProcessService(
         if (current.Status == SalesInvoiceStatus.Draft)
         {
             if (!permissions.CanApprove)
-                return Sales(current, DocumentProcessingOutcome.ApprovalPermissionMissing, false, false, mode,
+                return Sales(await EnrichedSalesAsync(companyId, branchId, userId, current.Id, cancellationToken).ConfigureAwait(false), DocumentProcessingOutcome.ApprovalPermissionMissing, false, false, mode,
                     "تم حفظ المستند كمسودة. لا تملك صلاحية اعتماد فواتير المبيعات، لذلك لم يُعتمد ولم يُرحَّل، ولم تُرفع صلاحياتك تلقائياً.");
             try
             {
                 await using var approvePhase = OpenPhase(AccountingOperation.ApproveSalesInvoice, companyId, branchId, userId);
-                current = await approvePhase.Sales.ApproveInvoiceAsync(companyId, branchId, current.Id, userId,
-                    ConcurrencyToken.FromBytes(current.RowVersion), cancellationToken).ConfigureAwait(false);
+                using (PetraERP.Infrastructure.Sales.SalesDetailEnrichment.Suppress())
+                    current = await approvePhase.Sales.ApproveInvoiceAsync(companyId, branchId, current.Id, userId,
+                        ConcurrencyToken.FromBytes(current.RowVersion), cancellationToken).ConfigureAwait(false);
             }
             catch (BusinessRuleException exception)
             {
@@ -543,11 +549,11 @@ public sealed class SqlDocumentSaveAndProcessService(
         }
 
         if (policy.DocumentPostingMode == DocumentPostingMode.ApproveOnly)
-            return Sales(current, DocumentProcessingOutcome.Approved, approvalApplied, false, mode,
+            return Sales(await EnrichedSalesAsync(companyId, branchId, userId, current.Id, cancellationToken).ConfigureAwait(false), DocumentProcessingOutcome.Approved, approvalApplied, false, mode,
                 "تم اعتماد المستند بانتظار الترحيل وفق سياسة الشركة: الترحيل اليدوي بعد الحفظ.");
 
         if (!permissions.CanPost)
-            return Sales(current, DocumentProcessingOutcome.PostingPermissionMissing, approvalApplied, false, mode,
+            return Sales(await EnrichedSalesAsync(companyId, branchId, userId, current.Id, cancellationToken).ConfigureAwait(false), DocumentProcessingOutcome.PostingPermissionMissing, approvalApplied, false, mode,
                 "تم اعتماد المستند ولم يُرحَّل: لا تملك صلاحية ترحيل فواتير المبيعات.");
 
         if (string.IsNullOrWhiteSpace(posting?.IdempotencyKey))
@@ -581,6 +587,13 @@ public sealed class SqlDocumentSaveAndProcessService(
         {
             return await SalesStageFailedAsync(companyId, branchId, userId, current.Id, DocumentProcessingOutcome.PostingFailed, mode, "posting.concurrency_conflict", exception.Message, cancellationToken).ConfigureAwait(false);
         }
+    }
+
+    /// <summary>The full detail (settlement and credit enrichment included) of a document an earlier step returned without it.</summary>
+    private async Task<SalesInvoiceDetailResult> EnrichedSalesAsync(Guid companyId, Guid branchId, Guid userId, Guid invoiceId, CancellationToken cancellationToken)
+    {
+        await using var read = OpenPhase(AccountingOperation.ManageSalesInvoices, companyId, branchId, userId);
+        return await read.Sales.GetInvoiceAsync(companyId, branchId, invoiceId, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>Reports the real persisted document (identity, status, version) after a failed approve/post phase.</summary>

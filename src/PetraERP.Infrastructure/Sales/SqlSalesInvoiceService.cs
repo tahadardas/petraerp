@@ -376,7 +376,7 @@ public sealed partial class SqlSalesInvoiceService : ISalesInvoiceService
             .ConfigureAwait(false);
 
         decimal? settled = null, returnedAmount = null, outstanding = null;
-        if (row.Status == (int)SalesInvoiceStatus.Posted && row.PaymentMethod == (int)PaymentMethod.Credit
+        if (!SalesDetailEnrichment.Suppressed && row.Status == (int)SalesInvoiceStatus.Posted && row.PaymentMethod == (int)PaymentMethod.Credit
             && row.ReversesInvoiceId == null && row.ReturnOfInvoiceId == null)
         {
             var invoices = await PetraERP.Infrastructure.Treasury.SettlementQueries.LoadInvoicesAsync(context, companyId, branchId,
@@ -388,7 +388,7 @@ public sealed partial class SqlSalesInvoiceService : ISalesInvoiceService
         }
 
         var detail = MapDetailResult(row, costCenters);
-        var credit = row.PaymentMethod == (int)PaymentMethod.Credit && row.ReturnOfInvoiceId is null && row.ReversesInvoiceId is null
+        var credit = !SalesDetailEnrichment.Suppressed && row.PaymentMethod == (int)PaymentMethod.Credit && row.ReturnOfInvoiceId is null && row.ReversesInvoiceId is null
             ? await LoadCreditSnapshotAsync(row, cancellationToken).ConfigureAwait(false) : null;
         var audit = await context.SalesCreditAudit.AsNoTracking().SingleOrDefaultAsync(a => a.InvoiceId == row.Id
             && a.CompanyId == companyId && a.BranchId == branchId, cancellationToken).ConfigureAwait(false);
