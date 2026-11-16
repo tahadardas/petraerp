@@ -1,0 +1,287 @@
+<Window x:Class="PetraERP.Desktop.Reporting.PetraReportViewerWindow"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:reporting="clr-namespace:PetraERP.Desktop.Reporting"
+ Width="1180" Height="720" MinWidth="760" MinHeight="520"
+ Style="{StaticResource Window.Tool}" WindowStartupLocation="CenterScreen"
+ PreviewKeyDown="WindowPreviewKeyDown">
+ <Window.Resources>
+  <ResourceDictionary>
+   <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="ReportingStyles.xaml"/>
+   </ResourceDictionary.MergedDictionaries>
+
+   <!-- Each labelled cluster gets its own band: a clipped print button is worse than one more tool row. -->
+   <Style x:Key="ToolGroupLabel" TargetType="TextBlock">
+    <Setter Property="FontSize" Value="10"/>
+    <Setter Property="Foreground" Value="{DynamicResource Text.Muted}"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="Margin" Value="0,0,6,0"/>
+   </Style>
+   <Style x:Key="SidebarTitle" TargetType="TextBlock">
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="FontSize" Value="13"/>
+    <Setter Property="Foreground" Value="{DynamicResource Text.Primary}"/>
+   </Style>
+   <Style x:Key="SidebarClose" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+    <Setter Property="Padding" Value="7,1"/>
+    <Setter Property="FontSize" Value="13"/>
+   </Style>
+   <Style x:Key="SidebarFieldLabel" TargetType="TextBlock">
+    <Setter Property="FontSize" Value="11"/>
+    <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}"/>
+    <Setter Property="Margin" Value="0,0,0,3"/>
+   </Style>
+  </ResourceDictionary>
+ </Window.Resources>
+ <Grid>
+  <Grid.RowDefinitions>
+   <RowDefinition Height="Auto"/>
+   <RowDefinition Height="Auto"/>
+   <RowDefinition Height="Auto"/>
+   <RowDefinition Height="Auto"/>
+   <RowDefinition Height="*"/>
+   <RowDefinition Height="Auto"/>
+  </Grid.RowDefinitions>
+
+  <!-- Header: the report and the exact server snapshot behind it, so nothing on screen is read out of context. -->
+  <Border Grid.Row="0" Background="{DynamicResource Brand.Navy}" Padding="14,9">
+   <Grid>
+    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+     <TextBlock x:Name="ReportTitle" Foreground="{DynamicResource Text.OnBrand}" FontSize="17" FontWeight="SemiBold"/>
+     <TextBlock x:Name="ReportContext" Foreground="{DynamicResource Text.OnBrand}" Opacity="0.8" FontSize="11" Margin="0,2,0,0"/>
+    </StackPanel>
+    <!-- The snapshot identity is the audit handle for the rows on screen. The Arabic caption and the Latin identifier
+         stay in separate runs so the bidi algorithm cannot interleave them. -->
+    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left">
+     <TextBlock x:Name="SnapshotCaption" Foreground="{DynamicResource Text.OnBrand}" Opacity="0.72" FontSize="{DynamicResource Font.Caption}" Margin="0,0,6,0"/>
+     <TextBlock x:Name="SnapshotLabel" Foreground="{DynamicResource Text.OnBrand}" Opacity="0.72" FontSize="{DynamicResource Font.Caption}"
+      FlowDirection="LeftToRight" TextWrapping="Wrap"/>
+    </StackPanel>
+   </Grid>
+  </Border>
+
+  <ToolBarTray Grid.Row="1" Background="{DynamicResource Surface.Secondary}" IsLocked="True">
+
+   <!-- Band 0 · working on the rows that are on screen. -->
+   <ToolBar Band="0" Background="Transparent" ToolBarTray.IsLocked="True">
+    <TextBlock x:Name="SearchGroupLabel" Style="{StaticResource ToolGroupLabel}"/>
+    <TextBox x:Name="SearchBox" Width="150" KeyDown="SearchBoxKeyDown" AutomationProperties.Name="بحث داخل التقرير / Search report" ToolBar.OverflowMode="Never"/>
+    <ComboBox x:Name="SearchColumn" Width="110" DisplayMemberPath="Heading" SelectedValuePath="Key" ToolBar.OverflowMode="AsNeeded" AutomationProperties.Name="نطاق البحث / Search scope"/>
+    <Button x:Name="PreviousMatchButton" Click="PreviousMatchClicked" ToolBar.OverflowMode="AsNeeded"/>
+    <Button x:Name="NextMatchButton" Click="NextMatchClicked" ToolBar.OverflowMode="AsNeeded"/>
+    <TextBlock x:Name="SearchResultLabel" MinWidth="72" VerticalAlignment="Center" FlowDirection="LeftToRight" TextAlignment="Center" ToolBar.OverflowMode="AsNeeded"/>
+   </ToolBar>
+   <ToolBar Band="0" Background="Transparent" ToolBarTray.IsLocked="True">
+    <TextBlock x:Name="ViewGroupLabel" Style="{StaticResource ToolGroupLabel}"/>
+    <Button x:Name="FilterButton" Click="FilterClicked" ToolBar.OverflowMode="Never"/>
+    <Button x:Name="FieldsButton" Click="FieldsClicked" ToolBar.OverflowMode="AsNeeded"/>
+    <Button x:Name="SummariesButton" Click="SummariesClicked" ToolBar.OverflowMode="AsNeeded"/>
+   </ToolBar>
+   <ToolBar Band="1" Background="Transparent" ToolBarTray.IsLocked="True">
+    <TextBlock x:Name="LayoutGroupLabel" Style="{StaticResource ToolGroupLabel}"/>
+    <ComboBox x:Name="GroupColumn" Width="115" DisplayMemberPath="Heading" SelectedValuePath="Key" ToolBar.OverflowMode="AsNeeded" AutomationProperties.Name="حقل التجميع / Grouping field"/>
+    <Button x:Name="AddGroupingButton" Click="AddGroupingClicked" ToolBar.OverflowMode="AsNeeded"/>
+    <Button x:Name="ClearGroupingButton" Click="ClearGroupingClicked" ToolBar.OverflowMode="AsNeeded"/>
+   </ToolBar>
+   <ToolBar Band="1" Background="Transparent" ToolBarTray.IsLocked="True">
+    <TextBlock x:Name="SectionLabel" VerticalAlignment="Center" Margin="0,0,6,0"/>
+    <ComboBox x:Name="Sections" DisplayMemberPath="Title" MinWidth="180" MaxWidth="280" SelectionChanged="SectionChanged"/>
+   </ToolBar>
+
+   <!-- Band 2 · leaving the window: the source record and the paper output. -->
+   <ToolBar Band="2" Background="Transparent" ToolBarTray.IsLocked="True">
+    <TextBlock x:Name="SourceGroupLabel" Style="{StaticResource ToolGroupLabel}"/>
+    <Button x:Name="ParametersButton" Click="ParametersClicked" ToolBar.OverflowMode="AsNeeded"/>
+    <Button x:Name="OpenSourceButton" Click="OpenSourceClicked" ToolBar.OverflowMode="AsNeeded"/>
+   </ToolBar>
+   <ToolBar Band="2" Background="Transparent" ToolBarTray.IsLocked="True">
+    <TextBlock x:Name="PrintGroupLabel" Style="{StaticResource ToolGroupLabel}"/>
+    <ComboBox x:Name="PrintScope" Width="150" DisplayMemberPath="Label" SelectedValuePath="Value" SelectionChanged="PrintScopeChanged" ToolBar.OverflowMode="AsNeeded" AutomationProperties.Name="نطاق الطباعة والتصدير / Print and export scope"/>
+    <Button x:Name="PreviewButton" Click="PreviewClicked" ToolBar.OverflowMode="AsNeeded"/>
+    <Button x:Name="PrintButton" Click="PrintClicked" ToolBar.OverflowMode="AsNeeded"/>
+   </ToolBar>
+
+   <!-- Band 3 · machine-readable files and the window's own actions, on their own row so nothing is clipped. -->
+   <ToolBar Band="3" Background="Transparent" ToolBarTray.IsLocked="True">
+    <TextBlock x:Name="OutputGroupLabel" Style="{StaticResource ToolGroupLabel}"/>
+    <Button x:Name="PdfButton" Click="PdfClicked" ToolBar.OverflowMode="AsNeeded"/>
+    <Button x:Name="ExcelButton" Click="ExcelClicked" ToolBar.OverflowMode="AsNeeded"/>
+    <Button x:Name="ExcelPrintButton" Click="ExcelPrintClicked" ToolBar.OverflowMode="AsNeeded"/>
+    <Button x:Name="CsvButton" Click="CsvClicked" ToolBar.OverflowMode="AsNeeded"/>
+   </ToolBar>
+   <ToolBar Band="3" Background="Transparent" ToolBarTray.IsLocked="True">
+    <Button x:Name="CancelButton" Click="CancelClicked" ToolBar.OverflowMode="AsNeeded"/>
+    <Button x:Name="CloseButton" Click="CloseClicked" ToolBar.OverflowMode="Never"/>
+   </ToolBar>
+  </ToolBarTray>
+
+  <!-- The executed criteria stay visible beside the rows they produced. -->
+  <Border Grid.Row="2" Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="0,0,0,1" Padding="12,6">
+   <DockPanel>
+    <TextBlock x:Name="CriteriaLabel" DockPanel.Dock="Left" Style="{StaticResource ToolGroupLabel}" VerticalAlignment="Center"/>
+    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+     <ItemsControl x:Name="CriteriaChips">
+      <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate><DataTemplate>
+       <Border Background="{DynamicResource Brand.TealSubtle}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Control}" Padding="7,2" Margin="0,0,5,0">
+        <TextBlock Text="{Binding}" FontSize="11" Foreground="{DynamicResource Text.Primary}" TextTrimming="CharacterEllipsis" MaxWidth="260"/>
+       </Border>
+      </DataTemplate></ItemsControl.ItemTemplate>
+     </ItemsControl>
+    </ScrollViewer>
+   </DockPanel>
+  </Border>
+
+  <Grid Grid.Row="3">
+   <ProgressBar x:Name="Progress" Height="3" IsIndeterminate="True" VerticalAlignment="Top" Visibility="Collapsed"/>
+   <TextBlock x:Name="Status" Margin="12,5,12,3" Style="{DynamicResource Text.Caption}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
+  </Grid>
+
+  <TabControl x:Name="ViewerTabs" Grid.Row="4" Margin="12,4,12,0" SelectionChanged="ViewerTabChanged">
+   <TabItem x:Name="ResultsTab">
+    <Grid>
+     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+     <reporting:PetraInteractiveReportGrid x:Name="ResultsGrid" RowActivated="ResultActivated" SelectionChanged="ResultSelectionChanged" VisibleRowsChanged="VisibleRowsChanged"/>
+     <Border x:Name="FilterSidebar" Grid.Column="1" Width="380" Visibility="Collapsed" Background="{DynamicResource Surface.Secondary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1,0,0,0" Padding="12">
+      <Grid>
+       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+       <DockPanel Grid.Row="0" Margin="0,0,0,8">
+        <Button x:Name="CloseFilterButton" DockPanel.Dock="Right" Content="×" Click="FilterClicked" Style="{StaticResource SidebarClose}"/>
+        <TextBlock x:Name="FilterTitle" Style="{StaticResource SidebarTitle}" VerticalAlignment="Center"/>
+       </DockPanel>
+       <TabControl Grid.Row="1" x:Name="FilterTabs">
+        <TabItem x:Name="FilterTreeTab">
+         <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,6,0,0">
+          <StackPanel>
+           <reporting:PetraReportFilterBuilderControl x:Name="TreeFilterBuilder" Margin="0,0,0,8"/>
+           <Grid>
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+            <Button x:Name="ApplyTreeFilterButton" Click="ApplyFilterClicked" Padding="8,4" Margin="0,0,4,0" Background="{DynamicResource Brand.Navy}" Foreground="{DynamicResource Text.OnBrand}"/>
+            <Button x:Name="ClearTreeFilterButton" Grid.Column="1" Click="ClearFiltersClicked" Padding="8,4"/>
+           </Grid>
+          </StackPanel>
+         </ScrollViewer>
+        </TabItem>
+        <TabItem x:Name="FilterQuickTab">
+         <Grid Margin="0,6,0,0">
+          <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+          <Grid Grid.Row="0" Margin="0,0,0,7">
+           <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+           <StackPanel><TextBlock x:Name="FilterColumnLabel" Style="{StaticResource SidebarFieldLabel}"/><ComboBox x:Name="FilterColumn" DisplayMemberPath="Heading" SelectedValuePath="Key" SelectionChanged="FilterColumnChanged" AutomationProperties.Name="حقل التصفية / Filter field"/></StackPanel>
+           <StackPanel Grid.Column="2"><TextBlock x:Name="FilterOperatorLabel" Style="{StaticResource SidebarFieldLabel}"/><ComboBox x:Name="FilterOperator" DisplayMemberPath="Label" SelectedValuePath="Value" AutomationProperties.Name="عامل التصفية / Filter operator"/></StackPanel>
+          </Grid>
+          <Grid Grid.Row="2" Margin="0,0,0,7">
+           <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+           <TextBox x:Name="FilterValue" AutomationProperties.Name="قيمة التصفية الأولى / First filter value"/>
+           <TextBox x:Name="FilterSecondValue" Grid.Column="2" AutomationProperties.Name="قيمة التصفية الثانية / Second filter value"/>
+          </Grid>
+          <Grid Grid.Row="3" Margin="0,0,0,8">
+           <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+           <ComboBox x:Name="FilterLogic" Width="82" DisplayMemberPath="Label" SelectedValuePath="Value"/>
+           <Button x:Name="AddFilterButton" Grid.Column="1" Click="AddFilterClicked" Margin="6,0,0,0"/>
+          </Grid>
+          <ListBox x:Name="ActiveFilters" Grid.Row="4" DisplayMemberPath="Label" BorderThickness="0" Margin="0,0,0,8" AutomationProperties.Name="شروط التصفية النشطة / Active filters"/>
+          <Grid Grid.Row="5">
+           <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+           <Button x:Name="RemoveFilterButton" Click="RemoveFilterClicked"/>
+           <Button x:Name="ApplyFilterButton" Grid.Column="1" Click="ApplyFilterClicked"/>
+           <Button x:Name="ClearFiltersButton" Grid.Column="2" Click="ClearFiltersClicked"/>
+          </Grid>
+         </Grid>
+        </TabItem>
+       </TabControl>
+      </Grid>
+     </Border>
+     <Border x:Name="FieldsSidebar" Grid.Column="1" Width="300" Visibility="Collapsed" Background="{DynamicResource Surface.Secondary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1,0,0,0" Padding="12">
+      <Grid>
+       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+       <DockPanel Grid.Row="0" Margin="0,0,0,8">
+        <Button DockPanel.Dock="Right" Content="×" Click="FieldsClicked" Style="{StaticResource SidebarClose}"/>
+        <TextBlock x:Name="FieldsTitle" Style="{StaticResource SidebarTitle}" VerticalAlignment="Center"/>
+       </DockPanel>
+       <TextBlock x:Name="ColumnFieldsLabel" Grid.Row="1" Style="{StaticResource SidebarFieldLabel}"/>
+       <ListBox x:Name="ColumnFields" Grid.Row="2" DisplayMemberPath="Heading" AutomationProperties.Name="قائمة الحقول / Field chooser"/>
+       <UniformGrid Grid.Row="3" Columns="2" Margin="0,8,0,0">
+        <Button x:Name="ShowColumnButton" Click="ShowColumnClicked"/>
+        <Button x:Name="HideColumnButton" Click="HideColumnClicked"/>
+        <Button x:Name="MoveColumnUpButton" Click="MoveColumnUpClicked"/>
+        <Button x:Name="MoveColumnDownButton" Click="MoveColumnDownClicked"/>
+       </UniformGrid>
+       <UniformGrid Grid.Row="4" Columns="2" Margin="0,4,0,0">
+        <Button x:Name="FreezeColumnButton" Click="FreezeColumnClicked"/>
+        <Button x:Name="ResetColumnsButton" Click="ResetColumnsClicked"/>
+       </UniformGrid>
+       <TextBlock x:Name="WorkspaceNameLabel" Grid.Row="5" Style="{StaticResource SidebarFieldLabel}" Margin="0,10,0,0"/>
+       <TextBox x:Name="WorkspaceName" Grid.Row="6" Margin="0,0,0,6" MaxLength="80" AutomationProperties.Name="اسم مساحة التقرير / Report workspace name"/>
+       <TextBlock x:Name="WorkspaceListLabel" Grid.Row="7" Style="{StaticResource SidebarFieldLabel}"/>
+       <ComboBox x:Name="WorkspaceList" Grid.Row="8" DisplayMemberPath="Name" Margin="0,0,0,6" AutomationProperties.Name="مساحات التقرير المحفوظة / Saved report workspaces"/>
+       <UniformGrid Grid.Row="9" Columns="3">
+        <Button x:Name="SaveWorkspaceButton" Click="SaveWorkspaceClicked"/>
+        <Button x:Name="LoadWorkspaceButton" Click="LoadWorkspaceClicked"/>
+        <Button x:Name="DeleteWorkspaceButton" Click="DeleteWorkspaceClicked"/>
+       </UniformGrid>
+      </Grid>
+     </Border>
+     <Border x:Name="SummariesSidebar" Grid.Column="1" Width="320" Visibility="Collapsed" Background="{DynamicResource Surface.Secondary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1,0,0,0" Padding="12">
+      <Grid>
+       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+       <DockPanel Grid.Row="0" Margin="0,0,0,8">
+        <Button DockPanel.Dock="Right" Content="×" Click="SummariesClicked" Style="{StaticResource SidebarClose}"/>
+        <TextBlock x:Name="SummariesTitle" Style="{StaticResource SidebarTitle}" VerticalAlignment="Center"/>
+       </DockPanel>
+       <TextBlock x:Name="SummaryColumnLabel" Grid.Row="1" Style="{StaticResource SidebarFieldLabel}"/>
+       <ComboBox x:Name="SummaryColumn" Grid.Row="2" DisplayMemberPath="Heading" SelectedValuePath="Key" Margin="0,0,0,7" AutomationProperties.Name="حقل الملخص / Summary field"/>
+       <TextBlock x:Name="SummaryKindLabel" Grid.Row="3" Style="{StaticResource SidebarFieldLabel}"/>
+       <ComboBox x:Name="SummaryKindCombo" Grid.Row="4" DisplayMemberPath="Label" SelectedValuePath="Value" Margin="0,0,0,7" AutomationProperties.Name="نوع الملخص / Summary kind"/>
+       <TextBlock x:Name="SummaryCustomLabelLabel" Grid.Row="5" Style="{StaticResource SidebarFieldLabel}"/>
+       <Grid Grid.Row="6" Margin="0,0,0,8">
+        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <TextBox x:Name="SummaryCustomLabel"/>
+        <Button x:Name="AddSummaryButton" Grid.Column="1" Click="AddSummaryClicked" Margin="6,0,0,0" Padding="8,3"/>
+       </Grid>
+       <ListBox x:Name="ActiveSummariesList" Grid.Row="7" DisplayMemberPath="Label" BorderThickness="0" Margin="0,0,0,8" AutomationProperties.Name="الملخصات المخصصة / Configured summaries"/>
+       <Grid Grid.Row="8">
+        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+        <Button x:Name="RemoveSummaryButton" Click="RemoveSummaryClicked" Margin="0,0,4,0"/>
+        <Button x:Name="ClearSummariesButton" Grid.Column="1" Click="ClearSummariesClicked"/>
+       </Grid>
+      </Grid>
+     </Border>
+    </Grid>
+   </TabItem>
+   <TabItem x:Name="PrintPreviewTab">
+    <DocumentViewer x:Name="PrintViewer" FlowDirection="LeftToRight"/>
+   </TabItem>
+  </TabControl>
+
+  <!-- The authoritative totals stay pinned under the rows: what the server committed, never what the display filtered. -->
+  <Border Grid.Row="5" Background="{DynamicResource Surface.Secondary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="0,1,0,0" Padding="12,7">
+   <Grid>
+    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+    <TextBlock Grid.Column="0" x:Name="TotalsLabel" Style="{StaticResource ToolGroupLabel}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+    <!-- Wrapped, never scrolled: a server total the operator has to scroll to find is a total that gets missed. -->
+    <ItemsControl Grid.Column="1" x:Name="AuthoritativeTotals" FlowDirection="LeftToRight">
+     <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+     <ItemsControl.ItemTemplate><DataTemplate>
+      <Border MinWidth="170" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="0,0,1,0" Padding="9,0" FlowDirection="RightToLeft">
+       <StackPanel>
+        <TextBlock Text="{Binding Label}" Foreground="{DynamicResource Text.Secondary}" FontSize="{DynamicResource Font.Caption}" TextTrimming="CharacterEllipsis"/>
+        <StackPanel Orientation="Horizontal" FlowDirection="LeftToRight">
+         <TextBlock Text="{Binding Value}" Foreground="{DynamicResource Text.Primary}" FontFamily="{DynamicResource Font.Numeric}" FontSize="13" FontWeight="SemiBold"/>
+         <TextBlock Text="{Binding Currency}" Foreground="{DynamicResource Text.Secondary}" FontSize="{DynamicResource Font.Caption}" Margin="4,0,0,0"/>
+        </StackPanel>
+       </StackPanel>
+      </Border>
+     </DataTemplate></ItemsControl.ItemTemplate>
+    </ItemsControl>
+    <StackPanel Grid.Column="2" Orientation="Horizontal">
+     <TextBlock x:Name="PresentationSummary" Foreground="{DynamicResource Text.Muted}" FontSize="{DynamicResource Font.Caption}" MaxWidth="300" TextTrimming="CharacterEllipsis" Margin="12,0" FlowDirection="LeftToRight" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"/>
+     <TextBlock x:Name="VisibleRowsLabel" Style="{DynamicResource Text.Caption}" Margin="12,0,5,0"/>
+     <TextBlock x:Name="VisibleRows" Style="{DynamicResource Text.Numeric}" FontWeight="SemiBold"/>
+    </StackPanel>
+   </Grid>
+  </Border>
+ </Grid>
+</Window>

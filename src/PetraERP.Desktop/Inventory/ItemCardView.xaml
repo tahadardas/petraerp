@@ -1,0 +1,657 @@
+<UserControl x:Class="PetraERP.Desktop.Inventory.ItemCardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:links="clr-namespace:PetraERP.Desktop.Sales"
+             xmlns:ux="clr-namespace:PetraERP.Desktop.Controls"
+             ux:ValidationFocus.Target="{Binding ValidationFocusTarget}" ux:ValidationFocus.Request="{Binding ValidationFocusRequest}">
+    <UserControl.InputBindings>
+        <KeyBinding Key="F5" Command="{Binding RefreshCommand}"/>
+        <!-- Esc leaves the edit (asks before discarding changes); a lookup popup or grid that uses Esc handles it first. -->
+        <KeyBinding Key="Escape" Command="{Binding CancelCardCommand}"/>
+        <KeyBinding Key="E" Modifiers="Control" Command="{Binding BeginEditCommand}"/>
+        <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCardCommand}"/>
+    </UserControl.InputBindings>
+    <UserControl.Resources>
+        <!-- Al-Ameen item card: compact label / field rows. -->
+        <Style x:Key="Am.Label" TargetType="TextBlock"><Setter Property="VerticalAlignment" Value="Center"/><Setter Property="Margin" Value="6,3"/></Style>
+        <Style x:Key="Am.Check" TargetType="CheckBox"><Setter Property="Margin" Value="4,3"/></Style>
+        <Style x:Key="Am.Radio" TargetType="RadioButton"><Setter Property="Margin" Value="8,2,4,2"/><Setter Property="VerticalAlignment" Value="Center"/></Style>
+    </UserControl.Resources>
+    <DockPanel Margin="6">
+        <!-- Bottom button bar (Al-Ameen order, right to left): add, new, edit, accounts, close / cancel -->
+        <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource Divider}" BorderThickness="0,1,0,0" Padding="0,6,0,0" Margin="0,6,0,0">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="إضافة" Command="{Binding SaveCardCommand}" Visibility="{Binding IsNewMode, Converter={StaticResource Visible}}" Style="{StaticResource Button.Primary}" MinWidth="76" Margin="0,0,6,0" ToolTip="Ctrl+S"/>
+                <Button Content="جديد" Command="{Binding BeginNewCommand}" MinWidth="76" Margin="0,0,6,0"/>
+                <Button MinWidth="76" Margin="0,0,6,0">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="Content" Value="تعديل"/>
+                            <Setter Property="Command" Value="{Binding BeginEditCommand}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsEditMode}" Value="True">
+                                    <Setter Property="Content" Value="حفظ"/>
+                                    <Setter Property="Command" Value="{Binding SaveCardCommand}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Content="حذف" Command="{Binding DeleteItemCommand}" MinWidth="76" Margin="0,0,6,0" ToolTip="لا يمكن حذف مادة عليها حركة"/>
+                <Button Content="حسابات..." Click="AccountsClicked" MinWidth="76" Margin="0,0,6,0"/>
+                <Button Content="إلغاء الأمر" Command="{Binding CancelCardCommand}" Visibility="{Binding IsEditing, Converter={StaticResource Visible}}" MinWidth="76" Margin="0,0,6,0" ToolTip="Esc"/>
+                <Button Content="إغلاق" Click="CloseClicked" Visibility="{Binding IsViewMode, Converter={StaticResource Visible}}" MinWidth="76" Margin="0,0,6,0"/>
+                <TextBlock Text="{Binding StatusText}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="8,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Validation summary -->
+        <Border DockPanel.Dock="Bottom" Background="{DynamicResource SubtleErrorBackground}" BorderBrush="{DynamicResource ErrorSurface}"
+                BorderThickness="1" CornerRadius="{DynamicResource Radius.Control}" Padding="8,4" Margin="0,6,0,0"
+                Visibility="{Binding HasValidationErrors, Converter={StaticResource Visible}}">
+            <DockPanel>
+                <TextBlock Text="&#xE783;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource ErrorSurface}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBlock Text="{Binding ValidationMessage}" Foreground="{DynamicResource ErrorSurface}" FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Record navigation: saved records only (disabled while a draft is open) -->
+        <ux:RecordNavigator DockPanel.Dock="Top" Margin="0,0,0,6" RecordNumber="{Binding RecordCode}" StatusText="{Binding StatusText}"
+                            FirstCommand="{Binding FirstItemCommand}" PreviousCommand="{Binding PreviousItemCommand}"
+                            NextCommand="{Binding NextItemCommand}" LastCommand="{Binding LastItemCommand}"/>
+
+        <!-- Header: code, names -->
+        <Grid DockPanel.Dock="Top" Margin="0,0,0,6">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="82"/><ColumnDefinition Width="150"/><ColumnDefinition Width="82"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+            <TextBlock Text="رمز المادة *" Style="{StaticResource Am.Label}"/>
+            <TextBox ux:ValidationFocus.Key="code" Grid.Column="1" Text="{Binding DraftCode, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsCodeReadOnly}" FlowDirection="LeftToRight" Margin="0,2"/>
+            <TextBlock Grid.Column="2" Text="اسم المادة *" Style="{StaticResource Am.Label}"/>
+            <TextBox ux:ValidationFocus.Key="name-ar" Grid.Column="3" Text="{Binding DraftNameArabic, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" Margin="0,2"/>
+            <TextBlock Grid.Row="1" Grid.Column="2" Text="الاسم اللاتيني" Style="{StaticResource Am.Label}"/>
+            <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding DraftNameEnglish, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" FlowDirection="LeftToRight" Margin="0,2"/>
+        </Grid>
+
+        <!-- Body: page list on the reading side (right), page content beside it -->
+        <Grid>
+            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="6"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+            <ListBox x:Name="NavList" SelectedIndex="0" MinWidth="124" AutomationProperties.Name="{Binding Title}">
+          <ListBoxItem Content="عام"/>
+          <ListBoxItem Content="وحدات"/>
+          <ListBoxItem Content="أسعار"/>
+          <ListBoxItem Content="خيارات"/>
+          <ListBoxItem Content="المكافآت" IsEnabled="False" Visibility="Collapsed"/>
+          <ListBoxItem Content="أهداف الفترات" IsEnabled="False" Visibility="Collapsed"/>
+          <ListBoxItem Content="كميات المستودعات"/>
+          <ListBoxItem Content="ملخص الحركة"/>
+          <ListBoxItem Content="مادة تجميعية"/>
+          <ListBoxItem Content="حقول مخصصة" IsEnabled="False" Visibility="Collapsed"/>
+          <ListBoxItem Content="الحسابات المحاسبية"/>
+          <ListBoxItem Content="الباركودات"/>
+          <ListBoxItem Content="أسعار خاصة"/>
+          <ListBoxItem Content="تحويلات الوحدات"/>
+          <ListBoxItem Content="الفواتير المرتبطة"/>
+            </ListBox>
+            <Border Grid.Column="2" Style="{StaticResource Panel.Card}" Padding="0">
+                <Grid>
+        <Grid>
+          <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers><DataTrigger Binding="{Binding SelectedIndex, ElementName=NavList}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+          </Style></Grid.Style>
+          <Grid Margin="8">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="14"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/><RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <TextBlock Text="المجموعة" Style="{StaticResource Am.Label}" VerticalAlignment="Top" Margin="6,8,6,3"/>
+            <ux:LookupPicker Grid.Column="1" ItemsSource="{Binding GroupLookups, Converter={StaticResource EntryLookups}}" SelectedId="{Binding DraftGroupId}" IsEnabled="{Binding IsEditing}" IsArabic="{Binding Localization.IsRightToLeft}" Margin="0,4,0,2" VerticalAlignment="Top"/>
+            <TextBlock Grid.Row="1" Text="المواصفات" Style="{StaticResource Am.Label}" VerticalAlignment="Top" Margin="6,8,6,3"/>
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding DraftSpecifications, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Top" Margin="0,2,0,2" MinHeight="150" MaxLength="2000"/>
+            <Grid Grid.RowSpan="2" Grid.Column="3" Grid.ColumnSpan="2">
+              <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+              </Grid.RowDefinitions>
+              <TextBlock Text="القياس" Style="{StaticResource Am.Label}"/>
+              <TextBox Grid.Column="1" Text="{Binding DraftMeasure, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" MaxLength="100" Margin="0,2"/>
+              <TextBlock Grid.Row="1" Text="المصدر" Style="{StaticResource Am.Label}"/>
+              <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding DraftSource, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" MaxLength="100" Margin="0,2"/>
+              <TextBlock Grid.Row="2" Text="مكان التواجد" Style="{StaticResource Am.Label}"/>
+              <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding DraftLocation, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" MaxLength="100" Margin="0,2"/>
+              <TextBlock Grid.Row="3" Text="الشركة المصنعة" Style="{StaticResource Am.Label}"/>
+              <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding DraftManufacturer, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" MaxLength="100" Margin="0,2"/>
+              <TextBlock Grid.Row="4" Text="اللون" Style="{StaticResource Am.Label}"/>
+              <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding DraftColor, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" MaxLength="100" Margin="0,2"/>
+              <TextBlock Grid.Row="5" Text="بلد المنشأ" Style="{StaticResource Am.Label}"/>
+              <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding DraftOriginCountry, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" MaxLength="100" Margin="0,2"/>
+              <TextBlock Grid.Row="6" Text="النوعية" Style="{StaticResource Am.Label}"/>
+              <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding DraftQuality, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" MaxLength="100" Margin="0,2"/>
+              <TextBlock Grid.Row="7" Text="الطراز" Style="{StaticResource Am.Label}"/>
+              <TextBox Grid.Row="7" Grid.Column="1" Text="{Binding DraftModel, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" MaxLength="100" Margin="0,2"/>
+            </Grid>
+          </Grid>
+        </Grid>
+        <Grid>
+          <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers><DataTrigger Binding="{Binding SelectedIndex, ElementName=NavList}" Value="1"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+          </Style></Grid.Style>
+          <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <Grid Margin="8">
+              <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="18"/><ColumnDefinition Width="170"/></Grid.ColumnDefinitions>
+              <StackPanel>
+            <Border BorderBrush="{DynamicResource Divider}" BorderThickness="0,0,0,1" Padding="0,2,0,4" Margin="0,0,0,4">
+              <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="82"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                <TextBlock Text="الوحدة 1" Style="{StaticResource Am.Label}"/>
+                <ux:LookupPicker ux:ValidationFocus.Key="base-unit" Grid.Column="1" ItemsSource="{Binding UnitLookups, Converter={StaticResource EntryLookups}}" SelectedId="{Binding DraftBaseUnitId}" IsEnabled="{Binding IsEditing}" IsArabic="{Binding Localization.IsRightToLeft}" Margin="0,2"/>
+                <RadioButton Grid.Column="2" GroupName="DefaultUnit" Content="افتراضية" IsChecked="{Binding IsUnit1Default}" IsEnabled="{Binding IsEditing}" Style="{StaticResource Am.Radio}"/>
+                <TextBlock Grid.Row="2" Text="رمز الباركود" Style="{StaticResource Am.Label}"/>
+                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding DraftUnit1Barcode, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsEditing}" FlowDirection="LeftToRight" Margin="0,2"/>
+                <Button Grid.Row="2" Grid.Column="2" Content="..." MinWidth="26" Margin="4,2,0,2" Click="MoreBarcodesClicked" ToolTip="كل الباركودات"/>
+              </Grid>
+            </Border>
+            <Border BorderBrush="{DynamicResource Divider}" BorderThickness="0,0,0,1" Padding="0,2,0,4" Margin="0,0,0,4">
+              <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="82"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                <TextBlock Text="الوحدة 2" Style="{StaticResource Am.Label}"/>
+                <ux:LookupPicker Grid.Column="1" ItemsSource="{Binding UnitLookups, Converter={StaticResource EntryLookups}}" SelectedId="{Binding DraftUnit2Id}" IsEnabled="{Binding IsEditing}" IsArabic="{Binding Localization.IsRightToLeft}" Margin="0,2"/>
+                <RadioButton Grid.Column="2" GroupName="DefaultUnit" Content="افتراضية" IsChecked="{Binding IsUnit2Default}" IsEnabled="{Binding CanEditUnit2}" Style="{StaticResource Am.Radio}"/>
+            <TextBlock Grid.Row="1" Text="عامل التحويل" Style="{StaticResource Am.Label}"/>
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding DraftUnit2Factor, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanEditUnit2}" FlowDirection="LeftToRight" Margin="0,2"/>
+            <CheckBox Grid.Row="1" Grid.Column="2" Content="غير ثابت" IsChecked="{Binding DraftUnit2Variable}" IsEnabled="{Binding CanEditUnit2}" Style="{StaticResource Am.Check}"/>
+                <TextBlock Grid.Row="2" Text="رمز الباركود" Style="{StaticResource Am.Label}"/>
+                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding DraftUnit2Barcode, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanEditUnit2}" FlowDirection="LeftToRight" Margin="0,2"/>
+                <Button Grid.Row="2" Grid.Column="2" Content="..." MinWidth="26" Margin="4,2,0,2" Click="MoreBarcodesClicked" ToolTip="كل الباركودات"/>
+              </Grid>
+            </Border>
+            <Border BorderBrush="{DynamicResource Divider}" BorderThickness="0,0,0,1" Padding="0,2,0,4" Margin="0,0,0,4">
+              <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="82"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                <TextBlock Text="الوحدة 3" Style="{StaticResource Am.Label}"/>
+                <ux:LookupPicker Grid.Column="1" ItemsSource="{Binding UnitLookups, Converter={StaticResource EntryLookups}}" SelectedId="{Binding DraftUnit3Id}" IsEnabled="{Binding IsEditing}" IsArabic="{Binding Localization.IsRightToLeft}" Margin="0,2"/>
+                <RadioButton Grid.Column="2" GroupName="DefaultUnit" Content="افتراضية" IsChecked="{Binding IsUnit3Default}" IsEnabled="{Binding CanEditUnit3}" Style="{StaticResource Am.Radio}"/>
+            <TextBlock Grid.Row="1" Text="عامل التحويل" Style="{StaticResource Am.Label}"/>
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding DraftUnit3Factor, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanEditUnit3}" FlowDirection="LeftToRight" Margin="0,2"/>
+            <CheckBox Grid.Row="1" Grid.Column="2" Content="غير ثابت" IsChecked="{Binding DraftUnit3Variable}" IsEnabled="{Binding CanEditUnit3}" Style="{StaticResource Am.Check}"/>
+                <TextBlock Grid.Row="2" Text="رمز الباركود" Style="{StaticResource Am.Label}"/>
+                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding DraftUnit3Barcode, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanEditUnit3}" FlowDirection="LeftToRight" Margin="0,2"/>
+                <Button Grid.Row="2" Grid.Column="2" Content="..." MinWidth="26" Margin="4,2,0,2" Click="MoreBarcodesClicked" ToolTip="كل الباركودات"/>
+              </Grid>
+            </Border>
+              </StackPanel>
+              <Grid Grid.Column="2">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="الحد الأعلى" Style="{StaticResource Am.Label}"/>
+                <TextBox Grid.Column="1" Text="{Binding DraftMaxStock, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" FlowDirection="LeftToRight" Margin="0,2"/>
+                <TextBlock Grid.Row="1" Text="حد الطلب" Style="{StaticResource Am.Label}"/>
+                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding DraftReorderPoint, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" FlowDirection="LeftToRight" Margin="0,2"/>
+                <TextBlock Grid.Row="2" Text="الحد الأدنى" Style="{StaticResource Am.Label}"/>
+                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding DraftMinStock, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" FlowDirection="LeftToRight" Margin="0,2"/>
+                <TextBlock Grid.Row="3" Text="الكمية الحالية" Style="{StaticResource Am.Label}"/>
+                <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding CurrentQuantityDisplay, Mode=OneWay}" IsReadOnly="True" FlowDirection="LeftToRight" Margin="0,2"/>
+                <Border Grid.Row="4" Grid.ColumnSpan="2" BorderBrush="{DynamicResource Divider}" BorderThickness="0,1,0,0" Margin="0,8,0,6"/>
+                <TextBlock Grid.Row="5" Text="هدية" Style="{StaticResource Am.Label}"/>
+                <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding DraftGiftQuantity, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" FlowDirection="LeftToRight" Margin="0,2"/>
+                <TextBlock Grid.Row="6" Text="لكل" Style="{StaticResource Am.Label}"/>
+                <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding DraftGiftPerQuantity, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" FlowDirection="LeftToRight" Margin="0,2"/>
+              </Grid>
+            </Grid>
+          </ScrollViewer>
+        </Grid>
+        <Grid>
+          <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers><DataTrigger Binding="{Binding SelectedIndex, ElementName=NavList}" Value="2"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+          </Style></Grid.Style>
+          <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="8">
+              <Grid Margin="0,0,0,4">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="96"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="1" Text="الوحدة الأولى" HorizontalAlignment="Center" Style="{StaticResource Am.Label}"/>
+                <TextBlock Grid.Column="2" Text="الوحدة الثانية" HorizontalAlignment="Center" Style="{StaticResource Am.Label}"/>
+                <TextBlock Grid.Column="3" Text="الوحدة الثالثة" HorizontalAlignment="Center" Style="{StaticResource Am.Label}"/>
+              </Grid>
+              <ItemsControl ItemsSource="{Binding PriceMatrix}" KeyboardNavigation.TabNavigation="Local">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Grid Margin="0,1">
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="96"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                      <TextBlock Text="{Binding Caption}" Style="{StaticResource Am.Label}"/>
+                    <TextBox Grid.Column="1" Text="{Binding Unit1, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight" Margin="2,1">
+                      <TextBox.Style><Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                        <Setter Property="IsEnabled" Value="{Binding DataContext.CanEditPriceMatrix, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                        <Style.Triggers></Style.Triggers>
+                      </Style></TextBox.Style>
+                    </TextBox>
+                    <TextBox Grid.Column="2" Text="{Binding Unit2, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight" Margin="2,1">
+                      <TextBox.Style><Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                        <Setter Property="IsEnabled" Value="{Binding DataContext.CanEditPriceMatrix, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                        <Style.Triggers><DataTrigger Binding="{Binding DataContext.HasUnit2, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False"><Setter Property="IsEnabled" Value="False"/></DataTrigger></Style.Triggers>
+                      </Style></TextBox.Style>
+                    </TextBox>
+                    <TextBox Grid.Column="3" Text="{Binding Unit3, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight" Margin="2,1">
+                      <TextBox.Style><Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                        <Setter Property="IsEnabled" Value="{Binding DataContext.CanEditPriceMatrix, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                        <Style.Triggers><DataTrigger Binding="{Binding DataContext.HasUnit3, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False"><Setter Property="IsEnabled" Value="False"/></DataTrigger></Style.Triggers>
+                      </Style></TextBox.Style>
+                    </TextBox>
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <Grid Margin="0,10,0,0">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="96"/><ColumnDefinition Width="90"/><ColumnDefinition Width="18"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="130"/></Grid.ColumnDefinitions>
+                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                <TextBlock Text="العملة" Style="{StaticResource Am.Label}"/>
+                <TextBox Grid.Column="1" Text="{Binding DraftPriceCurrency, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanEditPriceMatrix}" CharacterCasing="Upper" MaxLength="3" FlowDirection="LeftToRight" Margin="0,2"/>
+                <TextBlock Grid.Column="3" Text="سياسة التسعير" Style="{StaticResource Am.Label}"/>
+                <TextBox Grid.Column="4" Text="حقيقي" IsReadOnly="True" Margin="0,2"/>
+                <TextBlock Grid.Row="1" Text="تعادل آخر شراء" Style="{StaticResource Am.Label}"/>
+                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding DraftLastPurchaseRate, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" FlowDirection="LeftToRight" Margin="0,2"/>
+              </Grid>
+            </StackPanel>
+          </ScrollViewer>
+        </Grid>
+        <Grid>
+          <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers><DataTrigger Binding="{Binding SelectedIndex, ElementName=NavList}" Value="3"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+          </Style></Grid.Style>
+          <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <Grid Margin="8">
+              <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+              <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+              <Grid Grid.ColumnSpan="2" Margin="0,0,0,6">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="82"/><ColumnDefinition Width="170"/></Grid.ColumnDefinitions>
+                <TextBlock Text="نوع المادة" Style="{StaticResource Am.Label}"/>
+                <TextBox Grid.Column="1" Text="مستودعية" IsReadOnly="True" Margin="0,2"/>
+              </Grid>
+              <Border Grid.Row="1" Grid.ColumnSpan="2" BorderBrush="{DynamicResource Divider}" BorderThickness="1" Padding="6,2,6,6" Margin="0,0,0,6">
+                <Grid>
+                  <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                  <StackPanel>
+                    <CheckBox Content="مادة تجميعية" IsChecked="{Binding DraftIsAssembly}" IsEnabled="{Binding IsEditing}" Style="{StaticResource Am.Check}"/>
+                    <CheckBox Content="حساب الأسعار من المكونات" IsChecked="{Binding DraftComponentPricing}" IsEnabled="{Binding CanEditComponentPricing}" Style="{StaticResource Am.Check}"/>
+                    <CheckBox Content="رقم تسلسلي" IsChecked="{Binding DraftTracksSerial}" IsEnabled="{Binding IsEditing}" Style="{StaticResource Am.Check}"/>
+                    <CheckBox Content="فرض عند الإدخال" IsChecked="{Binding DraftEnforceSerialOnReceipt}" IsEnabled="{Binding CanEditSerialEnforcement}" Margin="18,3,4,3"/>
+                    <CheckBox Content="فرض عند الإخراج" IsChecked="{Binding DraftEnforceSerialOnIssue}" IsEnabled="{Binding CanEditSerialEnforcement}" Margin="18,3,4,3"/>
+                  </StackPanel>
+                  <StackPanel Grid.Column="1">
+                    <CheckBox Content="تاريخ إنتاج" IsChecked="{Binding DraftTracksProductionDate}" IsEnabled="{Binding IsEditing}" Style="{StaticResource Am.Check}"/>
+                    <CheckBox Content="تاريخ صلاحية" IsChecked="{Binding DraftTracksExpiryDate}" IsEnabled="{Binding IsEditing}" Style="{StaticResource Am.Check}"/>
+                    <CheckBox Content="فرض عند الإدخال" IsChecked="{Binding DraftEnforceDatesOnReceipt}" IsEnabled="{Binding CanEditDateEnforcement}" Margin="18,3,4,3"/>
+                    <CheckBox Content="فرض عند الإخراج" IsChecked="{Binding DraftEnforceDatesOnIssue}" IsEnabled="{Binding CanEditDateEnforcement}" Margin="18,3,4,3"/>
+                  </StackPanel>
+                </Grid>
+              </Border>
+              <CheckBox Grid.Row="2" Grid.ColumnSpan="2" Content="إخفاء في نافذة البحث" IsChecked="{Binding DraftHideInSearch}" IsEnabled="{Binding IsEditing}" Style="{StaticResource Am.Check}"/>
+              <CheckBox Grid.Row="3" Grid.ColumnSpan="2" Content="الكمية في الفاتورة كمية صحيحة" IsChecked="{Binding DraftIntegerQuantity}" IsEnabled="{Binding IsEditing}" Style="{StaticResource Am.Check}"/>
+              <StackPanel Grid.Row="4" Grid.ColumnSpan="2" Margin="0,8,0,0">
+                <TextBlock Text="صورة المادة" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                <Grid>
+                  <Grid.ColumnDefinitions><ColumnDefinition Width="46"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                  <TextBlock Text="الملف" Style="{StaticResource Am.Label}"/>
+                  <TextBox Grid.Column="1" Text="{Binding DraftImagePath, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" MaxLength="500" FlowDirection="LeftToRight" Margin="0,2"/>
+                  <Button Grid.Column="2" Content="استعراض..." IsEnabled="{Binding IsEditing}" Click="BrowseImageClicked" Margin="4,2,0,2" MinWidth="80"/>
+                </Grid>
+                <Border BorderBrush="{DynamicResource Divider}" BorderThickness="0,1,0,0" Margin="0,10,0,6"/>
+                <Grid>
+                  <Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/><ColumnDefinition Width="18"/><ColumnDefinition Width="86"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                  <TextBlock Text="المستودع الافتراضي" Style="{StaticResource Am.Label}"/>
+                  <ux:LookupPicker Grid.Column="1" ItemsSource="{Binding WarehouseLookups, Converter={StaticResource EntryLookups}}" SelectedId="{Binding DraftDefaultWarehouseId}" IsEnabled="{Binding IsEditing}" IsArabic="{Binding Localization.IsRightToLeft}" Margin="0,2"/>
+                  <TextBlock Grid.Column="3" Text="طريقة التكلفة" Style="{StaticResource Am.Label}"/>
+                  <ComboBox Grid.Column="4" ItemsSource="{Binding CostMethodOptions}" SelectedValue="{Binding DraftCostMethod}" SelectedValuePath="Value" DisplayMemberPath="Label" IsEnabled="{Binding IsEditing}" Margin="0,2"/>
+                </Grid>
+              </StackPanel>
+            </Grid>
+          </ScrollViewer>
+        </Grid>
+        <Grid>
+          <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers><DataTrigger Binding="{Binding SelectedIndex, ElementName=NavList}" Value="6"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+          </Style></Grid.Style>
+                <DockPanel Margin="16">
+                    <Border DockPanel.Dock="Top" Style="{StaticResource Panel.Card}" Margin="0,0,0,12" Padding="12">
+                        <StackPanel>
+                            <TextBlock Text="الأرصدة الحالية المشتقة خادمياً من سجل الحركات المعتمد" Style="{StaticResource Text.Caption}" Margin="0,0,0,4"/>
+                            <TextBlock Text="{Binding TotalStockDisplay, StringFormat='إجمالي الرصيد المتوفر: {0}'}" Style="{StaticResource Text.Heading}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <DataGrid ItemsSource="{Binding WarehouseBalances}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" BorderThickness="0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="رمز المستودع" Binding="{Binding WarehouseCode}" Width="120"/>
+                            <DataGridTextColumn Header="اسم المستودع" Binding="{Binding WarehouseName}" Width="*"/>
+                            <DataGridTextColumn Header="الكمية" Binding="{Binding Quantity, Converter={StaticResource Number}, ConverterParameter=quantity}" Width="140" ElementStyle="{StaticResource Text.Numeric}"/>
+                            <DataGridTextColumn Header="تكلفة الوحدة" Binding="{Binding UnitCost}" Width="140"/>
+                            <DataGridTextColumn Header="إجمالي التكلفة" Binding="{Binding TotalCost, Converter={StaticResource Number}}" Width="140" ElementStyle="{StaticResource Text.Numeric}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            
+        </Grid>
+        <Grid>
+          <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers><DataTrigger Binding="{Binding SelectedIndex, ElementName=NavList}" Value="7"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+          </Style></Grid.Style>
+                <DockPanel Margin="16">
+                    <TextBlock DockPanel.Dock="Top" Text="سجل حركات المخزون المعتمدة لهذه المادة" Style="{StaticResource Text.Subheading}" Margin="0,0,0,8"/>
+                    <DataGrid ItemsSource="{Binding Movements}" SelectedItem="{Binding SelectedMovement}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" BorderThickness="0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="التاريخ" Binding="{Binding MovementDateUtc, StringFormat='yyyy-MM-dd HH:mm'}" Width="130"/>
+                            <DataGridTextColumn Header="نوع الحركة" Binding="{Binding MovementKind}" Width="130"/>
+                            <DataGridTextColumn Header="المستودع" Binding="{Binding WarehouseCode}" Width="100"/>
+                            <DataGridTextColumn Header="الكمية" Binding="{Binding Quantity, Converter={StaticResource Number}, ConverterParameter=quantity}" Width="110" ElementStyle="{StaticResource Text.Numeric}"/>
+                            <DataGridTextColumn Header="الوحدة" Binding="{Binding UnitCode}" Width="80"/>
+                            <DataGridTextColumn Header="تكلفة الوحدة" Binding="{Binding UnitCost, Converter={StaticResource Number}}" Width="110" ElementStyle="{StaticResource Text.Numeric}"/>
+                            <DataGridTextColumn Header="التكلفة الإجمالية" Binding="{Binding TotalCost, Converter={StaticResource Number}}" Width="120" ElementStyle="{StaticResource Text.Numeric}"/>
+                            <DataGridTextColumn Header="رقم المستند" Binding="{Binding DocumentNumber}" Width="120"/>
+                            <DataGridTextColumn Header="مركز التكلفة" Binding="{Binding CostCenterCode}" Width="110"/>
+                            <DataGridTextColumn Header="ملاحظات" Binding="{Binding Notes}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            
+        </Grid>
+                <!-- Panel 8: مادة تجميعية (Composite Item - Matching Image 4) -->
+        <Grid>
+          <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers><DataTrigger Binding="{Binding SelectedIndex, ElementName=NavList}" Value="8"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+          </Style></Grid.Style>
+          <DockPanel Margin="10">
+            <!-- Edit row toolbar -->
+            <Border DockPanel.Dock="Top" Background="{DynamicResource Surface.Secondary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Small}" Padding="8,6" Margin="0,0,0,8"
+                    Visibility="{Binding IsEditing, Converter={StaticResource Visible}}">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="80"/>
+                  <ColumnDefinition Width="80"/>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                  <TextBlock Text="المادة المكونة" Style="{StaticResource Am.Label}"/>
+                  <ComboBox ItemsSource="{Binding ComponentLookups}" SelectedValue="{Binding NewComponentItemId}" SelectedValuePath="Id" DisplayMemberPath="NameArabic" TextSearch.TextPath="NameArabic" IsEnabled="{Binding IsEditing}" Height="24"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                  <TextBlock Text="الكمية" Style="{StaticResource Am.Label}"/>
+                  <TextBox Text="{Binding NewComponentQuantity, UpdateSourceTrigger=PropertyChanged}" Height="24" FlowDirection="LeftToRight"/>
+                </StackPanel>
+                <StackPanel Grid.Column="2" Margin="0,0,8,0">
+                  <TextBlock Text="الوحدة" Style="{StaticResource Am.Label}"/>
+                  <TextBox Text="{Binding NewComponentUnit, UpdateSourceTrigger=PropertyChanged}" Height="24"/>
+                </StackPanel>
+                <CheckBox Grid.Column="3" Content="مرنة" IsChecked="{Binding NewComponentIsFlexible}" VerticalAlignment="Center" Margin="0,14,10,0"/>
+                <CheckBox Grid.Column="4" Content="إجبارية" IsChecked="{Binding NewComponentIsMandatory}" VerticalAlignment="Center" Margin="0,14,10,0"/>
+                <CheckBox Grid.Column="5" Content="تطبع بالفاتورة" IsChecked="{Binding NewComponentPrintInInvoice}" VerticalAlignment="Center" Margin="0,14,10,0"/>
+                <Button Grid.Column="6" Content="إضافة مكون" Command="{Binding AddCompositeComponentCommand}" Style="{StaticResource Button.Primary}" Height="26" VerticalAlignment="Bottom" Margin="0,0,0,1"/>
+              </Grid>
+            </Border>
+
+            <!-- Composite Items DataGrid matching Image 4 -->
+            <DataGrid x:Name="CompositeComponentsGrid" ItemsSource="{Binding CompositeComponents}"
+                      AutoGenerateColumns="False" IsReadOnly="{Binding IsViewMode}" CanUserAddRows="False"
+                      GridLinesVisibility="All" HorizontalGridLinesBrush="{DynamicResource Divider}" VerticalGridLinesBrush="{DynamicResource Divider}"
+                      AlternatingRowBackground="{DynamicResource Grid.Alternate}" RowBackground="{DynamicResource Surface.Primary}" BorderThickness="1" BorderBrush="{DynamicResource Border.Normal}"
+                      RowHeight="26" ColumnHeaderHeight="28">
+              <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="DataGridColumnHeader">
+                  <Setter Property="Background" Value="{DynamicResource Surface.Secondary}"/>
+                  <Setter Property="Foreground" Value="{DynamicResource Text.Primary}"/>
+                  <Setter Property="FontWeight" Value="SemiBold"/>
+                  <Setter Property="FontSize" Value="11"/>
+                  <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                  <Setter Property="BorderBrush" Value="{DynamicResource Border.Normal}"/>
+                  <Setter Property="Padding" Value="6,4"/>
+                  <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                </Style>
+              </DataGrid.ColumnHeaderStyle>
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="#" Binding="{Binding LineNumber}" Width="45" IsReadOnly="True" ElementStyle="{StaticResource Text.Numeric}"/>
+                <DataGridTextColumn Header="المادة" Binding="{Binding ItemDisplay}" Width="*"/>
+                <DataGridTextColumn Header="الكمية" Binding="{Binding Quantity, StringFormat='{}{0:F2}'}" Width="90" ElementStyle="{StaticResource Text.Numeric}"/>
+                <DataGridTextColumn Header="الوحدة" Binding="{Binding UnitName}" Width="80"/>
+                <DataGridTextColumn Header="مرنة" Binding="{Binding FlexibleDisplay}" Width="90"/>
+                <DataGridTextColumn Header="إجبارية" Binding="{Binding MandatoryDisplay}" Width="90"/>
+                <DataGridTextColumn Header="تطبع بالـ..." Binding="{Binding PrintDisplay}" Width="90"/>
+                <DataGridTemplateColumn Width="40">
+                  <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                      <Button Style="{StaticResource Button.Icon}" Content="&#xE74D;" FontSize="{DynamicResource Font.Caption}"
+                              Command="{Binding DataContext.RemoveCompositeComponentCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                              CommandParameter="{Binding}"
+                              Visibility="{Binding DataContext.IsEditing, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource Visible}}"/>
+                    </DataTemplate>
+                  </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+              </DataGrid.Columns>
+            </DataGrid>
+          </DockPanel>
+        </Grid>
+<Grid>
+          <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers><DataTrigger Binding="{Binding SelectedIndex, ElementName=NavList}" Value="10"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+          </Style></Grid.Style>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="16">
+                        <TextBlock Text="الحسابات المحاسبية المعتمدة للمادة وحالات التوريث المالي" Style="{StaticResource Text.Subheading}" Margin="0,0,0,12"/>
+                        <TextBlock Text="يمكن تخصيص حسابات مستقلة لهذه المادة، أو تركها فارغة لترث تلقائياً من مجموعة المواد أو إعدادات النظام المالي." Style="{StaticResource Text.Caption}" Margin="0,0,0,16"/>
+
+                        <!-- Roles Grid / Table -->
+                        <Border Style="{StaticResource Panel.Card}" Padding="12">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="160"/>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="160"/>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="80"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Headers -->
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="الدور المحاسبي" FontWeight="Bold" Margin="4,4,8,8"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="الحساب الفعلي المطبق" FontWeight="Bold" Margin="4,4,8,8"/>
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="مصدر التوريث" FontWeight="Bold" Margin="4,4,8,8"/>
+                                <TextBlock Grid.Row="0" Grid.Column="3" Text="تخصيص حساب للمادة" FontWeight="Bold" Margin="4,4,8,8"/>
+                                <TextBlock Grid.Row="0" Grid.Column="4" Text="إلغاء" FontWeight="Bold" Margin="4,4,8,8"/>
+
+                                <!-- 1. Revenue -->
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="المبيعات (Revenue)" VerticalAlignment="Center" Margin="4,6"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding EffectiveRevenueDisplay}" VerticalAlignment="Center" FontWeight="SemiBold" Margin="4,6"/>
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding RevenueSourceDisplay}" VerticalAlignment="Center" Foreground="{DynamicResource AccentBrush}" Margin="4,6"/>
+                                <ux:LookupPicker Grid.Row="1" Grid.Column="3" ItemsSource="{Binding AccountLookups, Converter={StaticResource EntryLookups}}" SelectedId="{Binding OverrideRevenueAccountId}" IsEnabled="{Binding IsEditing}" Placeholder="{Binding Localization[D_EntryLookupHelp]}" IsArabic="{Binding Localization.IsRightToLeft}" Margin="4,2"/>
+                                <Button Grid.Row="1" Grid.Column="4" Style="{StaticResource Button.Subtle}" Content="افتراضي" Command="{Binding ResetOverrideCommand}" CommandParameter="Revenue" IsEnabled="{Binding IsEditing}" Margin="4,2"/>
+
+                                <!-- 2. Inventory -->
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="المخزون (Inventory)" VerticalAlignment="Center" Margin="4,6"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding EffectiveInventoryDisplay}" VerticalAlignment="Center" FontWeight="SemiBold" Margin="4,6"/>
+                                <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding InventorySourceDisplay}" VerticalAlignment="Center" Foreground="{DynamicResource AccentBrush}" Margin="4,6"/>
+                                <ux:LookupPicker Grid.Row="2" Grid.Column="3" ItemsSource="{Binding AccountLookups, Converter={StaticResource EntryLookups}}" SelectedId="{Binding OverrideInventoryAccountId}" IsEnabled="{Binding IsEditing}" Placeholder="{Binding Localization[D_EntryLookupHelp]}" IsArabic="{Binding Localization.IsRightToLeft}" Margin="4,2"/>
+                                <Button Grid.Row="2" Grid.Column="4" Style="{StaticResource Button.Subtle}" Content="افتراضي" Command="{Binding ResetOverrideCommand}" CommandParameter="Inventory" IsEnabled="{Binding IsEditing}" Margin="4,2"/>
+
+                                <!-- 3. COGS -->
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="تكلفة المبيعات (COGS)" VerticalAlignment="Center" Margin="4,6"/>
+                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding EffectiveCogsDisplay}" VerticalAlignment="Center" FontWeight="SemiBold" Margin="4,6"/>
+                                <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding CogsSourceDisplay}" VerticalAlignment="Center" Foreground="{DynamicResource AccentBrush}" Margin="4,6"/>
+                                <ux:LookupPicker Grid.Row="3" Grid.Column="3" ItemsSource="{Binding AccountLookups, Converter={StaticResource EntryLookups}}" SelectedId="{Binding OverrideCogsAccountId}" IsEnabled="{Binding IsEditing}" Placeholder="{Binding Localization[D_EntryLookupHelp]}" IsArabic="{Binding Localization.IsRightToLeft}" Margin="4,2"/>
+                                <Button Grid.Row="3" Grid.Column="4" Style="{StaticResource Button.Subtle}" Content="افتراضي" Command="{Binding ResetOverrideCommand}" CommandParameter="COGS" IsEnabled="{Binding IsEditing}" Margin="4,2"/>
+
+                                <!-- 4. Purchase -->
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="المشتريات (Purchase)" VerticalAlignment="Center" Margin="4,6"/>
+                                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding EffectivePurchaseDisplay}" VerticalAlignment="Center" FontWeight="SemiBold" Margin="4,6"/>
+                                <TextBlock Grid.Row="4" Grid.Column="2" Text="{Binding PurchaseSourceDisplay}" VerticalAlignment="Center" Foreground="{DynamicResource AccentBrush}" Margin="4,6"/>
+                                <ux:LookupPicker Grid.Row="4" Grid.Column="3" ItemsSource="{Binding AccountLookups, Converter={StaticResource EntryLookups}}" SelectedId="{Binding OverridePurchaseAccountId}" IsEnabled="{Binding IsEditing}" Placeholder="{Binding Localization[D_EntryLookupHelp]}" IsArabic="{Binding Localization.IsRightToLeft}" Margin="4,2"/>
+                                <Button Grid.Row="4" Grid.Column="4" Style="{StaticResource Button.Subtle}" Content="افتراضي" Command="{Binding ResetOverrideCommand}" CommandParameter="Purchase" IsEnabled="{Binding IsEditing}" Margin="4,2"/>
+
+                                <!-- 5. Sales Discount -->
+                                <TextBlock Grid.Row="5" Grid.Column="0" Text="حسم المبيعات (Discount)" VerticalAlignment="Center" Margin="4,6"/>
+                                <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding EffectiveSalesDiscountDisplay}" VerticalAlignment="Center" FontWeight="SemiBold" Margin="4,6"/>
+                                <TextBlock Grid.Row="5" Grid.Column="2" Text="{Binding SalesDiscountSourceDisplay}" VerticalAlignment="Center" Foreground="{DynamicResource AccentBrush}" Margin="4,6"/>
+                                <ux:LookupPicker Grid.Row="5" Grid.Column="3" ItemsSource="{Binding AccountLookups, Converter={StaticResource EntryLookups}}" SelectedId="{Binding OverrideSalesDiscountAccountId}" IsEnabled="{Binding IsEditing}" Placeholder="{Binding Localization[D_EntryLookupHelp]}" IsArabic="{Binding Localization.IsRightToLeft}" Margin="4,2"/>
+                                <Button Grid.Row="5" Grid.Column="4" Style="{StaticResource Button.Subtle}" Content="افتراضي" Command="{Binding ResetOverrideCommand}" CommandParameter="SalesDiscount" IsEnabled="{Binding IsEditing}" Margin="4,2"/>
+
+                                <!-- 6. Purchase Discount -->
+                                <TextBlock Grid.Row="6" Grid.Column="0" Text="حسم المشتريات (Discount)" VerticalAlignment="Center" Margin="4,6"/>
+                                <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding EffectivePurchaseDiscountDisplay}" VerticalAlignment="Center" FontWeight="SemiBold" Margin="4,6"/>
+                                <TextBlock Grid.Row="6" Grid.Column="2" Text="{Binding PurchaseDiscountSourceDisplay}" VerticalAlignment="Center" Foreground="{DynamicResource AccentBrush}" Margin="4,6"/>
+                                <ux:LookupPicker Grid.Row="6" Grid.Column="3" ItemsSource="{Binding AccountLookups, Converter={StaticResource EntryLookups}}" SelectedId="{Binding OverridePurchaseDiscountAccountId}" IsEnabled="{Binding IsEditing}" Placeholder="{Binding Localization[D_EntryLookupHelp]}" IsArabic="{Binding Localization.IsRightToLeft}" Margin="4,2"/>
+                                <Button Grid.Row="6" Grid.Column="4" Style="{StaticResource Button.Subtle}" Content="افتراضي" Command="{Binding ResetOverrideCommand}" CommandParameter="PurchaseDiscount" IsEnabled="{Binding IsEditing}" Margin="4,2"/>
+
+                                <!-- 7. Sales Tax -->
+                                <TextBlock Grid.Row="7" Grid.Column="0" Text="ضريبة المبيعات (VAT)" VerticalAlignment="Center" Margin="4,6"/>
+                                <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding EffectiveSalesTaxDisplay}" VerticalAlignment="Center" FontWeight="SemiBold" Margin="4,6"/>
+                                <TextBlock Grid.Row="7" Grid.Column="2" Text="{Binding SalesTaxSourceDisplay}" VerticalAlignment="Center" Foreground="{DynamicResource AccentBrush}" Margin="4,6"/>
+                                <ux:LookupPicker Grid.Row="7" Grid.Column="3" ItemsSource="{Binding AccountLookups, Converter={StaticResource EntryLookups}}" SelectedId="{Binding OverrideSalesTaxAccountId}" IsEnabled="{Binding IsEditing}" Placeholder="{Binding Localization[D_EntryLookupHelp]}" IsArabic="{Binding Localization.IsRightToLeft}" Margin="4,2"/>
+                                <Button Grid.Row="7" Grid.Column="4" Style="{StaticResource Button.Subtle}" Content="افتراضي" Command="{Binding ResetOverrideCommand}" CommandParameter="SalesTax" IsEnabled="{Binding IsEditing}" Margin="4,2"/>
+
+                                <!-- 8. Purchase Tax -->
+                                <TextBlock Grid.Row="8" Grid.Column="0" Text="ضريبة المشتريات (VAT)" VerticalAlignment="Center" Margin="4,6"/>
+                                <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding EffectivePurchaseTaxDisplay}" VerticalAlignment="Center" FontWeight="SemiBold" Margin="4,6"/>
+                                <TextBlock Grid.Row="8" Grid.Column="2" Text="{Binding PurchaseTaxSourceDisplay}" VerticalAlignment="Center" Foreground="{DynamicResource AccentBrush}" Margin="4,6"/>
+                                <ux:LookupPicker Grid.Row="8" Grid.Column="3" ItemsSource="{Binding AccountLookups, Converter={StaticResource EntryLookups}}" SelectedId="{Binding OverridePurchaseTaxAccountId}" IsEnabled="{Binding IsEditing}" Placeholder="{Binding Localization[D_EntryLookupHelp]}" IsArabic="{Binding Localization.IsRightToLeft}" Margin="4,2"/>
+                                <Button Grid.Row="8" Grid.Column="4" Style="{StaticResource Button.Subtle}" Content="افتراضي" Command="{Binding ResetOverrideCommand}" CommandParameter="PurchaseTax" IsEnabled="{Binding IsEditing}" Margin="4,2"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            
+        </Grid>
+        <Grid>
+          <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers><DataTrigger Binding="{Binding SelectedIndex, ElementName=NavList}" Value="11"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+          </Style></Grid.Style>
+                <DockPanel Margin="16">
+                    <Border DockPanel.Dock="Top" Style="{StaticResource Panel.Card}" Margin="0,0,0,8" Padding="8"
+                            Visibility="{Binding IsEditing, Converter={StaticResource Visible}}">
+                        <WrapPanel VerticalAlignment="Center">
+                            <TextBox Text="{Binding NewBarcodeText, UpdateSourceTrigger=PropertyChanged}" Width="200" Margin="0,0,8,0" AutomationProperties.Name="Barcode"/>
+                            <ux:LookupPicker ItemsSource="{Binding UnitLookups, Converter={StaticResource EntryLookups}}" SelectedId="{Binding NewBarcodeUnitId}" Width="100" Margin="0,0,8,0" Placeholder="{Binding Localization[D_EntryLookupHelp]}" IsArabic="{Binding Localization.IsRightToLeft}"/>
+                            <CheckBox Content="افتراضي" IsChecked="{Binding NewBarcodeIsDefault}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <Button Style="{StaticResource Button.Command}" Content="{Binding Localization[D_AddBarcode]}" Command="{Binding AddBarcodeCommand}"/>
+                        </WrapPanel>
+                    </Border>
+
+                    <DataGrid ux:GridRowNumbers.Enabled="True" ItemsSource="{Binding Barcodes}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" BorderThickness="0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="الباركود" Binding="{Binding Barcode}" Width="*"/>
+                            <DataGridTextColumn Header="الوحدة" Binding="{Binding UnitCode}" Width="100"/>
+                            <DataGridCheckBoxColumn Header="افتراضي" Binding="{Binding IsDefault}" Width="80"/>
+                            <DataGridTemplateColumn Width="70">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="حذف" Style="{StaticResource Button.Subtle}"
+                                                Command="{Binding DataContext.RemoveBarcodeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                Visibility="{Binding DataContext.IsEditing, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Visible}}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            
+        </Grid>
+        <Grid>
+          <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers><DataTrigger Binding="{Binding SelectedIndex, ElementName=NavList}" Value="12"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+          </Style></Grid.Style>
+                <DockPanel Margin="16">
+                    <Border DockPanel.Dock="Top" Style="{StaticResource Panel.Card}" Margin="0,0,0,8" Padding="8"
+                            Visibility="{Binding CanEditPrices, Converter={StaticResource Visible}}">
+                        <StackPanel>
+                            <WrapPanel VerticalAlignment="Center">
+                                <TextBox Text="{Binding NewPriceListCode, UpdateSourceTrigger=PropertyChanged}" Width="120" Margin="0,0,8,4" ux:Watermark.Text="{Binding Localization[CUR_PriceList]}" AutomationProperties.Name="{Binding Localization[CUR_PriceList]}"/>
+                                <ux:PetraMoneyBox Text="{Binding NewPriceAmount, UpdateSourceTrigger=PropertyChanged}" Width="110" Margin="0,0,8,4" ux:Watermark.Text="{Binding Localization[CUR_Price]}" AutomationProperties.Name="{Binding Localization[CUR_Price]}"/>
+                                <TextBox Text="{Binding NewPriceCurrency, UpdateSourceTrigger=PropertyChanged}" Width="60" Margin="0,0,8,4" MaxLength="3" CharacterCasing="Upper" FlowDirection="LeftToRight" ux:Watermark.Text="{Binding Localization[CUR_Currency]}" AutomationProperties.Name="{Binding Localization[CUR_Currency]}"/>
+                                <ux:LookupPicker ItemsSource="{Binding UnitLookups, Converter={StaticResource EntryLookups}}" SelectedId="{Binding NewPriceUnitId}" Width="100" Margin="0,0,8,4" Placeholder="{Binding Localization[D_EntryLookupHelp]}" IsArabic="{Binding Localization.IsRightToLeft}"/>
+                                <ux:PetraQuantityBox Text="{Binding NewPriceMinQuantity, UpdateSourceTrigger=PropertyChanged}" Width="90" Margin="0,0,8,4" ux:Watermark.Text="{Binding Localization[CUR_MinQuantity]}" AutomationProperties.Name="{Binding Localization[CUR_MinQuantity]}"/>
+                            </WrapPanel>
+                            <WrapPanel VerticalAlignment="Center">
+                                <ux:LookupPicker ItemsSource="{Binding PriceCustomerLookups, Converter={StaticResource EntryLookups}}" SelectedId="{Binding NewPricePartyId}" Width="180" Margin="0,0,8,0" Placeholder="{Binding Localization[CUR_AnyCustomer]}" IsArabic="{Binding Localization.IsRightToLeft}"/>
+                                <ux:LookupPicker ItemsSource="{Binding PricePatternLookups, Converter={StaticResource EntryLookups}}" SelectedId="{Binding NewPricePatternId}" Width="160" Margin="0,0,8,0" Placeholder="{Binding Localization[CUR_AnyPattern]}" IsArabic="{Binding Localization.IsRightToLeft}"/>
+                                <ux:PetraDatePicker SelectedDate="{Binding NewPriceValidFrom}" Width="130" Margin="0,0,8,0" ToolTip="{Binding Localization[CUR_ValidFrom]}" AutomationProperties.Name="{Binding Localization[CUR_ValidFrom]}"/>
+                                <ux:PetraDatePicker SelectedDate="{Binding NewPriceValidTo}" Width="130" Margin="0,0,8,0" ToolTip="{Binding Localization[CUR_ValidTo]}" AutomationProperties.Name="{Binding Localization[CUR_ValidTo]}"/>
+                                <Button Style="{StaticResource Button.Command}" Content="{Binding Localization[D_AddPrice]}" Command="{Binding AddPriceCommand}"/>
+                            </WrapPanel>
+                            <TextBlock Text="{Binding Localization[CUR_PriceHelp]}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <DataGrid ux:GridRowNumbers.Enabled="True" ItemsSource="{Binding Prices}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" BorderThickness="0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="قائمة السعر" Binding="{Binding PriceListCode}" Width="140"/>
+                            <DataGridTextColumn Header="السعر" Binding="{Binding Price, Converter={StaticResource Number}}" Width="130" ElementStyle="{StaticResource Text.Numeric}"/>
+                            <DataGridTextColumn Header="العملة" Binding="{Binding CurrencyCode}" Width="80"/>
+                            <DataGridTextColumn Header="الوحدة" Binding="{Binding UnitCode}" Width="90"/>
+                            <DataGridTextColumn Header="الحد الأدنى للكمية" Binding="{Binding MinQuantity}" Width="120"/>
+                            <DataGridTextColumn Header="من تاريخ" Binding="{Binding ValidFrom, StringFormat=yyyy-MM-dd}" Width="100"/>
+                            <DataGridTextColumn Header="إلى تاريخ" Binding="{Binding ValidTo, StringFormat=yyyy-MM-dd}" Width="100"/>
+                            <DataGridTextColumn Header="الزبون (معرف)" Binding="{Binding PartyId}" Width="110"/>
+                            <DataGridTextColumn Header="النمط (معرف)" Binding="{Binding PatternId}" Width="110"/>
+                            <DataGridTemplateColumn Width="70">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="حذف" Style="{StaticResource Button.Subtle}"
+                                                Command="{Binding DataContext.RemovePriceCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                Visibility="{Binding DataContext.CanEditPrices, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Visible}}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            
+        </Grid>
+        <Grid>
+          <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers><DataTrigger Binding="{Binding SelectedIndex, ElementName=NavList}" Value="13"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+          </Style></Grid.Style>
+                <DockPanel Margin="16">
+                    <TextBlock DockPanel.Dock="Top" Text="معاملات تحويل الوحدات المرتبطة بهذه المادة" Style="{StaticResource Text.Subheading}" Margin="0,0,0,8"/>
+                    <DataGrid ItemsSource="{Binding Conversions}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" BorderThickness="0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="من وحدة" Binding="{Binding FromUnitCode}" Width="120"/>
+                            <DataGridTextColumn Header="إلى وحدة" Binding="{Binding ToUnitCode}" Width="120"/>
+                            <DataGridTextColumn Header="معامل التحويل" Binding="{Binding Factor, Converter={StaticResource Number}, ConverterParameter=rate}" Width="160" ElementStyle="{StaticResource Text.Numeric}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            
+        </Grid>
+        <Grid>
+          <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers><DataTrigger Binding="{Binding SelectedIndex, ElementName=NavList}" Value="14"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+          </Style></Grid.Style>
+                <DockPanel>
+                 <WrapPanel DockPanel.Dock="Top"><Button Content="{Binding Localization[D_LinkedSalesInvoices]}" Command="{Binding ViewItemInvoicesCommand}"/><Button Content="{Binding Localization[D_OpenLinkedDocument]}" Command="{Binding OpenMovementSourceCommand}" Margin="8,0"/></WrapPanel>
+                 <links:SalesDocumentLinksView DataContext="{Binding DocumentLinks}"/>
+                </DockPanel>
+            
+        </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </DockPanel>
+</UserControl>

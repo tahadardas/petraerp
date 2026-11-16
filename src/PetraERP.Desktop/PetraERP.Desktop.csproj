@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    WPF desktop client. It talks to PetraERP.Api only through the generated typed client (PetraERP.ApiClient);
+    it has no reference to Application, Infrastructure, EF Core or SQL Server (enforced by tests/tooling).
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>PetraERP.Desktop</RootNamespace>
+    <AssemblyName>PetraERP.Desktop</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <NeutralLanguage>en</NeutralLanguage>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+    <ProjectReference Include="../PetraERP.ApiClient/PetraERP.ApiClient.csproj" />
+    <ProjectReference Include="../PetraERP.Reporting.OpenSource/PetraERP.Reporting.OpenSource.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="desktopsettings.json" CopyToOutputDirectory="PreserveNewest" />
+    <InternalsVisibleTo Include="PetraERP.Desktop.Tests" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,140 @@
+<UserControl x:Class="PetraERP.Desktop.Currencies.CurrencySettingsView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ux="clr-namespace:PetraERP.Desktop.Controls">
+ <DockPanel>
+  <ux:PageHeader DockPanel.Dock="Top" Title="{Binding Localization[CUR_Title]}">
+   <ux:PageHeader.Commands><WrapPanel>
+    <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE72C;" Content="{Binding Localization[D_Refresh]}" Command="{Binding RefreshCommand}"/>
+   </WrapPanel></ux:PageHeader.Commands>
+  </ux:PageHeader>
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+   <StackPanel>
+    <!-- Base currency: chosen by the operator; locked once data exists (server decides). -->
+    <Border Style="{StaticResource Panel.Card}" Margin="0,0,0,12">
+     <StackPanel>
+      <TextBlock Text="{Binding Localization[CUR_BaseSection]}" Style="{StaticResource Text.Label}" FontWeight="Bold"/>
+      <WrapPanel Margin="0,6,0,0">
+       <TextBlock Text="{Binding Localization[CUR_BaseCurrency]}" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+       <TextBlock Text="{Binding BaseCurrencyCode}" FontWeight="Bold" FlowDirection="LeftToRight" VerticalAlignment="Center"/>
+      </WrapPanel>
+      <TextBlock Text="{Binding BaseLockText}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,8"/>
+      <WrapPanel Visibility="{Binding CanManage, Converter={StaticResource Visible}}">
+       <ComboBox Width="110" ItemsSource="{Binding AllCurrencyCodes}" SelectedItem="{Binding NewBaseCurrencyCode}" IsEnabled="{Binding BaseCurrencyEditable}"
+                 FlowDirection="LeftToRight" AutomationProperties.Name="{Binding Localization[CUR_NewBase]}" Margin="0,0,8,0"/>
+       <TextBox Width="320" Text="{Binding BaseChangeReason, UpdateSourceTrigger=PropertyChanged}" MaxLength="500" IsEnabled="{Binding BaseCurrencyEditable}"
+                ux:Watermark.Text="{Binding Localization[CUR_Reason]}" AutomationProperties.Name="{Binding Localization[CUR_Reason]}" Margin="0,0,8,0"/>
+       <Button Style="{StaticResource Button.Command}" Content="{Binding Localization[CUR_ChangeBase]}" Command="{Binding ChangeBaseCommand}"/>
+      </WrapPanel>
+     </StackPanel>
+    </Border>
+
+    <!-- Enabled currencies -->
+    <Border Style="{StaticResource Panel.Card}" Margin="0,0,0,12">
+     <StackPanel>
+      <TextBlock Text="{Binding Localization[CUR_EnabledSection]}" Style="{StaticResource Text.Label}" FontWeight="Bold"/>
+      <DataGrid ItemsSource="{Binding Currencies}" SelectedItem="{Binding SelectedCurrency}" SelectionMode="Single" IsReadOnly="True" AutoGenerateColumns="False" HeadersVisibility="Column" MaxHeight="220" Margin="0,6,0,8"
+                AutomationProperties.Name="{Binding Localization[CUR_EnabledSection]}">
+       <DataGrid.Columns>
+        <DataGridTextColumn Binding="{Binding Code}" Width="90"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Code], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+        <DataGridTextColumn Binding="{Binding NameArabic}" Width="*"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_ArabicName], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+        <DataGridTextColumn Binding="{Binding NameEnglish}" Width="*"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_EnglishName], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+        <DataGridCheckBoxColumn Binding="{Binding IsBase}" Width="90"><DataGridCheckBoxColumn.Header><TextBlock Text="{Binding DataContext.Localization[CUR_IsBase], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridCheckBoxColumn.Header></DataGridCheckBoxColumn>
+       </DataGrid.Columns>
+      </DataGrid>
+
+      <WrapPanel Visibility="{Binding CanManage, Converter={StaticResource Visible}}">
+       <TextBox Width="70" Text="{Binding NewCurrencyCode, UpdateSourceTrigger=PropertyChanged}" MaxLength="3" CharacterCasing="Upper" FlowDirection="LeftToRight"
+                ux:Watermark.Text="{Binding Localization[CUR_Code]}" AutomationProperties.Name="{Binding Localization[CUR_Code]}" Margin="0,0,8,0"/>
+       <TextBox Width="180" Text="{Binding NewCurrencyNameArabic, UpdateSourceTrigger=PropertyChanged}" MaxLength="200" FlowDirection="RightToLeft"
+                ux:Watermark.Text="{Binding Localization[D_ArabicName]}" AutomationProperties.Name="{Binding Localization[D_ArabicName]}" Margin="0,0,8,0"/>
+       <TextBox Width="160" Text="{Binding NewCurrencyNameEnglish, UpdateSourceTrigger=PropertyChanged}" MaxLength="200" FlowDirection="LeftToRight"
+                ux:Watermark.Text="{Binding Localization[D_EnglishName]}" AutomationProperties.Name="{Binding Localization[D_EnglishName]}" Margin="0,0,8,0"/>
+       <TextBox Width="240" Text="{Binding EnableReason, UpdateSourceTrigger=PropertyChanged}" MaxLength="500"
+                ux:Watermark.Text="{Binding Localization[CUR_Reason]}" AutomationProperties.Name="{Binding Localization[CUR_Reason]}" Margin="0,0,8,0"/>
+       <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE710;" Content="{Binding Localization[CUR_Enable]}" Command="{Binding EnableCurrencyCommand}"/>
+      </WrapPanel>
+      <TextBlock Text="{Binding Localization[CUR_EnableHelp]}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+      <!-- Currency card: symbol, minor unit, decimals, rounding of the selected row; server enforces rules and history -->
+      <StackPanel Visibility="{Binding CanManage, Converter={StaticResource Visible}}" Margin="0,12,0,0">
+       <TextBlock Text="{Binding Localization[CUR_CardSection]}" Style="{StaticResource Text.Label}" FontWeight="Bold"/>
+       <WrapPanel Margin="0,6,0,0">
+        <TextBox Width="70" Text="{Binding CardSymbol, UpdateSourceTrigger=PropertyChanged}" MaxLength="8" FlowDirection="LeftToRight"
+                 ux:Watermark.Text="{Binding Localization[CUR_Symbol]}" AutomationProperties.Name="{Binding Localization[CUR_Symbol]}" Margin="0,0,8,0"/>
+        <TextBox Width="140" Text="{Binding CardMinorAr, UpdateSourceTrigger=PropertyChanged}" MaxLength="100" FlowDirection="RightToLeft"
+                 ux:Watermark.Text="{Binding Localization[CUR_MinorAr]}" AutomationProperties.Name="{Binding Localization[CUR_MinorAr]}" Margin="0,0,8,0"/>
+        <TextBox Width="140" Text="{Binding CardMinorEn, UpdateSourceTrigger=PropertyChanged}" MaxLength="100" FlowDirection="LeftToRight"
+                 ux:Watermark.Text="{Binding Localization[CUR_MinorEn]}" AutomationProperties.Name="{Binding Localization[CUR_MinorEn]}" Margin="0,0,8,0"/>
+        <TextBox Width="70" Text="{Binding CardDecimalPlaces, UpdateSourceTrigger=PropertyChanged}" MaxLength="1" FlowDirection="LeftToRight"
+                 ux:Watermark.Text="{Binding Localization[CUR_Decimals]}" AutomationProperties.Name="{Binding Localization[CUR_Decimals]}" Margin="0,0,8,0"/>
+        <ComboBox Width="170" ItemsSource="{Binding RoundingModes}" SelectedItem="{Binding CardRoundingMode}" FlowDirection="LeftToRight"
+                  AutomationProperties.Name="{Binding Localization[CUR_Rounding]}" Margin="0,0,8,0"/>
+        <TextBox Width="220" Text="{Binding CardReason, UpdateSourceTrigger=PropertyChanged}" MaxLength="500"
+                 ux:Watermark.Text="{Binding Localization[CUR_Reason]}" AutomationProperties.Name="{Binding Localization[CUR_Reason]}" Margin="0,0,8,0"/>
+        <Button Style="{StaticResource Button.Command}" Content="{Binding Localization[CUR_SaveCard]}" Command="{Binding SaveCardCommand}"/>
+       </WrapPanel>
+      </StackPanel>
+     </StackPanel>
+    </Border>
+
+    <!-- Exchange-rate register (append-only) -->
+    <Border Style="{StaticResource Panel.Card}" Margin="0,0,0,12">
+     <StackPanel>
+      <DockPanel>
+       <ComboBox DockPanel.Dock="Right" Width="110" ItemsSource="{Binding ForeignCurrencyCodes}" SelectedItem="{Binding RateFilterCurrency}" FlowDirection="LeftToRight"
+                 AutomationProperties.Name="{Binding Localization[CUR_Filter]}"/>
+       <ux:PetraDatePicker DockPanel.Dock="Right" Width="130" Margin="0,0,8,0" SelectedDate="{Binding RateFilterTo}" ToolTip="{Binding Localization[CUR_ValidTo]}"
+                 AutomationProperties.Name="{Binding Localization[CUR_ValidTo]}"/>
+       <ux:PetraDatePicker DockPanel.Dock="Right" Width="130" Margin="0,0,8,0" SelectedDate="{Binding RateFilterFrom}" ToolTip="{Binding Localization[CUR_ValidFrom]}"
+                 AutomationProperties.Name="{Binding Localization[CUR_ValidFrom]}"/>
+       <TextBlock Text="{Binding Localization[CUR_RatesSection]}" Style="{StaticResource Text.Label}" FontWeight="Bold" VerticalAlignment="Center"/>
+      </DockPanel>
+      <DataGrid ItemsSource="{Binding Rates}" IsReadOnly="True" AutoGenerateColumns="False" HeadersVisibility="Column" MaxHeight="320" Margin="0,6,0,8"
+                AutomationProperties.Name="{Binding Localization[CUR_RatesSection]}">
+       <DataGrid.Columns>
+        <DataGridTextColumn Binding="{Binding EffectiveDate, StringFormat=yyyy-MM-dd}" Width="110"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[CUR_EffectiveDate], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+        <DataGridTextColumn Binding="{Binding CurrencyCode}" Width="80"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[CUR_Code], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+        <DataGridTextColumn Binding="{Binding Rate, Converter={StaticResource Number}, ConverterParameter=rate}" Width="140" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[CUR_Rate], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+        <DataGridTextColumn Binding="{Binding BaseCurrencyCode}" Width="80"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[CUR_BaseCurrency], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+        <DataGridTextColumn Binding="{Binding Source}" Width="140"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[CUR_Source], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+        <DataGridTextColumn Binding="{Binding Reason}" Width="*"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[CUR_Reason], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+        <DataGridTextColumn Binding="{Binding CreatedByUserId}" Width="120"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[CUR_User], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+        <DataGridTextColumn Binding="{Binding CreatedAtUtc, StringFormat=yyyy-MM-dd HH:mm}" Width="140"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[CUR_RecordedAt], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       </DataGrid.Columns>
+      </DataGrid>
+      <WrapPanel Margin="0,4">
+       <Button Content="{Binding Localization[CUR_Previous]}" Command="{Binding PreviousRatesCommand}"/>
+       <TextBlock Text="{Binding RatesPageText}" VerticalAlignment="Center" Margin="8,0"/>
+       <Button Content="{Binding Localization[CUR_Next]}" Command="{Binding NextRatesCommand}"/>
+       <Button Content="{Binding Localization[CUR_ClearFilter]}" Command="{Binding ClearRateFilterCommand}"/>
+      </WrapPanel>
+      <WrapPanel Visibility="{Binding CanManage, Converter={StaticResource Visible}}">
+       <ComboBox Width="90" ItemsSource="{Binding ForeignCurrencyCodes}" SelectedItem="{Binding RateCurrencyCode}" FlowDirection="LeftToRight"
+                 AutomationProperties.Name="{Binding Localization[CUR_Code]}" Margin="0,0,8,0"/>
+       <ux:PetraNumericTextBox Kind="Rate" MaximumScale="8" Width="150" Text="{Binding RateValue, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight"
+                ux:Watermark.Text="{Binding Localization[CUR_Rate]}" AutomationProperties.Name="{Binding Localization[CUR_Rate]}" Margin="0,0,8,0"/>
+       <ux:PetraDatePicker Width="140" SelectedDate="{Binding RateEffectiveDate}" AutomationProperties.Name="{Binding Localization[CUR_EffectiveDate]}" Margin="0,0,8,0"/>
+       <TextBox Width="150" Text="{Binding RateSource, UpdateSourceTrigger=PropertyChanged}" MaxLength="64"
+                ux:Watermark.Text="{Binding Localization[CUR_Source]}" AutomationProperties.Name="{Binding Localization[CUR_Source]}" Margin="0,0,8,0"/>
+       <TextBox Width="240" Text="{Binding RateReason, UpdateSourceTrigger=PropertyChanged}" MaxLength="500"
+                ux:Watermark.Text="{Binding Localization[CUR_Reason]}" AutomationProperties.Name="{Binding Localization[CUR_Reason]}" Margin="0,0,8,0"/>
+       <Button Style="{StaticResource Button.Primary}" ux:Icon.Glyph="&#xE710;" Content="{Binding Localization[CUR_RegisterRate]}" Command="{Binding RegisterRateCommand}"/>
+      </WrapPanel>
+      <TextBlock Text="{Binding Localization[CUR_RateHelp]}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+     </StackPanel>
+    </Border>
+
+    <!-- Which rate would a document dated X use? -->
+    <Border Style="{StaticResource Panel.Card}">
+     <StackPanel>
+      <TextBlock Text="{Binding Localization[CUR_LookupSection]}" Style="{StaticResource Text.Label}" FontWeight="Bold"/>
+      <WrapPanel Margin="0,6,0,0">
+       <ComboBox Width="90" ItemsSource="{Binding AllCurrencyCodes}" SelectedItem="{Binding LookupCurrencyCode}" FlowDirection="LeftToRight"
+                 AutomationProperties.Name="{Binding Localization[CUR_Code]}" Margin="0,0,8,0"/>
+       <ux:PetraDatePicker Width="140" SelectedDate="{Binding LookupDate}" AutomationProperties.Name="{Binding Localization[CUR_EffectiveDate]}" Margin="0,0,8,0"/>
+       <Button Style="{StaticResource Button.Command}" Content="{Binding Localization[CUR_Lookup]}" Command="{Binding LookupCommand}" Margin="0,0,8,0"/>
+       <TextBlock Text="{Binding LookupResult}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+      </WrapPanel>
+     </StackPanel>
+    </Border>
+   </StackPanel>
+  </ScrollViewer>
+ </DockPanel>
+</UserControl>

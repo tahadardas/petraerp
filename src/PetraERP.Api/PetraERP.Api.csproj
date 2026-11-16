@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <RootNamespace>PetraERP.Api</RootNamespace>
+    <UserSecretsId>petraerp-api-2f6b8e64-1c35-4b9e-9a0e-5f7d0c3a8b21</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+    <ProjectReference Include="../PetraERP.Application/PetraERP.Application.csproj" />
+    <ProjectReference Include="../PetraERP.Contracts/PetraERP.Contracts.csproj" />
+    <ProjectReference Include="../PetraERP.Infrastructure/PetraERP.Infrastructure.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="PetraERP.Api.Tests" />
+  </ItemGroup>
+</Project>

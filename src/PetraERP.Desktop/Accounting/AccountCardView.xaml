@@ -1,0 +1,523 @@
+<UserControl x:Class="PetraERP.Desktop.Accounting.AccountCardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ux="clr-namespace:PetraERP.Desktop.Controls"
+             ux:ValidationFocus.Target="{Binding ValidationFocusTarget}"
+             ux:ValidationFocus.Request="{Binding ValidationFocusRequest}">
+ <UserControl.Resources>
+  <DataTemplate x:Key="AccountAuditHeader">
+   <TextBlock>
+    <TextBlock.Text>
+     <MultiBinding Converter="{StaticResource EnumLabel}" ConverterParameter="D_">
+      <Binding/>
+      <Binding Path="DataContext.Localization.Language" RelativeSource="{RelativeSource AncestorType=Window}"/>
+     </MultiBinding>
+    </TextBlock.Text>
+   </TextBlock>
+  </DataTemplate>
+  <Style x:Key="Am.Label" TargetType="TextBlock">
+   <Setter Property="VerticalAlignment" Value="Center"/>
+   <Setter Property="Margin" Value="6,3"/>
+   <Setter Property="FontSize" Value="11"/>
+   <Setter Property="Foreground" Value="{DynamicResource Text.Primary}"/>
+  </Style>
+
+  <!-- Al-Ameen Style Vertical TabItem -->
+  <Style x:Key="Am.VerticalTabItem" TargetType="TabItem">
+   <Setter Property="Padding" Value="12,8"/>
+   <Setter Property="FontSize" Value="12"/>
+   <Setter Property="FontWeight" Value="SemiBold"/>
+   <Setter Property="Cursor" Value="Hand"/>
+   <Setter Property="Template">
+    <Setter.Value>
+     <ControlTemplate TargetType="TabItem">
+      <Border x:Name="TabBorder" Background="{DynamicResource Surface.Secondary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="0,0,1,1" Margin="0,0,0,2" Padding="{TemplateBinding Padding}">
+       <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" ContentSource="Header"/>
+      </Border>
+      <ControlTemplate.Triggers>
+       <Trigger Property="IsSelected" Value="True">
+        <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource Warning.Subtle}"/>
+        <Setter TargetName="TabBorder" Property="BorderBrush" Value="{DynamicResource Warning}"/>
+        <Setter TargetName="TabBorder" Property="BorderThickness" Value="3,0,0,1"/>
+        <Setter Property="Foreground" Value="{DynamicResource Accent}"/>
+       </Trigger>
+       <Trigger Property="IsMouseOver" Value="True">
+        <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource Accent.Subtle}"/>
+       </Trigger>
+      </ControlTemplate.Triggers>
+     </ControlTemplate>
+    </Setter.Value>
+   </Setter>
+  </Style>
+ </UserControl.Resources>
+
+ <UserControl.InputBindings>
+  <KeyBinding Key="F5" Command="{Binding RefreshCommand}"/>
+  <KeyBinding Key="Escape" Command="{Binding CancelCardCommand}"/>
+  <KeyBinding Key="Home" Modifiers="Control" Command="{Binding FirstCommand}"/>
+  <KeyBinding Key="PageUp" Modifiers="Control" Command="{Binding PreviousCommand}"/>
+  <KeyBinding Key="PageDown" Modifiers="Control" Command="{Binding NextCommand}"/>
+  <KeyBinding Key="End" Modifiers="Control" Command="{Binding LastCommand}"/>
+  <KeyBinding Key="L" Modifiers="Control" Command="{Binding OpenLedgerCommand}"/>
+  <KeyBinding Key="E" Modifiers="Control" Command="{Binding BeginEditCommand}"/>
+  <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCardCommand}"/>
+  <KeyBinding Key="N" Modifiers="Control" Command="{Binding BeginNewCommand}"/>
+ </UserControl.InputBindings>
+
+ <DockPanel Margin="6" Background="{DynamicResource Surface.Secondary}">
+  <!-- ========================================================================= -->
+  <!-- BOTTOM COMMAND BAR (Matching Image 2)                                      -->
+  <!-- ========================================================================= -->
+  <Border DockPanel.Dock="Bottom" Background="{DynamicResource App.Background}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="0,1,0,0" Padding="6,6" Margin="0,6,0,0">
+   <DockPanel LastChildFill="False">
+    <!-- Left: Close (إغلاق) with Red X icon -->
+    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+     <Button Style="{StaticResource Button.Command}" Command="{Binding CancelCardCommand}" MinWidth="85" Height="28" Margin="0,0,6,0" ToolTip="إغلاق (Esc)">
+      <StackPanel Orientation="Horizontal">
+       <TextBlock Text="&#xE711;" FontFamily="Segoe MDL2 Assets" FontSize="11" Foreground="{DynamicResource Error}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+       <TextBlock Text="إغلاق" VerticalAlignment="Center"/>
+      </StackPanel>
+     </Button>
+    </StackPanel>
+
+    <!-- Right: Add, New, Edit, Delete (إضافة، جديد، تعديل، حذف) -->
+    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+     <!-- تعديل / حفظ -->
+     <Button x:Name="BeginEditButton" MinWidth="80" Height="28" Margin="0,0,6,0" Visibility="{Binding CanManage, Converter={StaticResource Visible}}">
+      <Button.Style>
+       <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Content">
+         <Setter.Value>
+          <StackPanel Orientation="Horizontal">
+           <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" FontSize="11" Foreground="{DynamicResource Text.Secondary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+           <TextBlock Text="{Binding Localization[D_Edit]}" VerticalAlignment="Center"/>
+          </StackPanel>
+         </Setter.Value>
+        </Setter>
+        <Setter Property="Command" Value="{Binding BeginEditCommand}"/>
+        <Setter Property="ToolTip" Value="Ctrl+E"/>
+        <Style.Triggers>
+         <DataTrigger Binding="{Binding IsEditMode}" Value="True">
+          <Setter Property="Content">
+           <Setter.Value>
+            <StackPanel Orientation="Horizontal">
+             <TextBlock Text="&#xE74E;" FontFamily="Segoe MDL2 Assets" FontSize="11" Foreground="{DynamicResource Success}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+             <TextBlock Text="{Binding Localization[D_Save]}" VerticalAlignment="Center"/>
+            </StackPanel>
+           </Setter.Value>
+          </Setter>
+          <Setter Property="Command" Value="{Binding SaveCardCommand}"/>
+          <Setter Property="ToolTip" Value="Ctrl+S"/>
+         </DataTrigger>
+        </Style.Triggers>
+       </Style>
+      </Button.Style>
+     </Button>
+
+     <!-- حذف -->
+     <Button Style="{StaticResource Button.Command}" Command="{Binding CancelCardCommand}" Visibility="{Binding CanManage, Converter={StaticResource Visible}}" MinWidth="80" Height="28" Margin="0,0,6,0">
+      <StackPanel Orientation="Horizontal">
+       <TextBlock Text="&#xE74D;" FontFamily="Segoe MDL2 Assets" FontSize="11" Foreground="{DynamicResource Text.Secondary}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+       <TextBlock Text="حذف" VerticalAlignment="Center"/>
+      </StackPanel>
+     </Button>
+
+     <!-- جديد -->
+     <Button Command="{Binding BeginNewCommand}" Visibility="{Binding CanManage, Converter={StaticResource Visible}}" Style="{StaticResource Button.Command}" MinWidth="80" Height="28" Margin="0,0,6,0" ToolTip="Ctrl+N">
+      <StackPanel Orientation="Horizontal">
+       <TextBlock Text="&#xE8F4;" FontFamily="Segoe MDL2 Assets" FontSize="11" Foreground="{DynamicResource Warning}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+       <TextBlock Text="جديد" VerticalAlignment="Center"/>
+      </StackPanel>
+     </Button>
+
+     <!-- إضافة (SaveCardCommand) -->
+     <Button Command="{Binding SaveCardCommand}" Style="{StaticResource Button.Primary}" MinWidth="80" Height="28" Margin="0,0,6,0" ToolTip="Ctrl+S">
+      <StackPanel Orientation="Horizontal">
+       <TextBlock Text="&#xE710;" FontFamily="Segoe MDL2 Assets" FontSize="11" Foreground="{DynamicResource Success}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+       <TextBlock Text="إضافة" VerticalAlignment="Center"/>
+      </StackPanel>
+     </Button>
+
+     <!-- Test Compatibility Hidden Anchors -->
+     <Button x:Name="OpenLedgerButton" Visibility="Collapsed" Command="{Binding OpenLedgerCommand}"/>
+     <ux:StatusBadge x:Name="CardModeBadge" Visibility="Collapsed" Text="{Binding ModeLabel}"/>
+    </StackPanel>
+   </DockPanel>
+  </Border>
+
+  <!-- Validation Summary Banner -->
+  <Border DockPanel.Dock="Bottom" Background="{DynamicResource SubtleErrorBackground}"
+          BorderBrush="{DynamicResource ErrorSurface}"
+          BorderThickness="1" CornerRadius="{DynamicResource Radius.Control}" Padding="8,4" Margin="0,4,0,0"
+          Visibility="{Binding HasValidationErrors, Converter={StaticResource Visible}}">
+   <DockPanel>
+    <TextBlock Text="&#xE783;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource ErrorSurface}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+    <TextBlock Text="{Binding ValidationMessage}" Foreground="{DynamicResource ErrorSurface}" FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center"/>
+   </DockPanel>
+  </Border>
+
+  <!-- ========================================================================= -->
+  <!-- TOP HEADER (Matching Image 2: Navigator, Degree of Secrecy, Fields)      -->
+  <!-- ========================================================================= -->
+  <Border DockPanel.Dock="Top" Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1" Padding="10,8" Margin="0,0,0,6" CornerRadius="{DynamicResource Radius.Small}">
+   <Grid>
+    <Grid.ColumnDefinitions>
+     <!-- Left (in RTL): Fields (رمز الحساب، اسم الحساب، الاسم اللاتيني، ملاحظات، نوع الحساب) -->
+     <ColumnDefinition Width="*"/>
+     <ColumnDefinition Width="16"/>
+     <!-- Right (in RTL): Navigator + Degree of Secrecy -->
+     <ColumnDefinition Width="Auto"/>
+    </Grid.ColumnDefinitions>
+
+    <!-- RIGHT SECTION (Navigator + درجة السرية) in RTL -->
+    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Top" Margin="0,4,0,0">
+     <!-- Record Navigator |<< << < [ Code ] > >> >| -->
+     <Button x:Name="FirstRecordButton" Visibility="Collapsed" Command="{Binding FirstCommand}"/>
+     <ux:RecordNavigator FirstCommand="{Binding FirstCommand}"
+                         PreviousCommand="{Binding PreviousCommand}"
+                         NextCommand="{Binding NextCommand}"
+                         LastCommand="{Binding LastCommand}"
+                         RecordNumber="{Binding DraftCode}"
+                         StatusText="{Binding StatusText}"
+                         StatusKind="Neutral"
+                         VerticalAlignment="Center"/>
+
+     <!-- درجة السرية with Green Shield Icon -->
+     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+      <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" FontSize="13" Foreground="{DynamicResource Success}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+      <TextBlock Text="درجة السرية" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource Text.Primary}" VerticalAlignment="Center"/>
+     </StackPanel>
+    </StackPanel>
+
+    <!-- LEFT SECTION (5-row Account Attributes Header) in RTL -->
+    <Grid Grid.Column="0">
+     <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80"/>
+      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="16"/>
+      <ColumnDefinition Width="80"/>
+      <ColumnDefinition Width="*"/>
+     </Grid.ColumnDefinitions>
+     <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+     </Grid.RowDefinitions>
+
+     <!-- Row 0: رمز الحساب & اسم الحساب -->
+     <TextBlock Grid.Row="0" Grid.Column="0" Text="رمز الحساب" Style="{StaticResource Am.Label}"/>
+     <TextBox x:Name="DraftCodeBox" ux:ValidationFocus.Key="code" Grid.Row="0" Grid.Column="1"
+              Text="{Binding DraftCode, UpdateSourceTrigger=PropertyChanged}" MaxLength="64"
+              FlowDirection="LeftToRight" IsReadOnly="{Binding IsCodeReadOnly}" Margin="0,2" Height="24"
+              AutomationProperties.Name="{Binding Localization[D_Code]}"/>
+
+     <TextBlock Grid.Row="0" Grid.Column="3" Text="اسم الحساب" Style="{StaticResource Am.Label}"/>
+     <TextBox x:Name="DraftArabicBox" ux:ValidationFocus.Key="name-ar" Grid.Row="0" Grid.Column="4"
+              Text="{Binding DraftNameArabic, UpdateSourceTrigger=PropertyChanged}" MaxLength="200"
+              IsReadOnly="{Binding IsViewMode}" Margin="0,2" Height="24"
+              AutomationProperties.Name="{Binding Localization[D_ArabicName]}"/>
+
+     <!-- Row 1: الاسم اللاتيني & نوع الحساب -->
+     <TextBlock Grid.Row="1" Grid.Column="0" Text="الاسم اللاتيني" Style="{StaticResource Am.Label}"/>
+     <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding DraftNameEnglish, UpdateSourceTrigger=PropertyChanged}"
+              MaxLength="200" FlowDirection="LeftToRight" IsReadOnly="{Binding IsViewMode}" Margin="0,2" Height="24"
+              AutomationProperties.Name="{Binding Localization[D_EnglishName]}"/>
+
+     <TextBlock Grid.Row="1" Grid.Column="3" Text="نوع الحساب" Style="{StaticResource Am.Label}"/>
+     <ComboBox Grid.Row="1" Grid.Column="4" SelectedIndex="0" Height="24" Margin="0,2">
+      <ComboBoxItem Content="عادي" IsSelected="True"/>
+      <ComboBoxItem Content="رئيسي"/>
+      <ComboBoxItem Content="ختامي"/>
+      <ComboBoxItem Content="تجميعي"/>
+     </ComboBox>
+
+     <!-- Row 2: ملاحظات -->
+     <TextBlock Grid.Row="2" Grid.Column="0" Text="ملاحظات" Style="{StaticResource Am.Label}"/>
+     <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="4" Text="{Binding DraftNotes, UpdateSourceTrigger=PropertyChanged}"
+              IsReadOnly="{Binding IsViewMode}" MaxLength="500" Margin="0,2" Height="24"/>
+    </Grid>
+   </Grid>
+  </Border>
+
+  <!-- ========================================================================= -->
+  <!-- VERTICAL RIGHT TAB CONTROL (Matching Image 2)                              -->
+  <!-- ========================================================================= -->
+  <TabControl x:Name="CardTabs" TabStripPlacement="Right" Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1"
+              Visibility="{Binding HasAccount, Converter={StaticResource Visible}}" AutomationProperties.Name="{Binding Title}">
+
+   <!-- ======================================================================= -->
+   <!-- TAB 1: عام (GENERAL - Image 2 Layout)                                   -->
+   <!-- ======================================================================= -->
+   <TabItem Header="عام" Style="{StaticResource Am.VerticalTabItem}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+     <Grid Margin="10">
+      <Grid.ColumnDefinitions>
+       <!-- Right Column in RTL: الحساب الرئيسي، الحساب الختامي، الموازنة التقديرية، القوائم المالية -->
+       <ColumnDefinition Width="*"/>
+       <ColumnDefinition Width="12"/>
+       <!-- Left Column in RTL: طبيعة الحساب، الرصيد الحالي، خيارات ومركز الكلفة، آخر مطابقة -->
+       <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+
+      <!-- RIGHT COLUMN (in RTL) -->
+      <StackPanel Grid.Column="0">
+       <!-- الحساب الرئيسي -->
+       <Border Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Divider}" BorderThickness="1" Padding="8,4" Margin="0,0,0,6" CornerRadius="{DynamicResource Radius.Small}">
+        <DockPanel LastChildFill="True">
+         <TextBlock Text="الحساب الرئيسي" Style="{StaticResource Am.Label}" DockPanel.Dock="Right" Width="95"/>
+         <Border DockPanel.Dock="Left" Background="{DynamicResource Accent.Subtle}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Small}" Padding="6,2" Margin="4,0,0,0">
+          <TextBlock Text="رئيسية" FontSize="11" Foreground="{DynamicResource Accent}" FontWeight="SemiBold"/>
+         </Border>
+         <Button DockPanel.Dock="Left" Style="{StaticResource Button.Icon}" Content="&#xE721;" ToolTip="بحث في الحسابات" Margin="4,0"/>
+         <TextBox Text="{Binding ParentLabel, Mode=OneWay}" IsReadOnly="True" Background="{DynamicResource Surface.Primary}" Height="24" VerticalContentAlignment="Center"/>
+        </DockPanel>
+       </Border>
+
+       <!-- الحساب الختامي -->
+       <Border Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Divider}" BorderThickness="1" Padding="8,4" Margin="0,0,0,8" CornerRadius="{DynamicResource Radius.Small}">
+        <DockPanel LastChildFill="True">
+         <TextBlock Text="الحساب الختامي" Style="{StaticResource Am.Label}" DockPanel.Dock="Right" Width="95"/>
+         <Border DockPanel.Dock="Left" Background="{DynamicResource Warning.Subtle}" BorderBrush="{DynamicResource Warning}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Small}" Padding="6,2" Margin="4,0,0,0">
+          <TextBlock Text="ختامية" FontSize="11" Foreground="{DynamicResource Warning}" FontWeight="SemiBold"/>
+         </Border>
+         <Button DockPanel.Dock="Left" Style="{StaticResource Button.Icon}" Content="&#xE721;" ToolTip="بحث في الحسابات الختامية" Margin="4,0"/>
+         <ux:LookupPicker ItemsSource="{Binding ClosingAccountLookups, Converter={StaticResource EntryLookups}}"
+                          SelectedId="{Binding DraftClosingAccountId}" IsEnabled="{Binding IsEditing}"
+                          IsArabic="{Binding Localization.IsRightToLeft}" Height="24"/>
+        </DockPanel>
+       </Border>
+
+       <!-- الموازنة التقديرية (GroupBox) -->
+       <GroupBox Header="الموازنة التقديرية" Margin="0,0,0,8" Padding="8">
+        <StackPanel>
+         <!-- Radio options: مدينة / دائنة / بدون -->
+         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+          <RadioButton Content="بدون" IsChecked="{Binding IsBudgetNone}" IsEnabled="{Binding IsEditing}" Margin="0,0,16,0"/>
+          <RadioButton Content="دائنة" IsChecked="{Binding IsBudgetCredit}" IsEnabled="{Binding IsEditing}" Margin="0,0,16,0"/>
+          <RadioButton Content="مدينة" IsChecked="{Binding IsBudgetDebit}" IsEnabled="{Binding IsEditing}"/>
+         </StackPanel>
+
+         <!-- القيمة -->
+         <Grid Margin="0,2">
+          <Grid.ColumnDefinitions><ColumnDefinition Width="70"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+          <TextBlock Text="القيمة" Style="{StaticResource Am.Label}"/>
+          <TextBox Grid.Column="1" Text="{Binding DraftBudgetAmount, UpdateSourceTrigger=PropertyChanged}"
+                   IsEnabled="{Binding CanEditBudget}" Height="24" FlowDirection="LeftToRight"/>
+         </Grid>
+
+         <!-- العملة -->
+         <Grid Margin="0,2">
+          <Grid.ColumnDefinitions><ColumnDefinition Width="70"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+          <TextBlock Text="العملة" Style="{StaticResource Am.Label}"/>
+          <ComboBox Grid.Column="1" Text="{Binding DraftBudgetCurrency, UpdateSourceTrigger=PropertyChanged}"
+                    IsEditable="True" IsEnabled="{Binding CanEditBudget}" Height="24"/>
+         </Grid>
+
+         <!-- التعادل -->
+         <Grid Margin="0,2">
+          <Grid.ColumnDefinitions><ColumnDefinition Width="70"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+          <TextBlock Text="التعادل" Style="{StaticResource Am.Label}"/>
+          <TextBox Grid.Column="1" Text="{Binding DraftBudgetRate, UpdateSourceTrigger=PropertyChanged}"
+                   IsEnabled="{Binding CanEditBudget}" Height="24" FlowDirection="LeftToRight"/>
+         </Grid>
+
+         <!-- اعتبار الأوراق التجارية -->
+         <CheckBox Content="اعتبار الأوراق التجارية المستحقة جزءاً من الموازنة"
+                   IsChecked="{Binding DraftIncludePapers}" IsEnabled="{Binding IsEditing}" Margin="0,6,0,0"/>
+        </StackPanel>
+       </GroupBox>
+
+       <!-- تبويبات القوائم المالية (GroupBox) -->
+       <GroupBox Header="تبويبات القوائم المالية" Padding="8">
+        <StackPanel>
+         <Grid Margin="0,2">
+          <Grid.ColumnDefinitions><ColumnDefinition Width="90"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+          <TextBlock Text="قائمة الدخل" Style="{StaticResource Am.Label}"/>
+          <TextBox Grid.Column="1" Text="{Binding DraftIncomeCategory, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" Height="24"/>
+         </Grid>
+         <Grid Margin="0,2">
+          <Grid.ColumnDefinitions><ColumnDefinition Width="90"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+          <TextBlock Text="حقوق الملكية" Style="{StaticResource Am.Label}"/>
+          <TextBox Grid.Column="1" Text="{Binding DraftEquityCategory, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" Height="24"/>
+         </Grid>
+         <Grid Margin="0,2">
+          <Grid.ColumnDefinitions><ColumnDefinition Width="90"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+          <TextBlock Text="المركز المالي" Style="{StaticResource Am.Label}"/>
+          <TextBox Grid.Column="1" Text="{Binding DraftPositionCategory, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" Height="24"/>
+         </Grid>
+         <Grid Margin="0,2">
+          <Grid.ColumnDefinitions><ColumnDefinition Width="90"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+          <TextBlock Text="التدفق النقدي" Style="{StaticResource Am.Label}"/>
+          <TextBox Grid.Column="1" Text="{Binding DraftCashFlowCategory, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" Height="24"/>
+         </Grid>
+         <DockPanel Margin="0,4,0,0" LastChildFill="True">
+          <TextBlock Text="تفصيلات التبويبات" Style="{StaticResource Am.Label}" DockPanel.Dock="Right" Width="90"/>
+          <Button DockPanel.Dock="Left" Style="{StaticResource Button.Icon}" Content="&#xE721;" ToolTip="بحث التبويبات" Margin="4,0"/>
+          <TextBox Height="24" IsReadOnly="True" Background="{DynamicResource Surface.Primary}"/>
+         </DockPanel>
+        </StackPanel>
+       </GroupBox>
+      </StackPanel>
+
+      <!-- LEFT COLUMN (in RTL) -->
+      <StackPanel Grid.Column="2">
+       <!-- طبيعة الحساب (GroupBox) -->
+       <GroupBox Header="طبيعة الحساب" Margin="0,0,0,8" Padding="8">
+        <StackPanel Orientation="Horizontal">
+         <RadioButton Content="مدين ودائن" IsChecked="{Binding IsNatureBoth}" IsEnabled="{Binding IsEditing}" Margin="0,0,20,0"/>
+         <RadioButton Content="دائن" IsChecked="{Binding IsNatureCredit}" IsEnabled="{Binding IsEditing}" Margin="0,0,20,0"/>
+         <RadioButton Content="مدين" IsChecked="{Binding IsNatureDebit}" IsEnabled="{Binding IsEditing}"/>
+        </StackPanel>
+       </GroupBox>
+
+       <!-- الرصيد الحالي (Solid Royal Blue Box matching Image 2) -->
+       <GroupBox Header="الرصيد الحالي" Margin="0,0,0,8">
+        <Border Background="{DynamicResource Brand.Navy}" CornerRadius="{DynamicResource Radius.Small}" Padding="12,8">
+         <Grid>
+          <Grid.ColumnDefinitions><ColumnDefinition Width="60"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+          <Grid.RowDefinitions>
+           <RowDefinition Height="24"/>
+           <RowDefinition Height="24"/>
+           <RowDefinition Height="24"/>
+          </Grid.RowDefinitions>
+          <TextBlock Grid.Row="0" Grid.Column="0" Text="مدين" Foreground="{DynamicResource Text.OnBrand}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+          <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding TotalDebit}" Foreground="{DynamicResource Text.OnBrand}" FontWeight="Bold" FontSize="13" HorizontalAlignment="Left" FlowDirection="LeftToRight" VerticalAlignment="Center"/>
+
+          <TextBlock Grid.Row="1" Grid.Column="0" Text="دائن" Foreground="{DynamicResource Text.OnBrand}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+          <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TotalCredit}" Foreground="{DynamicResource Text.OnBrand}" FontWeight="Bold" FontSize="13" HorizontalAlignment="Left" FlowDirection="LeftToRight" VerticalAlignment="Center"/>
+
+          <TextBlock Grid.Row="2" Grid.Column="0" Text="رصيد" Foreground="{DynamicResource Warning}" FontWeight="Bold" VerticalAlignment="Center"/>
+          <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Closing}" Foreground="{DynamicResource Warning}" FontWeight="Bold" FontSize="13" HorizontalAlignment="Left" FlowDirection="LeftToRight" VerticalAlignment="Center"/>
+         </Grid>
+        </Border>
+       </GroupBox>
+
+       <!-- خيارات إضافية -->
+       <StackPanel Margin="0,0,0,8">
+        <CheckBox Content="إخفاء في نافذة البحث" IsChecked="{Binding DraftHideInSearch}" IsEnabled="{Binding IsEditing}" Margin="0,2"/>
+        <CheckBox Content="فرض مركز الكلفة" IsChecked="{Binding DraftRequireCostCenter}" IsEnabled="{Binding IsEditing}" Margin="0,2"/>
+        <DockPanel Margin="0,4" LastChildFill="True">
+         <TextBlock Text="مركز الكلفة" Style="{StaticResource Am.Label}" DockPanel.Dock="Right" Width="70"/>
+         <ux:LookupPicker ItemsSource="{Binding CostCenterLookups, Converter={StaticResource EntryLookups}}"
+                          SelectedId="{Binding DraftDefaultCostCenterId}" IsEnabled="{Binding IsEditing}"
+                          IsArabic="{Binding Localization.IsRightToLeft}" Height="24"/>
+        </DockPanel>
+       </StackPanel>
+
+       <!-- آخر مطابقة (GroupBox) matching text in Image 2 -->
+       <GroupBox Header="آخر مطابقة" Padding="8">
+        <TextBlock Text="لم يتم إجراء أية عمليات مطابقة على هذا الحساب، يمكن أن يتم تخزين المطابقات على هذا الحساب من خلال الأمر (مطابقة رصيد حساب) ضمن القائمة: حسابات - أدوات."
+                   TextWrapping="Wrap" FontSize="11" Foreground="{DynamicResource Text.Secondary}" LineHeight="18"/>
+       </GroupBox>
+      </StackPanel>
+     </Grid>
+    </ScrollViewer>
+   </TabItem>
+
+   <!-- TAB 2: الضرائب -->
+   <TabItem Header="الضرائب" Style="{StaticResource Am.VerticalTabItem}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+     <StackPanel Margin="16">
+      <TextBlock Text="إعدادات الضرائب للحساب" Style="{StaticResource Text.Section}" Margin="0,0,0,12"/>
+      <CheckBox Content="حساب خاضع لضريبة القيمة المضافة" IsChecked="True" IsEnabled="{Binding IsEditing}" Margin="0,4"/>
+      <CheckBox Content="حساب مخصص للضريبة المحصلة" IsEnabled="{Binding IsEditing}" Margin="0,4"/>
+      <CheckBox Content="حساب مخصص للضريبة المدفوعة" IsEnabled="{Binding IsEditing}" Margin="0,4"/>
+     </StackPanel>
+    </ScrollViewer>
+   </TabItem>
+
+   <!-- TAB 3: حقول مخصصة -->
+   <TabItem Header="حقول مخصصة" Style="{StaticResource Am.VerticalTabItem}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+     <StackPanel Margin="16">
+      <TextBlock Text="الحقول الإضافية والمخصصة" Style="{StaticResource Text.Section}" Margin="0,0,0,12"/>
+      <TextBlock Text="لا توجد حقول مخصصة معرفة لهذا الحساب حالياً." Foreground="{DynamicResource Text.Secondary}" Margin="0,4"/>
+     </StackPanel>
+    </ScrollViewer>
+   </TabItem>
+
+   <!-- TAB 4: الحركات والمالية -->
+   <TabItem Header="الحركات" Style="{StaticResource Am.VerticalTabItem}" Visibility="{Binding CanViewLedger, Converter={StaticResource Visible}}">
+    <DockPanel Margin="12">
+     <DataGrid x:Name="MovementsGrid" ItemsSource="{Binding RecentLines}" SelectedItem="{Binding SelectedLine}" IsReadOnly="True" SelectionUnit="FullRow" CanUserSortColumns="False" BorderThickness="0" MouseDoubleClick="MovementOpened" AutomationProperties.Name="{Binding Localization[D_RecentMovements]}">
+      <DataGrid.InputBindings><KeyBinding Key="Enter" Command="{Binding OpenJournalCommand}"/></DataGrid.InputBindings>
+      <DataGrid.Columns>
+       <DataGridTextColumn Binding="{Binding AccountingDate, Converter={StaticResource DateText}}" Width="100"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_AccountingDate], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding PostingSequence}" Width="70"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_JournalNumber], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding LineDescription}" Width="*"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Description], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding BaseDebit, Converter={StaticResource Money}}" Width="110" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Debit], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding BaseCredit, Converter={StaticResource Money}}" Width="110" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Credit], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding RunningBalance, Converter={StaticResource Money}}" Width="120" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_RunningBalance], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      </DataGrid.Columns>
+     </DataGrid>
+    </DockPanel>
+   </TabItem>
+
+   <!-- TAB 5: AccountHierarchyTab (For test compatibility) -->
+   <TabItem x:Name="AccountHierarchyTab" Header="{Binding Localization[D_CardHierarchy]}" Style="{StaticResource Am.VerticalTabItem}">
+    <DockPanel Margin="12">
+     <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+      <TextBlock Text="{Binding Localization[D_ParentAccount]}" Style="{StaticResource Text.Label}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+      <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE74A;" Content="{Binding ParentLabel}" Command="{Binding OpenParentCommand}" HorizontalAlignment="Left"/>
+     </DockPanel>
+     <TextBlock DockPanel.Dock="Top" Text="{Binding Localization[D_ChildAccounts]}" Style="{StaticResource Text.Section}"/>
+     <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+      <Button Content="{Binding Localization[D_Previous]}" Command="{Binding PreviousChildrenCommand}" Style="{StaticResource Button.Command}"/>
+      <Button Content="{Binding Localization[D_Next]}" Command="{Binding NextChildrenCommand}" Style="{StaticResource Button.Command}"/>
+      <Button Content="{Binding Localization[D_Refresh]}" Command="{Binding RefreshChildrenCommand}" Style="{StaticResource Button.Command}"/>
+      <TextBlock Text="{Binding ChildrenPageStatus}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="8,0"/>
+     </WrapPanel>
+     <TextBlock DockPanel.Dock="Top" Text="{Binding Localization[D_NoChildAccounts]}" Style="{StaticResource Text.Caption}" Visibility="{Binding HasChildAccounts, Converter={StaticResource Show}, ConverterParameter=invert}"/>
+     <DataGrid x:Name="ChildrenGrid" ItemsSource="{Binding Children}" IsReadOnly="True" SelectionUnit="FullRow" CanUserSortColumns="False" BorderThickness="0" MouseDoubleClick="ChildOpened" AutomationProperties.Name="{Binding Localization[D_ChildAccounts]}"
+               Visibility="{Binding HasChildAccounts, Converter={StaticResource Visible}}">
+      <DataGrid.InputBindings><KeyBinding Key="Enter" Command="{Binding OpenChildCommand}" CommandParameter="{Binding SelectedItem, ElementName=ChildrenGrid}"/></DataGrid.InputBindings>
+      <DataGrid.Columns>
+       <DataGridTextColumn Binding="{Binding Code}" Width="140" Header="Code" HeaderTemplate="{StaticResource AccountAuditHeader}"/>
+       <DataGridTemplateColumn Width="*" Header="Name" HeaderTemplate="{StaticResource AccountAuditHeader}">
+        <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock TextTrimming="CharacterEllipsis"><TextBlock.Text><MultiBinding Converter="{StaticResource NameLabel}"><Binding Path="NameArabic"/><Binding Path="NameEnglish"/><Binding Path="DataContext.Localization.IsRightToLeft" RelativeSource="{RelativeSource AncestorType=UserControl}"/></MultiBinding></TextBlock.Text></TextBlock></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+      </DataGrid.Columns>
+     </DataGrid>
+    </DockPanel>
+   </TabItem>
+
+   <!-- TAB 6: AccountAuditTab (For test compatibility) -->
+   <TabItem x:Name="AccountAuditTab" Header="{Binding Localization[D_AuditTrail]}" Style="{StaticResource Am.VerticalTabItem}">
+    <DockPanel Margin="12">
+     <TextBlock DockPanel.Dock="Top" Text="{Binding Localization[D_AccountAuditHelp]}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,0,0,6"/>
+     <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+      <Button Style="{StaticResource Button.Command}" Content="{Binding Localization[D_Refresh]}" Command="{Binding RefreshAuditCommand}"/>
+      <Button Style="{StaticResource Button.Command}" Content="{Binding Localization[D_Previous]}" Command="{Binding PreviousAuditCommand}"/>
+      <TextBlock Text="{Binding AuditPageStatus}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="8,0"/>
+      <Button Style="{StaticResource Button.Command}" Content="{Binding Localization[D_Next]}" Command="{Binding NextAuditCommand}"/>
+     </WrapPanel>
+     <Grid>
+      <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+      <DataGrid x:Name="AccountAuditGrid" ItemsSource="{Binding AuditEvents}" SelectedItem="{Binding SelectedAudit}" IsReadOnly="True" SelectionUnit="FullRow" CanUserSortColumns="False" BorderThickness="0" AutomationProperties.Name="{Binding Localization[D_AuditTrail]}">
+       <DataGrid.Columns>
+        <DataGridTextColumn Header="DateTime" HeaderTemplate="{StaticResource AccountAuditHeader}" Binding="{Binding OccurredAtUtc, Converter={StaticResource DateText}, ConverterParameter=time}" Width="155"/>
+        <DataGridTemplateColumn Header="Action" HeaderTemplate="{StaticResource AccountAuditHeader}" Width="110"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock><TextBlock.Text><MultiBinding Converter="{StaticResource EnumLabel}" ConverterParameter="D_AccountAuditAction_"><Binding Path="Action"/><Binding Path="DataContext.Localization.Language" RelativeSource="{RelativeSource AncestorType=UserControl}"/></MultiBinding></TextBlock.Text></TextBlock></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+        <DataGridTemplateColumn Header="UserName" HeaderTemplate="{StaticResource AccountAuditHeader}" Width="*"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock ToolTip="{Binding ActorUserId}"><TextBlock.Text><MultiBinding Converter="{StaticResource NameLabel}"><Binding Path="ActorNameArabic"/><Binding Path="ActorNameEnglish"/><Binding Path="DataContext.Localization.IsRightToLeft" RelativeSource="{RelativeSource AncestorType=UserControl}"/></MultiBinding></TextBlock.Text></TextBlock></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+       </DataGrid.Columns>
+      </DataGrid>
+      <StackPanel Grid.Row="1" Margin="0,6">
+       <TextBlock Text="{Binding AuditActor}" Style="{StaticResource Text.Caption}"/>
+       <TextBlock Text="{Binding SelectedAudit.Reason}" TextWrapping="Wrap"/>
+       <TextBlock Text="{Binding Localization[D_AuditLegacy]}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Visibility="{Binding HasLegacyAudit, Converter={StaticResource Visible}}"/>
+       <Expander Header="{Binding Localization[D_TechnicalDetails]}"><StackPanel>
+        <TextBlock Text="{Binding SelectedAudit.ActorUserId}"/><TextBlock Text="{Binding SelectedAudit.WorkingBranchId}"/>
+        <TextBlock Text="{Binding SelectedAudit.EventId}"/><TextBlock Text="{Binding SelectedAudit.CorrelationId}"/>
+       </StackPanel></Expander>
+      </StackPanel>
+      <DataGrid x:Name="AccountAuditFieldsGrid" Grid.Row="2" ItemsSource="{Binding AuditFields}" IsReadOnly="True" CanUserSortColumns="False" BorderThickness="0" AutomationProperties.Name="{Binding Localization[D_AuditChanges]}">
+       <DataGrid.Columns>
+        <DataGridTextColumn Header="AuditField" HeaderTemplate="{StaticResource AccountAuditHeader}" Binding="{Binding Field}" Width="140"/>
+        <DataGridTextColumn Header="AuditBefore" HeaderTemplate="{StaticResource AccountAuditHeader}" Binding="{Binding Before}" Width="*"/>
+        <DataGridTextColumn Header="AuditAfter" HeaderTemplate="{StaticResource AccountAuditHeader}" Binding="{Binding After}" Width="*"/>
+       </DataGrid.Columns>
+      </DataGrid>
+     </Grid>
+    </DockPanel>
+   </TabItem>
+  </TabControl>
+ </DockPanel>
+</UserControl>

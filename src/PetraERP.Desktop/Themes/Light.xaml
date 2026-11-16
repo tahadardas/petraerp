@@ -1,0 +1,87 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Petra design system v2 light palette (one blue accent in both themes; text 4.5:1, control borders 3:1). Classic Al-Ameen ERP 10-inspired neutral frames. -->
+  <ResourceDictionary.MergedDictionaries><ResourceDictionary Source="pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.Light.xaml"/></ResourceDictionary.MergedDictionaries>
+
+  <!-- Canonical semantic palette. -->
+  <SolidColorBrush x:Key="App.Background" Color="#F3F4F6"/>
+  <SolidColorBrush x:Key="Surface.Primary" Color="#FFFFFF"/>
+  <SolidColorBrush x:Key="Surface.Secondary" Color="#F8F9FA"/>
+  <SolidColorBrush x:Key="Surface.Recessed" Color="#EAEDF1"/>
+  <SolidColorBrush x:Key="Brand.Navy" Color="#2A527E"/>
+  <SolidColorBrush x:Key="Brand.NavyHover" Color="#204366"/>
+  <SolidColorBrush x:Key="Brand.Teal" Color="#1F6FA3"/>
+  <SolidColorBrush x:Key="Brand.TealHover" Color="#185A86"/>
+  <SolidColorBrush x:Key="Brand.TealSubtle" Color="#DEEFFA"/>
+  <SolidColorBrush x:Key="Text.Primary" Color="#252D35"/>
+  <SolidColorBrush x:Key="Text.Secondary" Color="#5D6975"/>
+  <SolidColorBrush x:Key="Text.Muted" Color="#5D6975"/>
+  <SolidColorBrush x:Key="Border.Normal" Color="#C6CDD5"/>
+  <SolidColorBrush x:Key="Border.Strong" Color="#8A95A3"/>
+  <SolidColorBrush x:Key="Grid.Header" Color="#E8EDF2"/>
+  <SolidColorBrush x:Key="Grid.Alternate" Color="#F4F8FB"/>
+  <SolidColorBrush x:Key="Grid.Selection" Color="#C5EAFB"/>
+  <SolidColorBrush x:Key="Grid.ActiveCell" Color="#1F6FA3"/>
+  <SolidColorBrush x:Key="Danger" Color="#B4383D"/>
+
+  <!-- Stable compatibility aliases consumed throughout the existing views. -->
+  <SolidColorBrush x:Key="Surface" Color="#F3F4F6"/>
+  <SolidColorBrush x:Key="Input" Color="#FFFFFF"/>
+  <SolidColorBrush x:Key="Text" Color="#252D35"/>
+  <SolidColorBrush x:Key="Border" Color="#C6CDD5"/>
+  <SolidColorBrush x:Key="Divider" Color="#D7DEE6"/>
+  <SolidColorBrush x:Key="Accent" Color="#1F6FA3"/>
+  <SolidColorBrush x:Key="Accent.Hover" Color="#185A86"/>
+  <SolidColorBrush x:Key="Accent.Subtle" Color="#DEEFFA"/>
+  <SolidColorBrush x:Key="Text.OnAccent" Color="#FFFFFF"/>
+  <!-- Text and icons on Brand.Navy (splash, report header, Button.Financial). Skins map it to their top-bar text. -->
+  <SolidColorBrush x:Key="Text.OnBrand" Color="#FFFFFF"/>
+  <SolidColorBrush x:Key="Alternate" Color="#F4F8FB"/>
+  <SolidColorBrush x:Key="Selection" Color="#C5EAFB"/>
+  <SolidColorBrush x:Key="Focus" Color="#1F6FA3"/>
+  <SolidColorBrush x:Key="TopBar" Color="#F8F9FA"/>
+  <SolidColorBrush x:Key="TopBar.Text" Color="#25394C"/>
+  <SolidColorBrush x:Key="TopBar.Input" Color="#E8EDF2"/>
+  <SolidColorBrush x:Key="Sidebar" Color="#F8F9FA"/>
+
+  <!-- Status roles retain text/icon cues in addition to color. -->
+  <SolidColorBrush x:Key="Success" Color="#24754F"/>
+  <SolidColorBrush x:Key="Success.Subtle" Color="#E2F3E9"/>
+  <SolidColorBrush x:Key="Warning" Color="#936100"/>
+  <SolidColorBrush x:Key="Warning.Subtle" Color="#FFF1D6"/>
+  <SolidColorBrush x:Key="Error" Color="#B4383D"/>
+  <SolidColorBrush x:Key="Error.Subtle" Color="#FDE7E8"/>
+  <SolidColorBrush x:Key="Info" Color="#2C6975"/>
+  <SolidColorBrush x:Key="Info.Subtle" Color="#E7F0F2"/>
+  <SolidColorBrush x:Key="Neutral" Color="#536570"/>
+  <SolidColorBrush x:Key="Neutral.Subtle" Color="#EDF1F3"/>
+  <SolidColorBrush x:Key="Overlay" Color="#73101C22"/>
+
+  <!-- Extended component roles. -->
+  <SolidColorBrush x:Key="Brand.Graphite" Color="#34495C"/>
+  <SolidColorBrush x:Key="Teal" Color="#1F6FA3"/>
+  <SolidColorBrush x:Key="Teal.Subtle" Color="#DEEFFA"/>
+  <SolidColorBrush x:Key="Surface.Raised" Color="#FFFFFF"/>
+  <SolidColorBrush x:Key="Surface.Sunken" Color="#EAEDF1"/>
+  <SolidColorBrush x:Key="Text.Disabled" Color="#89969D"/>
+  <SolidColorBrush x:Key="Skeleton" Color="#E1E8EB"/>
+  <SolidColorBrush x:Key="Skeleton.Highlight" Color="#F2F6F7"/>
+  <SolidColorBrush x:Key="Numeric.Negative" Color="#B4383D"/>
+  <SolidColorBrush x:Key="Numeric.Positive" Color="#24754F"/>
+  <SolidColorBrush x:Key="Dirty" Color="#936100"/>
+  <SolidColorBrush x:Key="Tab.Active" Color="#FFFFFF"/>
+  <SolidColorBrush x:Key="Tab.Inactive" Color="#E7EBF0"/>
+  <Color x:Key="Shadow.Color">#142B38</Color>
+
+  <!-- Historical semantic aliases retained for shared controls. -->
+  <SolidColorBrush x:Key="MutedText" Color="#5D6975"/>
+  <SolidColorBrush x:Key="Canvas" Color="#F3F4F6"/>
+  <SolidColorBrush x:Key="SubtleSuccessBackground" Color="#E2F3E9"/>
+  <SolidColorBrush x:Key="SubtleMutedBackground" Color="#EDF1F3"/>
+  <SolidColorBrush x:Key="SubtleInfoBackground" Color="#E7F0F2"/>
+  <SolidColorBrush x:Key="SubtleWarningBackground" Color="#FFF1D6"/>
+  <SolidColorBrush x:Key="SubtleErrorBackground" Color="#FDE7E8"/>
+  <SolidColorBrush x:Key="SuccessSurface" Color="#24754F"/>
+  <SolidColorBrush x:Key="ErrorSurface" Color="#B4383D"/>
+  <SolidColorBrush x:Key="WarningSurface" Color="#936100"/>
+  <SolidColorBrush x:Key="InfoSurface" Color="#2C6975"/>
+</ResourceDictionary>

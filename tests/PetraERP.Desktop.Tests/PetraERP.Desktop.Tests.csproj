@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net10.0-windows</TargetFramework><UseWPF>true</UseWPF><OutputType>Exe</OutputType><UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner></PropertyGroup>
+  <ItemGroup><PackageReference Include="xunit.v3.mtp-v2"/><ProjectReference Include="../../src/PetraERP.Desktop/PetraERP.Desktop.csproj"/><Using Include="Xunit"/><Using Include="System.Net.Http"/></ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing"/>
+    <ProjectReference Include="../../src/PetraERP.Api/PetraERP.Api.csproj"/>
+    <Compile Include="../PetraERP.Api.Tests/ApiSqlHost.cs" Link="SqlHost/ApiSqlHost.cs"/>
+    <Compile Include="../PetraERP.Api.Tests/PetraApiFactory.cs" Link="SqlHost/PetraApiFactory.cs"/>
+    <Compile Include="../PetraERP.Api.Tests/ApiJson.cs" Link="SqlHost/ApiJson.cs"/>
+    <Compile Include="../PetraERP.Infrastructure.Tests/SqlTestDatabase.cs" Link="SqlHost/SqlTestDatabase.cs"/>
+  </ItemGroup>
+</Project>

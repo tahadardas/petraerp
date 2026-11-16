@@ -1,0 +1,199 @@
+<UserControl x:Class="PetraERP.Desktop.Inventory.UnitsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ux="clr-namespace:PetraERP.Desktop.Controls">
+    <UserControl.InputBindings>
+        <KeyBinding Key="F5" Command="{Binding RefreshCommand}"/>
+    </UserControl.InputBindings>
+    <UserControl.Resources>
+        <Style x:Key="Am.Label" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="6,3"/>
+        </Style>
+    </UserControl.Resources>
+    <DockPanel Margin="6">
+        <!-- Top Page Header -->
+        <ux:PageHeader DockPanel.Dock="Top" Title="{Binding Localization[UNT_Title]}" Subtitle="{Binding Localization[UNT_Help]}">
+            <ux:PageHeader.Commands>
+                <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE72C;" Content="{Binding Localization[D_Refresh]}" Command="{Binding RefreshCommand}" ToolTip="F5"/>
+            </ux:PageHeader.Commands>
+        </ux:PageHeader>
+
+        <!-- Main Body: Units Directory (Left) + Unit Card & Conversions (Right) -->
+        <Grid Margin="0,4,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="340"/>
+                <ColumnDefinition Width="6"/>
+                <ColumnDefinition Width="460" MinWidth="360"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Units Directory Grid (Left) -->
+            <Border Grid.Column="0" Style="{StaticResource Panel.Flat}">
+                <DockPanel>
+                    <Border DockPanel.Dock="Top" Background="{DynamicResource SubtleBackground}" Padding="8,6" Margin="0,0,0,6" CornerRadius="{DynamicResource Radius.Control}">
+                        <DockPanel>
+                            <TextBlock Text="قائمة وحدات القياس المعرفة" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Units.Count, StringFormat='({0} وحدة)'}" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                        </DockPanel>
+                    </Border>
+                    <DataGrid ItemsSource="{Binding Units}" SelectedItem="{Binding SelectedUnit}"
+                              IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False"
+                              SelectionUnit="FullRow" BorderThickness="0"
+                              ux:GridRowNumbers.Enabled="True" ux:GridRowContext.Enabled="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding Code}" Width="90">
+                                <DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Code], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Binding="{Binding NameArabic}" Width="*">
+                                <DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_ArabicName], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Binding="{Binding NameEnglish}" Width="*">
+                                <DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_EnglishName], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Binding="{Binding Symbol}" Width="80">
+                                <DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[UNT_Symbol], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Binding="{Binding DecimalPlaces}" Width="75">
+                                <DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[UNT_Decimals], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </Border>
+
+            <GridSplitter Grid.Column="1" Width="6" HorizontalAlignment="Stretch" Background="Transparent"/>
+
+            <!-- Right Pane: Tabs for Unit Card and Conversions -->
+            <Border Grid.Column="2" Style="{StaticResource Panel.Card}" Padding="10">
+                <TabControl>
+                    <!-- Tab 1: Unit Card & Classification -->
+                    <TabItem Header="بطاقة وحدة القياس">
+                        <DockPanel>
+                            <!-- Command bar at bottom -->
+                            <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource Divider}" BorderThickness="0,1,0,0" Padding="0,8,0,0" Margin="0,8,0,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Style="{StaticResource Button.Primary}" Content="{Binding Localization[D_Save]}" Command="{Binding CreateUnitCommand}" MinWidth="85" Margin="0,0,8,0" Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+                                    <Button Style="{StaticResource Button.Command}" Content="{Binding Localization[D_Refresh]}" Command="{Binding RefreshCommand}" MinWidth="85"/>
+                                </StackPanel>
+                            </Border>
+
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel Margin="4">
+                                    <TextBlock Text="{Binding Localization[UNT_New]}" FontWeight="SemiBold" Style="{StaticResource Text.Section}" Margin="0,0,0,8"/>
+
+                                    <!-- Form Fields -->
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="100"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Text="{Binding Localization[D_Code], StringFormat='{}{0} *'}" Style="{StaticResource Am.Label}"/>
+                                        <TextBox Grid.Column="1" Text="{Binding NewUnitCode, UpdateSourceTrigger=PropertyChanged}" MaxLength="64" FlowDirection="LeftToRight" Margin="0,2"/>
+
+                                        <TextBlock Grid.Row="1" Text="{Binding Localization[D_ArabicName], StringFormat='{}{0} *'}" Style="{StaticResource Am.Label}"/>
+                                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding NewUnitNameArabic, UpdateSourceTrigger=PropertyChanged}" MaxLength="200" Margin="0,2"/>
+
+                                        <TextBlock Grid.Row="2" Text="{Binding Localization[D_EnglishName]}" Style="{StaticResource Am.Label}"/>
+                                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding NewUnitNameEnglish, UpdateSourceTrigger=PropertyChanged}" MaxLength="200" FlowDirection="LeftToRight" Margin="0,2"/>
+
+                                        <TextBlock Grid.Row="3" Text="{Binding Localization[UNT_Symbol], StringFormat='{}{0} *'}" Style="{StaticResource Am.Label}"/>
+                                        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding NewUnitSymbol, UpdateSourceTrigger=PropertyChanged}" MaxLength="32" Margin="0,2"/>
+
+                                        <TextBlock Grid.Row="4" Text="{Binding Localization[UNT_Decimals]}" Style="{StaticResource Am.Label}"/>
+                                        <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding DecimalOptions}" SelectedItem="{Binding NewUnitDecimalPlaces}" Width="90" HorizontalAlignment="Left" Margin="0,2"/>
+
+                                        <TextBlock Grid.Row="5" Text="{Binding Localization[UNT_Dimension]}" Style="{StaticResource Am.Label}"/>
+                                        <ComboBox Grid.Row="5" Grid.Column="1" ItemsSource="{Binding DimensionOptions}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding NewUnitDimension}" Margin="0,2"/>
+                                    </Grid>
+
+                                    <!-- Classify Selected Unit -->
+                                    <Border BorderBrush="{DynamicResource Divider}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Control}" Padding="10" Margin="0,8,0,0" Visibility="{Binding CanManage, Converter={StaticResource Visible}}">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Localization[UNT_Classify]}" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                            <WrapPanel VerticalAlignment="Center">
+                                                <ComboBox Width="180" ItemsSource="{Binding DimensionOptions}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding SelectedUnitDimension}" Margin="0,0,8,0"/>
+                                                <Button Content="{Binding Localization[D_Save]}" Command="{Binding ClassifyUnitCommand}" Style="{StaticResource Button.Command}"/>
+                                            </WrapPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </DockPanel>
+                    </TabItem>
+
+                    <!-- Tab 2: Unit Conversions -->
+                    <TabItem Header="{Binding Localization[UNT_NewConversion]}">
+                        <DockPanel>
+                            <!-- Create Conversion Form -->
+                            <Border DockPanel.Dock="Top" BorderBrush="{DynamicResource Divider}" BorderThickness="0,0,0,1" Padding="0,0,0,10" Margin="0,0,0,8" Visibility="{Binding CanManage, Converter={StaticResource Visible}}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Localization[UNT_ConversionHelp]}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,0,0,8"/>
+
+                                    <WrapPanel Margin="0,0,0,6">
+                                        <TextBox Width="190" Text="{Binding ItemSearch, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,6,0"/>
+                                        <Button Style="{StaticResource Button.Command}" Content="{Binding Localization[D_Search]}" Command="{Binding SearchItemsCommand}"/>
+                                    </WrapPanel>
+
+                                    <Grid Margin="0,4,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="100"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Text="{Binding Localization[UNT_OptionalItem]}" Style="{StaticResource Am.Label}"/>
+                                        <ux:LookupPicker Grid.Column="1" ItemsSource="{Binding ItemLookups}" SelectedId="{Binding ConversionItemId}" IsArabic="{Binding Localization.IsRightToLeft}" Placeholder="{Binding Localization[UNT_OptionalItem]}" Margin="0,2"/>
+
+                                        <TextBlock Grid.Row="1" Text="{Binding Localization[UNT_FromRequired]}" Style="{StaticResource Am.Label}"/>
+                                        <ux:LookupPicker Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Units}" SelectedId="{Binding ConversionFromUnitId}" IsArabic="{Binding Localization.IsRightToLeft}" Placeholder="{Binding Localization[UNT_FromRequired]}" Margin="0,2"/>
+
+                                        <TextBlock Grid.Row="2" Text="{Binding Localization[UNT_ToRequired]}" Style="{StaticResource Am.Label}"/>
+                                        <ux:LookupPicker Grid.Row="2" Grid.Column="1" ItemsSource="{Binding Units}" SelectedId="{Binding ConversionToUnitId}" IsArabic="{Binding Localization.IsRightToLeft}" Placeholder="{Binding Localization[UNT_ToRequired]}" Margin="0,2"/>
+
+                                        <TextBlock Grid.Row="3" Text="{Binding Localization[UNT_FactorRequired]}" Style="{StaticResource Am.Label}"/>
+                                        <ux:PetraNumericTextBox Grid.Row="3" Grid.Column="1" Kind="Rate" MaximumScale="8" Width="140" HorizontalAlignment="Left" Text="{Binding ConversionFactor, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight" Margin="0,2"/>
+
+                                        <Button Grid.Row="4" Grid.Column="1" Style="{StaticResource Button.Primary}" Content="{Binding Localization[D_Save]}" Command="{Binding CreateConversionCommand}" HorizontalAlignment="Left" Margin="0,6,0,0"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Conversions Grid -->
+                            <DataGrid ItemsSource="{Binding Conversions}" IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" ux:GridRowNumbers.Enabled="True" BorderThickness="0">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Binding="{Binding ItemId}" Width="*">
+                                        <DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[UNT_OptionalItem], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header>
+                                    </DataGridTextColumn>
+                                    <DataGridTextColumn Binding="{Binding FromUnitCode}" Width="110">
+                                        <DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[UNT_FromRequired], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header>
+                                    </DataGridTextColumn>
+                                    <DataGridTextColumn Binding="{Binding ToUnitCode}" Width="110">
+                                        <DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[UNT_ToRequired], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header>
+                                    </DataGridTextColumn>
+                                    <DataGridTextColumn Binding="{Binding Factor, Converter={StaticResource Number}, ConverterParameter=rate}" Width="120" ElementStyle="{StaticResource Text.Numeric}">
+                                        <DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[UNT_FactorRequired], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header>
+                                    </DataGridTextColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </TabItem>
+                </TabControl>
+            </Border>
+        </Grid>
+    </DockPanel>
+</UserControl>

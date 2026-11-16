@@ -1,0 +1,6 @@
+<Application x:Class="PetraERP.Desktop.App" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:PetraERP.Desktop.Localization">
+  <!-- Design system order: color tokens (swapped by WpfThemeService), non-color tokens and base styles, component styles. -->
+  <Application.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="Themes/Light.xaml"/><ResourceDictionary Source="Themes/Dense.xaml"/><ResourceDictionary Source="Themes/Components.xaml"/>
+  </ResourceDictionary.MergedDictionaries><loc:StandardLabelConverter x:Key="StandardLabel"/></ResourceDictionary></Application.Resources>
+</Application>

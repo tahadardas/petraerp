@@ -1,0 +1,255 @@
+<UserControl x:Class="PetraERP.Desktop.Accounting.CostCentersView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ux="clr-namespace:PetraERP.Desktop.Controls" xmlns:local="clr-namespace:PetraERP.Desktop.Accounting" xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+ <UserControl.InputBindings>
+  <KeyBinding Key="N" Modifiers="Control" Command="{Binding NewCommand}"/>
+  <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCommand}"/>
+ </UserControl.InputBindings>
+ <DockPanel>
+  <TextBlock DockPanel.Dock="Top" Text="{Binding Localization[D_RequiredEntryHelp]}" Style="{StaticResource Text.Caption}" Margin="4,0,4,8"/>
+  <ux:PageHeader DockPanel.Dock="Top" Title="{Binding Localization[D_CostCenters]}">
+   <ux:PageHeader.Commands><WrapPanel>
+    <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE710;" Content="{Binding Localization[D_NewCostCenter]}" Command="{Binding NewCommand}" ToolTip="Ctrl+N" Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+    <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE8F4;" Content="{Binding Localization[D_NewChildCenter]}" Command="{Binding NewChildCommand}" Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+   </WrapPanel></ux:PageHeader.Commands>
+  </ux:PageHeader>
+  <ux:AdaptivePaneGrid>
+   <ux:AdaptivePaneGrid.ColumnDefinitions><ColumnDefinition Width="*" MinWidth="360"/><ColumnDefinition Width="8"/><ColumnDefinition Width="480" MinWidth="360"/></ux:AdaptivePaneGrid.ColumnDefinitions>
+
+   <!-- Left: Search, Tree and List -->
+   <Border ux:AdaptivePaneGrid.Label="{Binding Localization[D_CostCenters]}" Style="{StaticResource Panel.Flat}"><DockPanel>
+    <DockPanel DockPanel.Dock="Top" Margin="8">
+     <Button DockPanel.Dock="Right" Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE721;" Content="{Binding Localization[D_Search]}" Command="{Binding SearchCommand}"/>
+     <ComboBox DockPanel.Dock="Right" Width="130" SelectedValuePath="Tag" SelectedValue="{Binding ActiveFilter}" AutomationProperties.Name="{Binding Localization[UX_Status]}">
+      <ComboBoxItem Content="{Binding Localization[D_AllStatuses]}" Tag="{x:Null}"/>
+      <ComboBoxItem Content="{Binding Localization[D_Active]}"><ComboBoxItem.Tag><sys:Boolean>True</sys:Boolean></ComboBoxItem.Tag></ComboBoxItem>
+      <ComboBoxItem Content="{Binding Localization[D_Inactive]}"><ComboBoxItem.Tag><sys:Boolean>False</sys:Boolean></ComboBoxItem.Tag></ComboBoxItem>
+     </ComboBox>
+     <TextBox Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" ux:SearchTarget.IsTarget="True" ToolTip="Ctrl+F" AutomationProperties.Name="{Binding Localization[D_Search]}">
+      <TextBox.InputBindings><KeyBinding Key="Enter" Command="{Binding SearchCommand}"/></TextBox.InputBindings>
+     </TextBox>
+    </DockPanel>
+    <DockPanel DockPanel.Dock="Bottom" Margin="8,4" LastChildFill="False">
+     <Button Style="{StaticResource Button.Icon}" Content="&#xE76B;" Command="{Binding PreviousPageCommand}" AutomationProperties.Name="{Binding Localization[D_Previous]}"/>
+     <TextBlock Text="{Binding PageStatus}" Style="{StaticResource Text.Caption}" Margin="8,0"/>
+     <Button Style="{StaticResource Button.Icon}" Content="&#xE76C;" Command="{Binding NextPageCommand}" AutomationProperties.Name="{Binding Localization[D_Next]}"/>
+    </DockPanel>
+
+    <TabControl BorderThickness="0" Background="Transparent">
+     <!-- Flat Paged Grid View -->
+     <TabItem Header="جدول المراكز">
+      <DataGrid ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" PreviewMouseRightButtonDown="RowRightClicked" IsReadOnly="True" SelectionUnit="FullRow" CanUserSortColumns="False" BorderThickness="0"
+                ux:GridLayouts.Key="ledger.cost-centers" ux:GridLayouts.Store="{Binding DataContext.Workspace, RelativeSource={RelativeSource AncestorType=Window}}" AutomationProperties.Name="{Binding Localization[D_CostCenters]}">
+       <DataGrid.ContextMenu>
+        <ContextMenu>
+         <MenuItem Header="{Binding Localization[D_NewCostCenter]}" Command="{Binding NewCommand}" InputGestureText="Ctrl+N" Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+         <MenuItem Header="{Binding Localization[D_NewChildCenter]}" Command="{Binding NewChildCommand}" Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+         <MenuItem Header="{Binding ToggleActiveLabel}" Command="{Binding ToggleActiveCommand}" Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+         <Separator/>
+         <MenuItem Header="{Binding Localization[D_GeneralJournal]}" Command="{Binding OpenGeneralJournalCommand}" Visibility="{Binding CanViewGeneralJournal, Converter={StaticResource Visible}}"/>
+         <MenuItem Header="دفتر أستاذ المركز" Command="{Binding OpenCostCenterLedgerCommand}" Visibility="{Binding CanViewGeneralJournal, Converter={StaticResource Visible}}"/>
+         <MenuItem Header="ميزان مراجعة المركز" Command="{Binding OpenCostCenterTrialBalanceCommand}" Visibility="{Binding CanViewGeneralJournal, Converter={StaticResource Visible}}"/>
+        </ContextMenu>
+       </DataGrid.ContextMenu>
+       <DataGrid.Columns>
+        <DataGridTextColumn Binding="{Binding Code}" SortMemberPath="Code" Width="120"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Code], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+        <DataGridTemplateColumn SortMemberPath="Name" Width="*">
+         <DataGridTemplateColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Name], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTemplateColumn.Header>
+         <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock TextTrimming="CharacterEllipsis"><TextBlock.Text><MultiBinding Converter="{StaticResource NameLabel}"><Binding Path="NameArabic"/><Binding Path="NameEnglish"/><Binding Path="DataContext.Localization.IsRightToLeft" RelativeSource="{RelativeSource AncestorType=UserControl}"/></MultiBinding></TextBlock.Text></TextBlock></DataTemplate></DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+        <DataGridTemplateColumn Header="النوع" Width="100">
+         <DataGridTemplateColumn.CellTemplate>
+          <DataTemplate>
+           <TextBlock>
+            <TextBlock.Text>
+             <MultiBinding Converter="{StaticResource EnumLabel}" ConverterParameter="D_CostCenterType_">
+              <Binding Path="CenterType"/>
+              <Binding Path="DataContext.Localization.Language" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+             </MultiBinding>
+            </TextBlock.Text>
+           </TextBlock>
+          </DataTemplate>
+         </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+        <DataGridTemplateColumn SortMemberPath="Status" Width="90">
+         <DataGridTemplateColumn.Header><TextBlock Text="{Binding DataContext.Localization[UX_Status], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTemplateColumn.Header>
+         <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock><TextBlock.Text><MultiBinding Converter="{StaticResource EnumLabel}" ConverterParameter="D_ActiveState_"><Binding Path="IsActive"/><Binding Path="DataContext.Localization.Language" RelativeSource="{RelativeSource AncestorType=UserControl}"/></MultiBinding></TextBlock.Text></TextBlock></DataTemplate></DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+       </DataGrid.Columns>
+      </DataGrid>
+     </TabItem>
+
+     <!-- Hierarchical Tree View -->
+     <TabItem Header="شجرة المراكز">
+      <TreeView ItemsSource="{Binding CostCenterTree}" BorderThickness="0" Background="Transparent"
+                SelectedItemChanged="OnCostCenterTreeSelectionChanged">
+       <TreeView.ItemContainerStyle>
+        <Style TargetType="TreeViewItem">
+         <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+         <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
+        </Style>
+       </TreeView.ItemContainerStyle>
+       <TreeView.ItemTemplate>
+        <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+         <StackPanel Orientation="Horizontal" Margin="2,3">
+          <TextBlock Text="&#xE82D;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource AccentBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+          <TextBlock Text="{Binding DisplayText}" VerticalAlignment="Center" FontSize="13"/>
+         </StackPanel>
+        </HierarchicalDataTemplate>
+       </TreeView.ItemTemplate>
+      </TreeView>
+     </TabItem>
+    </TabControl>
+   </DockPanel></Border>
+
+   <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="Transparent"/>
+
+   <!-- Right: Editor Card with Tabs -->
+   <Border ux:AdaptivePaneGrid.Label="{Binding Localization[D_Details]}" ux:AdaptivePaneGrid.ActivateWhen="{Binding IsEditorOpen}" Grid.Column="2" Style="{StaticResource Panel.Card}">
+    <Grid>
+     <ux:EmptyState Glyph="&#xE8B9;" Title="{Binding Localization[D_SelectCostCenter]}" Message="{Binding Localization[D_SelectCostCenterHelp]}" Visibility="{Binding IsEditorOpen, Converter={StaticResource Show}, ConverterParameter=invert}"/>
+     <DockPanel Visibility="{Binding IsEditorOpen, Converter={StaticResource Visible}}">
+      <!-- Card Top Header -->
+      <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+       <ux:StatusBadge DockPanel.Dock="Right" Text="{Binding StatusText}" Kind="{Binding StatusKind}"/>
+       <TextBlock Text="{Binding EditorTitle}" Style="{StaticResource Text.Section}" Margin="0" TextTrimming="CharacterEllipsis"/>
+      </DockPanel>
+
+      <!-- Bottom Docked Command Bar (Al-Ameen 10 style) -->
+      <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource Divider}" BorderThickness="0,1,0,0" Padding="0,8,0,0" Margin="0,8,0,0">
+       <WrapPanel>
+        <Button Style="{StaticResource Button.Primary}" ux:Icon.Glyph="&#xE74E;" Content="{Binding Localization[D_Save]}" Command="{Binding SaveCommand}" ToolTip="Ctrl+S" Visibility="{Binding CanManage, Converter={StaticResource Visible}}" MinWidth="76" Margin="0,0,6,0"/>
+        <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE8FB;" Content="{Binding ToggleActiveLabel}" Command="{Binding ToggleActiveCommand}" Visibility="{Binding CanManage, Converter={StaticResource Visible}}" MinWidth="76" Margin="0,0,6,0"/>
+        <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE8A5;" Content="{Binding Localization[D_GeneralJournal]}" Command="{Binding OpenGeneralJournalCommand}" Visibility="{Binding CanViewGeneralJournal, Converter={StaticResource Visible}}" Margin="0,0,6,0"/>
+        <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE8A5;" Content="دفتر أستاذ المركز" Command="{Binding OpenCostCenterLedgerCommand}" Visibility="{Binding CanViewGeneralJournal, Converter={StaticResource Visible}}" Margin="0,0,6,0"/>
+        <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE8A5;" Content="ميزان مراجعة المركز" Command="{Binding OpenCostCenterTrialBalanceCommand}" Visibility="{Binding CanViewGeneralJournal, Converter={StaticResource Visible}}" Margin="0,0,6,0"/>
+       </WrapPanel>
+      </Border>
+
+      <TabControl>
+       <!-- Tab 1: General Details -->
+       <TabItem Header="{Binding Localization[D_CardGeneral]}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+         <StackPanel Margin="4">
+          <!-- Structured 2-Column Master Grid -->
+          <Grid Margin="0,0,0,8">
+           <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="*"/>
+           </Grid.ColumnDefinitions>
+           <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+           </Grid.RowDefinitions>
+
+           <!-- Row 0: Code & Parent -->
+           <StackPanel Style="{StaticResource Field}" Grid.Column="0">
+            <TextBlock Text="{Binding Localization[D_Code], StringFormat='{}{0} *'}" Style="{StaticResource Text.Label}"/>
+            <TextBox Text="{Binding Code, UpdateSourceTrigger=PropertyChanged}" MaxLength="64" IsEnabled="{Binding CanEditCode}" FlowDirection="LeftToRight" AutomationProperties.Name="{Binding Localization[D_Code]}"/>
+            <TextBlock Text="{Binding CodeError}" Style="{StaticResource Text.Error}" Visibility="{Binding CodeError, Converter={StaticResource Show}}"/>
+           </StackPanel>
+           <StackPanel Style="{StaticResource Field}" Grid.Column="2">
+            <TextBlock Text="المركز الرئيسي / الأب" Style="{StaticResource Text.Label}"/>
+            <ux:LookupPicker ItemsSource="{Binding ParentCostCenterLookups, Converter={StaticResource EntryLookups}}" SelectedId="{Binding ParentId}" IsEnabled="{Binding CanEditDetails}" Placeholder="{Binding Localization[D_EntryLookupHelp]}" IsArabic="{Binding Localization.IsRightToLeft}"/>
+           </StackPanel>
+
+           <!-- Row 1: Arabic Name & English Name -->
+           <StackPanel Style="{StaticResource Field}" Grid.Row="1" Grid.Column="0">
+            <TextBlock Text="{Binding Localization[D_ArabicName], StringFormat='{}{0} *'}" Style="{StaticResource Text.Label}"/>
+            <TextBox Text="{Binding NameArabic, UpdateSourceTrigger=PropertyChanged}" MaxLength="200" IsEnabled="{Binding CanEditDetails}" FlowDirection="RightToLeft" AutomationProperties.Name="{Binding Localization[D_ArabicName]}"/>
+            <TextBlock Text="{Binding NameError}" Style="{StaticResource Text.Error}" Visibility="{Binding NameError, Converter={StaticResource Show}}"/>
+           </StackPanel>
+           <StackPanel Style="{StaticResource Field}" Grid.Row="1" Grid.Column="2">
+            <TextBlock Text="{Binding Localization[D_EnglishName]}" Style="{StaticResource Text.Label}"/>
+            <TextBox Text="{Binding NameEnglish, UpdateSourceTrigger=PropertyChanged}" MaxLength="200" IsEnabled="{Binding CanEditDetails}" FlowDirection="LeftToRight" AutomationProperties.Name="{Binding Localization[D_EnglishName]}"/>
+           </StackPanel>
+
+           <!-- Row 2: Center Type & Responsible Person -->
+           <StackPanel Style="{StaticResource Field}" Grid.Row="2" Grid.Column="0">
+            <TextBlock Text="نوع مركز التكلفة" Style="{StaticResource Text.Label}"/>
+            <ComboBox ItemsSource="{Binding CenterTypeOptions}" SelectedValue="{Binding CenterType}" SelectedValuePath="Value" DisplayMemberPath="Label" IsEnabled="{Binding CanEditDetails}"/>
+           </StackPanel>
+           <StackPanel Style="{StaticResource Field}" Grid.Row="2" Grid.Column="2">
+            <TextBlock Text="المسؤول عن المركز" Style="{StaticResource Text.Label}"/>
+            <TextBox Text="{Binding ResponsiblePerson, UpdateSourceTrigger=PropertyChanged}" MaxLength="200" IsEnabled="{Binding CanEditDetails}"/>
+           </StackPanel>
+          </Grid>
+
+          <!-- Description / Notes -->
+          <StackPanel Style="{StaticResource Field}">
+           <TextBlock Text="{Binding Localization[D_Description]}" Style="{StaticResource Text.Label}"/>
+           <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" MaxLength="1000" AcceptsReturn="True" MinHeight="60" IsEnabled="{Binding CanEditDetails}"/>
+          </StackPanel>
+         </StackPanel>
+        </ScrollViewer>
+       </TabItem>
+
+       <!-- Tab 2: Allocations (For Distribution Centers) -->
+       <TabItem Header="نسب التوزيع" Visibility="{Binding IsDistributionType, Converter={StaticResource Visible}}">
+        <DockPanel Margin="4">
+         <Border DockPanel.Dock="Top" Style="{StaticResource Panel.Card}" Margin="0,0,0,8" Padding="8"
+                 Visibility="{Binding CanManage, Converter={StaticResource Visible}}">
+          <StackPanel>
+           <TextBlock Text="توزيع التكاليف تحليلياً على المراكز المستهدفة" Style="{StaticResource Text.Caption}" Margin="0,0,0,6"/>
+           <WrapPanel VerticalAlignment="Center">
+            <ux:LookupPicker ItemsSource="{Binding TargetCostCenterLookups, Converter={StaticResource EntryLookups}}" SelectedId="{Binding NewAllocationTargetId}" Width="200" Margin="0,0,8,0" Placeholder="اختر المركز المستهدف" IsArabic="{Binding Localization.IsRightToLeft}"/>
+            <TextBox Text="{Binding NewAllocationPercentage, UpdateSourceTrigger=PropertyChanged}" Width="70" Margin="0,0,8,0"/>
+            <TextBlock Text="%" VerticalAlignment="Center" Margin="0,0,12,0"/>
+            <Button Style="{StaticResource Button.Command}" Content="إضافة / تعديل" Command="{Binding AddAllocationCommand}"/>
+           </WrapPanel>
+           <TextBlock Text="{Binding AllocationError}" Style="{StaticResource Text.Error}" Visibility="{Binding AllocationError, Converter={StaticResource Show}}" Margin="0,4,0,0"/>
+          </StackPanel>
+         </Border>
+
+         <Border DockPanel.Dock="Bottom" Padding="8,4" Background="{DynamicResource SubtleBackground}" Margin="0,8,0,0">
+          <DockPanel>
+           <TextBlock Text="{Binding TotalAllocationPercentage, StringFormat='مجموع النسب: {0:F2} %'}" FontWeight="Bold" VerticalAlignment="Center"/>
+           <Button DockPanel.Dock="Right" Style="{StaticResource Button.Primary}" Content="{Binding Localization[D_Save]}" Command="{Binding SaveCommand}" Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+          </DockPanel>
+         </Border>
+
+         <DataGrid ItemsSource="{Binding Allocations}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" BorderThickness="0">
+          <DataGrid.Columns>
+           <DataGridTextColumn Header="رمز المركز" Binding="{Binding TargetCode}" Width="100"/>
+           <DataGridTextColumn Header="اسم المركز المستهدف" Binding="{Binding TargetNameArabic}" Width="*"/>
+           <DataGridTextColumn Header="النسبة %" Binding="{Binding Percentage, StringFormat='{}{0:F2} %'}" Width="100" ElementStyle="{StaticResource Text.Numeric}"/>
+           <DataGridTemplateColumn Width="70">
+            <DataGridTemplateColumn.CellTemplate>
+             <DataTemplate>
+              <Button Content="حذف" Style="{StaticResource Button.Subtle}"
+                      Command="{Binding DataContext.RemoveAllocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                      CommandParameter="{Binding}"
+                      Visibility="{Binding DataContext.CanManage, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Visible}}"/>
+             </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+           </DataGridTemplateColumn>
+          </DataGrid.Columns>
+         </DataGrid>
+        </DockPanel>
+       </TabItem>
+
+       <!-- Tab 3: Financial Reports & Ledger -->
+       <TabItem Header="التقارير المالية">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+         <StackPanel Margin="12">
+          <TextBlock Text="التقارير التحليلية الخاصة بمركز التكلفة" Style="{StaticResource Text.Subheading}" Margin="0,0,0,12"/>
+          <WrapPanel Margin="0,0,0,16">
+           <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE8A5;" Content="{Binding Localization[D_GeneralJournal]}" Command="{Binding OpenGeneralJournalCommand}" Margin="0,0,8,8"/>
+           <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE8A5;" Content="دفتر أستاذ المركز" Command="{Binding OpenCostCenterLedgerCommand}" Margin="0,0,8,8"/>
+           <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE8A5;" Content="ميزان مراجعة المركز" Command="{Binding OpenCostCenterTrialBalanceCommand}" Margin="0,0,8,8"/>
+          </WrapPanel>
+         </StackPanel>
+        </ScrollViewer>
+       </TabItem>
+
+       <!-- Tab 4: Audit Trail -->
+       <TabItem x:Name="CostCenterHistoryTab" Header="{Binding Localization[D_AuditTrail]}" Visibility="{Binding IsNew, Converter={StaticResource Show}, ConverterParameter=invert}">
+        <local:CostCenterHistoryView/>
+       </TabItem>
+      </TabControl>
+     </DockPanel>
+    </Grid>
+   </Border>
+  </ux:AdaptivePaneGrid>
+ </DockPanel>
+</UserControl>

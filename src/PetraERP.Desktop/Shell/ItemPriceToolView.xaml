@@ -1,0 +1,38 @@
+<UserControl x:Class="PetraERP.Desktop.Shell.ItemPriceToolView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ux="clr-namespace:PetraERP.Desktop.Controls">
+ <DockPanel>
+  <Border DockPanel.Dock="Bottom" Style="{StaticResource Panel.CommandBar}" Margin="0,8,0,0">
+   <WrapPanel>
+    <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE721;" Content="{Binding Localization[D_PriceTool_PreviewButton]}" Command="{Binding PreviewCommand}"/>
+    <Button Style="{StaticResource Button.Primary}" ux:Icon.Glyph="&#xE73E;" Content="{Binding Localization[D_PriceTool_ApplyButton]}" Command="{Binding ApplyCommand}"/>
+   </WrapPanel>
+  </Border>
+  <Border Style="{StaticResource Panel.Card}" Padding="14">
+   <StackPanel>
+    <TextBlock Text="{Binding Localization[D_PriceTool_Help]}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,0,0,10"/>
+    <StackPanel Style="{StaticResource Field}" Margin="0,0,0,8">
+     <TextBlock Text="{Binding Localization[D_Group]}" Style="{StaticResource Text.Label}"/>
+     <ux:LookupPicker ItemsSource="{Binding Groups}" SelectedId="{Binding GroupId}" IsArabic="{Binding Localization.IsRightToLeft}" Placeholder="{Binding Localization[D_PriceTool_AllGroups]}"
+                      AutomationProperties.Name="{Binding Localization[D_Group]}"/>
+    </StackPanel>
+    <StackPanel Style="{StaticResource Field}" Margin="0,0,0,8">
+     <TextBlock Text="{Binding Localization[D_PriceTool_PriceType]}" Style="{StaticResource Text.Label}"/>
+     <ComboBox ItemsSource="{Binding PriceTypes}" SelectedItem="{Binding PriceType}" FlowDirection="LeftToRight" AutomationProperties.Name="{Binding Localization[D_PriceTool_PriceType]}"/>
+    </StackPanel>
+    <WrapPanel>
+     <StackPanel Style="{StaticResource Field}" Width="140" Margin="0,0,8,8">
+      <TextBlock Text="{Binding Localization[D_PriceTool_Percent]}" Style="{StaticResource Text.Label}"/>
+      <TextBox Text="{Binding PercentText, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight" MaxLength="10" AutomationProperties.Name="{Binding Localization[D_PriceTool_Percent]}"/>
+     </StackPanel>
+     <StackPanel Style="{StaticResource Field}" Width="120" Margin="0,0,8,8">
+      <TextBlock Text="{Binding Localization[D_PriceTool_Rounding]}" Style="{StaticResource Text.Label}"/>
+      <TextBox Text="{Binding RoundingText, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight" MaxLength="1" AutomationProperties.Name="{Binding Localization[D_PriceTool_Rounding]}"/>
+     </StackPanel>
+    </WrapPanel>
+    <TextBlock Text="{Binding StatusText}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,6,0,0"/>
+   </StackPanel>
+  </Border>
+ </DockPanel>
+</UserControl>

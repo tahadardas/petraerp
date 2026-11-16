@@ -1,0 +1,36 @@
+<UserControl x:Class="PetraERP.Desktop.Accounting.ReconciliationView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ux="clr-namespace:PetraERP.Desktop.Controls">
+  <DockPanel>
+    <ux:PageHeader DockPanel.Dock="Top" Title="{Binding Localization[ACC_Reconciliation]}">
+      <ux:PageHeader.Commands>
+        <WrapPanel>
+          <Button Style="{StaticResource Button.Primary}" ux:Icon.Glyph="&#xE768;" Content="{Binding Localization[D_RunReport]}" Command="{Binding RunCommand}"/>
+          <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE896;" Content="JSON تصدير" Command="{Binding ExportJsonCommand}"/>
+          <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE896;" Content="CSV تصدير" Command="{Binding ExportCsvCommand}"/>
+        </WrapPanel>
+      </ux:PageHeader.Commands>
+    </ux:PageHeader>
+
+    <!-- Summary Header -->
+    <Border DockPanel.Dock="Top" Style="{StaticResource Panel.Summary}" Margin="0,0,0,8" Visibility="{Binding HasReport, Converter={StaticResource Visible}}">
+      <WrapPanel>
+        <TextBlock Text="{Binding SummaryText}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="10,4"/>
+        <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="16,4"/>
+      </WrapPanel>
+    </Border>
+
+    <Border Style="{StaticResource Panel.Flat}">
+      <DataGrid ItemsSource="{Binding Findings}" SelectedItem="{Binding SelectedFinding}" IsReadOnly="True" SelectionUnit="FullRow" CanUserSortColumns="False" BorderThickness="0">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="{Binding DataContext.Localization[D_Code], RelativeSource={RelativeSource AncestorType=UserControl}}" Binding="{Binding CheckCode}" Width="160"/>
+          <DataGridTextColumn Header="{Binding DataContext.Localization[D_Severity], RelativeSource={RelativeSource AncestorType=UserControl}}" Binding="{Binding Severity}" Width="90"/>
+          <DataGridTextColumn Header="{Binding DataContext.Localization[D_Difference], RelativeSource={RelativeSource AncestorType=UserControl}}" Binding="{Binding Difference}" Width="110" ElementStyle="{StaticResource Text.Numeric}"/>
+          <DataGridTextColumn Header="{Binding DataContext.Localization[D_Explanation], RelativeSource={RelativeSource AncestorType=UserControl}}" Binding="{Binding Explanation}" Width="*"/>
+          <DataGridTextColumn Header="{Binding DataContext.Localization[D_SuggestedAction], RelativeSource={RelativeSource AncestorType=UserControl}}" Binding="{Binding SuggestedAction}" Width="200"/>
+        </DataGrid.Columns>
+      </DataGrid>
+    </Border>
+  </DockPanel>
+</UserControl>

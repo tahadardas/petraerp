@@ -1,0 +1,26 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="[10.0.13]" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="[10.0.13]" />
+    <!-- Keep the patched version explicit to prevent vulnerable transitive resolution. -->
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="[10.0.13]" />
+    <PackageVersion Include="xunit.v3.mtp-v2" Version="[4.0.2]" />
+    <!-- Phase 4: API host, authentication, OpenAPI and in-process API tests (ASP.NET Core servicing train). -->
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="[10.0.13]" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="[10.0.13]" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="[10.0.13]" />
+    <!-- Phase 4: desktop MVVM primitives and composition (MIT-licensed, no proprietary UI suite). -->
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="[8.4.2]" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="[10.0.13]" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="[10.0.13]" />
+    <!-- Windows DPAPI wrapper, MIT; reviewed official NuGet 10.0.13 metadata. -->
+    <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="[10.0.13]" Condition="$([System.String]::Copy('$(MSBuildProjectName)').StartsWith('PetraERP.Desktop'))" />
+    <PackageVersion Include="FastReport.OpenSource" Version="[2026.2.8]" />
+    <PackageVersion Include="FastReport.OpenSource.Export.PdfSimple" Version="[2026.2.8]" />
+    <PackageVersion Include="ClosedXML" Version="[0.105.1]" />
+    <PackageVersion Include="System.Drawing.Common" Version="[10.0.13]" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="ClosedXML" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+    <ProjectReference Include="../PetraERP.Application/PetraERP.Application.csproj" />
+    <ProjectReference Include="../PetraERP.Modules.Abstractions/PetraERP.Modules.Abstractions.csproj" />
+    <ProjectReference Include="../PetraERP.Modules.Packaging/PetraERP.Modules.Packaging.csproj" />
+    <ProjectReference Include="../PetraERP.Modules.Host/PetraERP.Modules.Host.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="PetraERP.Infrastructure.Tests" />
+    <InternalsVisibleTo Include="PetraERP.Api.Tests" />
+  </ItemGroup>
+</Project>

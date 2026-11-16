@@ -1,0 +1,113 @@
+﻿<UserControl x:Class="PetraERP.Desktop.Parties.PartiesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ux="clr-namespace:PetraERP.Desktop.Controls">
+ <UserControl.InputBindings>
+  <KeyBinding Key="N" Modifiers="Control" Command="{Binding NewPartyCommand}"/>
+  <KeyBinding Key="F5" Command="{Binding RefreshCommand}"/>
+  <KeyBinding Key="Enter" Command="{Binding OpenCardCommand}"/>
+ </UserControl.InputBindings>
+ <DockPanel>
+  <ux:PageHeader DockPanel.Dock="Top" Title="{Binding Localization[D_Parties]}">
+   <ux:PageHeader.Commands>
+    <WrapPanel>
+     <Button x:Name="NewPartyButton" Style="{StaticResource Button.Primary}" ux:Icon.Glyph="&#xE710;" Content="{Binding Localization[D_NewParty]}" Command="{Binding NewPartyCommand}" ToolTip="Ctrl+N" Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+     <Button x:Name="RefreshButton" Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE72C;" Content="{Binding Localization[D_Refresh]}" Command="{Binding RefreshCommand}" ToolTip="F5"/>
+    </WrapPanel>
+   </ux:PageHeader.Commands>
+  </ux:PageHeader>
+
+  <TextBlock DockPanel.Dock="Top" Text="{Binding Localization[D_DirectoryEntryHelp]}" Style="{StaticResource Text.Caption}" Margin="4,0,4,8"/>
+  <Border DockPanel.Dock="Top" Style="{StaticResource Panel.Card}" Margin="0,0,0,8" Padding="8">
+   <WrapPanel VerticalAlignment="Center">
+    <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
+     <RadioButton Content="{Binding Localization[D_All]}" IsChecked="{Binding FilterRole, Converter={StaticResource Equal}, ConverterParameter=all, Mode=TwoWay}" Style="{StaticResource {x:Type ToggleButton}}" Padding="12,4" Margin="0,0,4,0"/>
+     <RadioButton Content="{Binding Localization[D_Customers]}" IsChecked="{Binding FilterRole, Converter={StaticResource Equal}, ConverterParameter=customer, Mode=TwoWay}" Style="{StaticResource {x:Type ToggleButton}}" Padding="12,4" Margin="0,0,4,0"/>
+     <RadioButton Content="{Binding Localization[D_Suppliers]}" IsChecked="{Binding FilterRole, Converter={StaticResource Equal}, ConverterParameter=supplier, Mode=TwoWay}" Style="{StaticResource {x:Type ToggleButton}}" Padding="12,4" Margin="0,0,4,0"/>
+     <RadioButton Content="{Binding Localization[D_BothParties]}" IsChecked="{Binding FilterRole, Converter={StaticResource Equal}, ConverterParameter=both, Mode=TwoWay}" Style="{StaticResource {x:Type ToggleButton}}" Padding="12,4"/>
+    </StackPanel>
+
+    <ux:PetraSearchBox Placeholder="{Binding Localization[D_Search]}" x:Name="SearchBox" Text="{Binding Search, UpdateSourceTrigger=PropertyChanged, Delay=150}" Width="240" Margin="0,0,12,0" ToolTip="Ctrl+F" AutomationProperties.Name="{Binding Localization[D_Search]}"/>
+
+    <CheckBox Content="{Binding Localization[D_ActiveOnly]}" IsChecked="{Binding ActiveOnly}" VerticalAlignment="Center" Margin="0,0,16,0"/>
+
+    <TextBlock Text="{Binding TotalCount, StringFormat='Σ {0}'}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center"/>
+   </WrapPanel>
+  </Border>
+
+  <Border Style="{StaticResource Panel.Flat}">
+   <DataGrid x:Name="PartiesGrid" ItemsSource="{Binding VisibleParties}" SelectedItem="{Binding SelectedParty}" IsReadOnly="True" SelectionUnit="FullRow" CanUserSortColumns="True" BorderThickness="0"
+             ux:GridRowContext.Enabled="True" MouseDoubleClick="RowOpened" AutomationProperties.Name="{Binding Localization[D_Parties]}">
+    <DataGrid.ContextMenu>
+     <ContextMenu x:Name="PartyMenu" DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}" FlowDirection="{Binding PlacementTarget.FlowDirection, RelativeSource={RelativeSource Self}}">
+      <MenuItem Header="{Binding Localization[D_ViewPartyCard]}" Command="{Binding OpenCardCommand}" InputGestureText="Enter"/>
+      <MenuItem Header="{Binding Localization[D_NewParty]}" Command="{Binding NewPartyCommand}" Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+      <Separator Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+      <MenuItem Header="{Binding Localization[D_ToggleActive]}" Command="{Binding ToggleActiveCommand}" Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+     </ContextMenu>
+    </DataGrid.ContextMenu>
+
+    <DataGrid.Columns>
+     <DataGridTextColumn Header="الرمز" Binding="{Binding Code}" Width="110" SortMemberPath="Code"/>
+
+     <DataGridTemplateColumn Header="الاسم" Width="*" MinWidth="120" SortMemberPath="NameArabic">
+      <DataGridTemplateColumn.CellTemplate>
+       <DataTemplate>
+        <TextBlock TextTrimming="CharacterEllipsis">
+         <TextBlock.Text>
+          <MultiBinding Converter="{StaticResource NameLabel}">
+           <Binding Path="NameArabic"/>
+           <Binding Path="NameEnglish"/>
+           <Binding Path="DataContext.Localization.IsRightToLeft" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+          </MultiBinding>
+         </TextBlock.Text>
+        </TextBlock>
+       </DataTemplate>
+      </DataGridTemplateColumn.CellTemplate>
+     </DataGridTemplateColumn>
+
+     <DataGridTextColumn Header="الصفة" Binding="{Binding RoleDisplay}" Width="100"/>
+     <DataGridTextColumn Binding="{Binding ReceivableBalance, Converter={StaticResource Number}}" Width="130" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[AR_ReceivableBase], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+     <DataGridTextColumn Binding="{Binding PayableBalance, Converter={StaticResource Number}}" Width="130" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[AR_PayableBase], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+     <DataGridCheckBoxColumn Binding="{Binding IsCreditBlocked}" IsReadOnly="True" Width="100"><DataGridCheckBoxColumn.Header><TextBlock Text="{Binding DataContext.Localization[AR_CreditSalesBlocked], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridCheckBoxColumn.Header></DataGridCheckBoxColumn>
+     <DataGridTextColumn Binding="{Binding CreditLimit, Converter={StaticResource Number}}" Width="130" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[AR_CreditLimitBase], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+     <DataGridTextColumn Header="الائتمان المتاح" Binding="{Binding AvailableCredit, Converter={StaticResource Number}}" Width="120" ElementStyle="{StaticResource Text.Numeric}"/>
+     <DataGridTextColumn Header="سياسة الائتمان" Binding="{Binding PolicyDisplay}" Width="120"/>
+
+     <DataGridTemplateColumn Header="الحالة" Width="80" SortMemberPath="IsActive">
+      <DataGridTemplateColumn.CellTemplate>
+       <DataTemplate>
+        <Border Padding="6,2" CornerRadius="{DynamicResource Radius.Small}" HorizontalAlignment="Center">
+         <Border.Style>
+          <Style TargetType="Border">
+           <Setter Property="Background" Value="{DynamicResource SubtleSuccessBackground}"/>
+           <Style.Triggers>
+            <DataTrigger Binding="{Binding IsActive}" Value="False">
+             <Setter Property="Background" Value="{DynamicResource SubtleMutedBackground}"/>
+            </DataTrigger>
+           </Style.Triggers>
+          </Style>
+         </Border.Style>
+         <TextBlock FontSize="11">
+          <TextBlock.Style>
+           <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
+            <Setter Property="Text" Value="نشط"/>
+            <Setter Property="Foreground" Value="{DynamicResource Success}"/>
+            <Style.Triggers>
+             <DataTrigger Binding="{Binding IsActive}" Value="False">
+              <Setter Property="Text" Value="معطل"/>
+              <Setter Property="Foreground" Value="{DynamicResource MutedText}"/>
+             </DataTrigger>
+            </Style.Triggers>
+           </Style>
+          </TextBlock.Style>
+         </TextBlock>
+        </Border>
+       </DataTemplate>
+      </DataGridTemplateColumn.CellTemplate>
+     </DataGridTemplateColumn>
+    </DataGrid.Columns>
+   </DataGrid>
+  </Border>
+ </DockPanel>
+</UserControl>

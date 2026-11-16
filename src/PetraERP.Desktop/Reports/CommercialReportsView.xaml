@@ -1,0 +1,282 @@
+<UserControl x:Class="PetraERP.Desktop.Reports.CommercialReportsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ux="clr-namespace:PetraERP.Desktop.Controls"
+            >
+ <UserControl.InputBindings>
+  <KeyBinding Key="F5" Command="{Binding RunCommand}"/>
+  <KeyBinding Key="Enter" Modifiers="Control" Command="{Binding OpenDocumentCommand}"/>
+ </UserControl.InputBindings>
+ <DockPanel>
+  <ux:PageHeader DockPanel.Dock="Top" Title="{Binding Localization[RPT_Title]}">
+   <ux:PageHeader.Commands>
+    <WrapPanel>
+     <Button Style="{StaticResource Button.Primary}" Content="{Binding Localization[RPT_Run]}" Command="{Binding RunCommand}"/>
+     <Button Style="{StaticResource Button.Command}" Content="{Binding Localization[RPT_OpenDocument]}" Command="{Binding OpenDocumentCommand}" Margin="8,0,0,0"/>
+    </WrapPanel>
+   </ux:PageHeader.Commands>
+  </ux:PageHeader>
+
+  <!-- Shared parameters; each report uses the ones it needs (Run is disabled until they are complete). -->
+  <Border DockPanel.Dock="Top" Style="{StaticResource Panel.Card}" Padding="10" Margin="0,0,0,8">
+   <WrapPanel>
+    <StackPanel Margin="0,0,12,4" Visibility="{Binding ShowDateRange, Converter={StaticResource Visible}}"><TextBlock Text="{Binding Localization[RPT_From]}" Style="{StaticResource Text.Label}"/><ux:PetraDatePicker SelectedDate="{Binding FromDate}" MinWidth="130"/></StackPanel>
+    <StackPanel Margin="0,0,12,4" Visibility="{Binding ShowDateRange, Converter={StaticResource Visible}}"><TextBlock Text="{Binding Localization[RPT_To]}" Style="{StaticResource Text.Label}"/><ux:PetraDatePicker SelectedDate="{Binding ToDate}" MinWidth="130"/></StackPanel>
+    <StackPanel Margin="0,0,12,4" Visibility="{Binding ShowAsOf, Converter={StaticResource Visible}}"><TextBlock Text="{Binding Localization[RPT_AsOf]}" Style="{StaticResource Text.Label}"/><ux:PetraDatePicker SelectedDate="{Binding AsOfDate}" MinWidth="130"/></StackPanel>
+    <StackPanel Margin="0,0,12,4" Visibility="{Binding ShowCurrency, Converter={StaticResource Visible}}"><TextBlock Text="{Binding Localization[D_Currency]}" Style="{StaticResource Text.Label}"/><TextBox Text="{Binding CurrencyCode, UpdateSourceTrigger=PropertyChanged}" MaxLength="3" Width="70"/></StackPanel>
+    <StackPanel Margin="0,0,12,4" Visibility="{Binding ShowPartyKind, Converter={StaticResource Visible}}"><TextBlock Text="{Binding Localization[RPT_PartyKind]}" Style="{StaticResource Text.Label}"/>
+     <ComboBox ItemsSource="{Binding PartyKinds}" DisplayMemberPath="Label" SelectedItem="{Binding PartyKind}" MinWidth="110"/></StackPanel>
+    <StackPanel Margin="0,0,12,4" Visibility="{Binding ShowParty, Converter={StaticResource Visible}}"><TextBlock Text="{Binding Localization[RPT_Party]}" Style="{StaticResource Text.Label}"/>
+     <ComboBox ItemsSource="{Binding Parties}" DisplayMemberPath="NameArabic" SelectedValuePath="Id" SelectedValue="{Binding PartyId}" MinWidth="180"/></StackPanel>
+    <StackPanel Margin="0,0,12,4" Visibility="{Binding ShowParty, Converter={StaticResource Visible}}"><TextBlock Text="{Binding Localization[D_Search]}" Style="{StaticResource Text.Label}"/>
+     <DockPanel><Button DockPanel.Dock="Right" Content="{Binding Localization[D_Search]}" Command="{Binding SearchPartiesCommand}"/>
+      <TextBox Text="{Binding PartySearch, UpdateSourceTrigger=PropertyChanged}" MaxLength="200" MinWidth="140">
+       <TextBox.InputBindings><KeyBinding Key="Enter" Command="{Binding SearchPartiesCommand}"/></TextBox.InputBindings>
+      </TextBox></DockPanel></StackPanel>
+    <StackPanel Margin="0,0,12,4" Visibility="{Binding ShowItem, Converter={StaticResource Visible}}"><TextBlock Text="{Binding Localization[D_ReturnItem]}" Style="{StaticResource Text.Label}"/>
+     <ComboBox ItemsSource="{Binding Items}" DisplayMemberPath="NameArabic" SelectedValuePath="Id" SelectedValue="{Binding ItemId}" MinWidth="180"/></StackPanel>
+    <StackPanel Margin="0,0,12,4" Visibility="{Binding ShowWarehouse, Converter={StaticResource Visible}}"><TextBlock Text="{Binding Localization[D_Warehouse]}" Style="{StaticResource Text.Label}"/>
+     <ComboBox ItemsSource="{Binding Warehouses}" DisplayMemberPath="NameArabic" SelectedValuePath="Id" SelectedValue="{Binding WarehouseId}" MinWidth="140"/></StackPanel>
+    <StackPanel Margin="0,0,12,4" Visibility="{Binding ShowCashAccount, Converter={StaticResource Visible}}"><TextBlock Text="{Binding Localization[RPT_CashAccount]}" Style="{StaticResource Text.Label}"/>
+     <ComboBox ItemsSource="{Binding CashAccounts}" DisplayMemberPath="NameArabic" SelectedValuePath="AccountId" SelectedValue="{Binding CashAccountId}" MinWidth="160"/></StackPanel>
+    <CheckBox Visibility="{Binding ShowConsolidated, Converter={StaticResource Visible}}" Content="{Binding Localization[RPT_Consolidated]}" IsChecked="{Binding Consolidated}" VerticalAlignment="Bottom" Margin="0,0,0,6"/>
+   </WrapPanel>
+  </Border>
+
+  <TabControl SelectedIndex="{Binding SelectedTab}">
+   <!-- 0 Income statement -->
+   <TabItem Header="{Binding Localization[RPT_IncomeStatement]}">
+    <DockPanel>
+     <WrapPanel DockPanel.Dock="Bottom" Margin="0,6">
+      <TextBlock Text="{Binding Localization[RPT_TotalRevenue]}" Margin="0,0,4,0"/><TextBlock Text="{Binding IncomeStatement.TotalRevenue}" FontWeight="SemiBold" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding Localization[RPT_TotalExpenses]}" Margin="0,0,4,0"/><TextBlock Text="{Binding IncomeStatement.TotalExpenses}" FontWeight="SemiBold" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding Localization[RPT_NetIncome]}" Margin="0,0,4,0"/><TextBlock Text="{Binding IncomeStatement.NetIncome}" FontWeight="Bold"/>
+     </WrapPanel>
+     <ux:PetraAccountingDataGrid ItemsSource="{Binding IncomeStatement.Lines}" SelectedItem="{Binding SelectedIncomeStatementLine}" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" SelectionUnit="FullRow">
+      <DataGrid.Columns>
+       <DataGridTextColumn Binding="{Binding Code}" Width="110"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_AccountCode], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding NameArabic}" Width="*"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_AccountName], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding Type}" Width="100"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_VoucherKind], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding Amount, Converter={StaticResource Number}}" Width="140" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Amount], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      </DataGrid.Columns>
+     </ux:PetraAccountingDataGrid>
+    </DockPanel>
+   </TabItem>
+
+   <!-- 1 Balance sheet -->
+   <TabItem Header="{Binding Localization[RPT_BalanceSheet]}">
+    <DockPanel>
+     <WrapPanel DockPanel.Dock="Bottom" Margin="0,6">
+      <TextBlock Text="{Binding Localization[RPT_TotalAssets]}" Margin="0,0,4,0"/><TextBlock Text="{Binding BalanceSheet.TotalAssets}" FontWeight="SemiBold" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding Localization[RPT_TotalLiabilities]}" Margin="0,0,4,0"/><TextBlock Text="{Binding BalanceSheet.TotalLiabilities}" FontWeight="SemiBold" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding Localization[RPT_TotalEquity]}" Margin="0,0,4,0"/><TextBlock Text="{Binding BalanceSheet.TotalEquity}" FontWeight="SemiBold" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding Localization[RPT_CurrentEarnings]}" Margin="0,0,4,0"/><TextBlock Text="{Binding BalanceSheet.CurrentEarnings}" FontWeight="SemiBold" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding Localization[RPT_Balanced]}" Margin="0,0,4,0"/><TextBlock Text="{Binding BalanceSheet.Balanced}" FontWeight="Bold"/>
+     </WrapPanel>
+     <ux:PetraAccountingDataGrid ItemsSource="{Binding BalanceSheet.Lines}" SelectedItem="{Binding SelectedBalanceSheetLine}" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" SelectionUnit="FullRow">
+      <DataGrid.Columns>
+       <DataGridTextColumn Binding="{Binding Code}" Width="110"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_AccountCode], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding NameArabic}" Width="*"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_AccountName], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding Type}" Width="100"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_VoucherKind], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding Amount, Converter={StaticResource Number}}" Width="140" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Amount], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      </DataGrid.Columns>
+     </ux:PetraAccountingDataGrid>
+    </DockPanel>
+   </TabItem>
+
+   <!-- 2 Party statement -->
+   <TabItem Header="{Binding Localization[RPT_PartyStatement]}" IsEnabled="{Binding CanParties}">
+    <DockPanel>
+     <WrapPanel DockPanel.Dock="Top" Margin="0,4,0,6">
+      <TextBlock Text="{Binding PartyStatement.PartyCode}" FontWeight="SemiBold" Margin="0,0,8,0"/>
+      <TextBlock Text="{Binding PartyStatement.PartyName}" FontWeight="SemiBold" Margin="0,0,12,0"/>
+      <TextBlock Text="{Binding Localization[D_Currency]}" Margin="0,0,4,0"/>
+      <TextBlock Text="{Binding PartyStatement.CurrencyCode}" FontWeight="Bold"/>
+      <Button Style="{StaticResource Button.Command}" Content="{Binding Localization[RPT_OpenLedgerStatement]}" Command="{Binding OpenLedgerStatementCommand}" Margin="12,0,0,0"/>
+      <TextBlock Text="{Binding Localization[RPT_DocumentsOnlyNote]}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" MaxWidth="620" VerticalAlignment="Center" Margin="12,0,0,0"/>
+     </WrapPanel>
+     <WrapPanel DockPanel.Dock="Bottom" Margin="0,6">
+      <TextBlock Text="{Binding Localization[RPT_Opening]}" Margin="0,0,4,0"/><TextBlock Text="{Binding PartyStatement.Opening}" FontWeight="SemiBold" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding Localization[RPT_TotalDebit]}" Margin="0,0,4,0"/><TextBlock Text="{Binding PartyStatement.TotalDebit}" FontWeight="SemiBold" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding Localization[RPT_TotalCredit]}" Margin="0,0,4,0"/><TextBlock Text="{Binding PartyStatement.TotalCredit}" FontWeight="SemiBold" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding Localization[RPT_Closing]}" Margin="0,0,4,0"/><TextBlock Text="{Binding PartyStatement.Closing}" FontWeight="Bold"/>
+     </WrapPanel>
+     <ux:PetraAccountingDataGrid ItemsSource="{Binding PartyStatement.Lines}" SelectedItem="{Binding SelectedStatementLine}" ux:GridRowContext.Enabled="True" AutoGenerateColumns="False" IsReadOnly="True">
+      <DataGrid.InputBindings><MouseBinding MouseAction="LeftDoubleClick" Command="{Binding OpenDocumentCommand}"/></DataGrid.InputBindings>
+      <DataGrid.ContextMenu><ContextMenu><MenuItem Header="{Binding Localization[RPT_OpenDocument]}" Command="{Binding OpenDocumentCommand}"/></ContextMenu></DataGrid.ContextMenu>
+      <DataGrid.Columns>
+       <DataGridTextColumn Binding="{Binding DateUtc, StringFormat=yyyy-MM-dd}" Width="100"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_DateTime], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding DocumentNumber}" Width="110"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_VoucherNumber], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding Description}" Width="*"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Description], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding Debit, Converter={StaticResource Number}}" Width="110" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_Debit], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding Credit, Converter={StaticResource Number}}" Width="110" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_Credit], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding Balance, Converter={StaticResource Number}}" Width="120" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_Balance], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      </DataGrid.Columns>
+     </ux:PetraAccountingDataGrid>
+    </DockPanel>
+   </TabItem>
+
+   <!-- 3 Aging -->
+   <TabItem Header="{Binding Localization[RPT_Aging]}" IsEnabled="{Binding CanParties}">
+    <DockPanel>
+     <ux:PetraAccountingDataGrid DockPanel.Dock="Bottom" ItemsSource="{Binding Aging.Documents}" SelectedItem="{Binding SelectedAgingDocument}" ux:GridRowContext.Enabled="True" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="200" Margin="0,6,0,0">
+      <DataGrid.InputBindings><MouseBinding MouseAction="LeftDoubleClick" Command="{Binding OpenDocumentCommand}"/></DataGrid.InputBindings>
+      <DataGrid.ContextMenu><ContextMenu><MenuItem Header="{Binding Localization[RPT_OpenDocument]}" Command="{Binding OpenDocumentCommand}"/></ContextMenu></DataGrid.ContextMenu>
+      <DataGrid.Columns>
+       <DataGridTextColumn Binding="{Binding InvoiceNumber}" Width="120"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_VoucherNumber], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding InvoiceDate}" Width="100"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_DateTime], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding DueDate}" Width="100"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_DueDate], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding DaysOverdue}" Width="90"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_DaysOverdue], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding Outstanding, Converter={StaticResource Number}}" Width="*" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Outstanding], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      </DataGrid.Columns>
+     </ux:PetraAccountingDataGrid>
+     <ux:PetraAccountingDataGrid ItemsSource="{Binding Aging.Rows}" AutoGenerateColumns="False" IsReadOnly="True">
+      <DataGrid.Columns>
+       <DataGridTextColumn Binding="{Binding PartyName}" Width="*"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_Party], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding NotDue, Converter={StaticResource Number}}" Width="95" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_NotDue], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding Days1To30, Converter={StaticResource Number}}" Width="95" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="1–30"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding Days31To60, Converter={StaticResource Number}}" Width="95" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="31–60"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding Days61To90, Converter={StaticResource Number}}" Width="95" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="61–90"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding Over90, Converter={StaticResource Number}}" Width="95" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="&gt;90"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding Advance, Converter={StaticResource Number}}" Width="95" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_Advance], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding Net, Converter={StaticResource Number}}" Width="110" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_Net], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      </DataGrid.Columns>
+     </ux:PetraAccountingDataGrid>
+    </DockPanel>
+   </TabItem>
+   <!-- 4 Sales analysis -->
+   <TabItem Header="{Binding Localization[RPT_SalesAnalysis]}" IsEnabled="{Binding CanSales}">
+    <DockPanel>
+     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,6">
+      <TextBlock Text="{Binding Localization[RPT_GroupBy]}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+      <ComboBox ItemsSource="{Binding SalesGroupings}" DisplayMemberPath="Label" SelectedItem="{Binding SalesGrouping}" MinWidth="140"/>
+     </StackPanel>
+     <WrapPanel DockPanel.Dock="Bottom" Margin="0,6">
+      <TextBlock Text="{Binding Localization[RPT_Net]}" Margin="0,0,4,0"/><TextBlock Text="{Binding SalesAnalysis.NetBase}" FontWeight="SemiBold" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding Localization[D_Tax]}" Margin="0,0,4,0"/><TextBlock Text="{Binding SalesAnalysis.TaxBase}" FontWeight="SemiBold" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding Localization[D_Amount]}" Margin="0,0,4,0"/><TextBlock Text="{Binding SalesAnalysis.TotalBase}" FontWeight="SemiBold" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding Localization[RPT_GlRevenue]}" Margin="0,0,4,0"/><TextBlock Text="{Binding SalesAnalysis.GlRevenueBase}" FontWeight="SemiBold" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding Localization[RPT_Difference]}" Margin="0,0,4,0"/><TextBlock Text="{Binding SalesAnalysis.RevenueDifference}" FontWeight="Bold"/>
+     </WrapPanel>
+     <ux:PetraAccountingDataGrid ItemsSource="{Binding SalesAnalysis.Rows}" AutoGenerateColumns="False" IsReadOnly="True">
+      <DataGrid.Columns>
+       <DataGridTextColumn Binding="{Binding KeyCode}" Width="110"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_AccountCode], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding KeyName}" Width="*"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Description], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding Quantity, Converter={StaticResource Number}, ConverterParameter=quantity}" Width="90" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_LinkQuantity], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding UnitCode}" Width="60"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Unit], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding DocumentCount}" Width="70"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_Documents], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding NetBase, Converter={StaticResource Number}}" Width="110" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_Net], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding AdditionsBase, Converter={StaticResource Number}}" Width="100" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_Additions], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding TaxBase, Converter={StaticResource Number}}" Width="100" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Tax], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding TotalBase, Converter={StaticResource Number}}" Width="110" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Amount], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      </DataGrid.Columns>
+     </ux:PetraAccountingDataGrid>
+    </DockPanel>
+   </TabItem>
+
+   <!-- 5 Purchase analysis -->
+   <TabItem Header="{Binding Localization[RPT_PurchaseAnalysis]}" IsEnabled="{Binding CanPurchases}">
+    <DockPanel>
+     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,6">
+      <TextBlock Text="{Binding Localization[RPT_GroupBy]}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+      <ComboBox ItemsSource="{Binding PurchaseGroupings}" DisplayMemberPath="Label" SelectedItem="{Binding PurchaseGrouping}" MinWidth="140"/>
+     </StackPanel>
+     <WrapPanel DockPanel.Dock="Bottom" Margin="0,6">
+      <TextBlock Text="{Binding Localization[RPT_Net]}" Margin="0,0,4,0"/><TextBlock Text="{Binding PurchaseAnalysis.NetBase}" FontWeight="SemiBold" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding Localization[D_Tax]}" Margin="0,0,4,0"/><TextBlock Text="{Binding PurchaseAnalysis.TaxBase}" FontWeight="SemiBold" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding Localization[D_Amount]}" Margin="0,0,4,0"/><TextBlock Text="{Binding PurchaseAnalysis.TotalBase}" FontWeight="SemiBold" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding Localization[RPT_StockCost]}" Margin="0,0,4,0"/><TextBlock Text="{Binding PurchaseAnalysis.StockCostBase}" FontWeight="Bold"/>
+     </WrapPanel>
+     <ux:PetraAccountingDataGrid ItemsSource="{Binding PurchaseAnalysis.Rows}" AutoGenerateColumns="False" IsReadOnly="True">
+      <DataGrid.Columns>
+       <DataGridTextColumn Binding="{Binding KeyCode}" Width="110"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_AccountCode], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding KeyName}" Width="*"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Description], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding BaseQuantity, Converter={StaticResource Number}, ConverterParameter=quantity}" Width="100" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_BaseQuantity], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding BaseUnitCode}" Width="60"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Unit], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding DocumentCount}" Width="70"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_Documents], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding NetBase, Converter={StaticResource Number}}" Width="110" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_Net], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding TaxBase, Converter={StaticResource Number}}" Width="100" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Tax], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding TotalBase, Converter={StaticResource Number}}" Width="110" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Amount], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding StockCostBase, Converter={StaticResource Number}}" Width="110" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_StockCost], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      </DataGrid.Columns>
+     </ux:PetraAccountingDataGrid>
+    </DockPanel>
+   </TabItem>
+   <!-- 6 Inventory valuation -->
+   <TabItem Header="{Binding Localization[RPT_InventoryValuation]}" IsEnabled="{Binding CanInventory}">
+    <DockPanel>
+     <WrapPanel DockPanel.Dock="Bottom" Margin="0,6">
+      <TextBlock Text="{Binding Localization[RPT_TotalValue]}" Margin="0,0,4,0"/><TextBlock Text="{Binding InventoryValuation.TotalValue}" FontWeight="SemiBold" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding Localization[RPT_GlInventory]}" Margin="0,0,4,0"/><TextBlock Text="{Binding InventoryValuation.GlInventoryBalance}" FontWeight="SemiBold" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding Localization[RPT_Difference]}" Margin="0,0,4,0"/><TextBlock Text="{Binding InventoryValuation.Difference}" FontWeight="Bold"/>
+     </WrapPanel>
+     <ux:PetraAccountingDataGrid ItemsSource="{Binding InventoryValuation.Rows}" AutoGenerateColumns="False" IsReadOnly="True">
+      <DataGrid.Columns>
+       <DataGridTextColumn Binding="{Binding WarehouseCode}" Width="100"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Warehouse], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding ItemCode}" Width="110"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_AccountCode], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding ItemName}" Width="*"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_ReturnItem], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding Quantity}" Width="110"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_BaseQuantity], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding BaseUnitCode}" Width="60"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Unit], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding AverageCost, Converter={StaticResource Number}}" Width="100" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_AverageCost], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding Value, Converter={StaticResource Number}}" Width="120" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_Value], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      </DataGrid.Columns>
+     </ux:PetraAccountingDataGrid>
+    </DockPanel>
+   </TabItem>
+
+   <!-- 7 Inventory movements -->
+   <TabItem Header="{Binding Localization[RPT_InventoryMovements]}" IsEnabled="{Binding CanMovements}">
+    <DockPanel>
+     <WrapPanel DockPanel.Dock="Bottom" Margin="0,6">
+      <TextBlock Text="{Binding Localization[RPT_Opening]}" Margin="0,0,4,0"/><TextBlock Text="{Binding InventoryMovements.OpeningQuantity}" FontWeight="SemiBold" Margin="0,0,4,0"/>
+      <TextBlock Text="/" Margin="0,0,4,0"/><TextBlock Text="{Binding InventoryMovements.OpeningValue}" FontWeight="SemiBold" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding Localization[RPT_In]}" Margin="0,0,4,0"/><TextBlock Text="{Binding InventoryMovements.InQuantity}" FontWeight="SemiBold" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding Localization[RPT_Out]}" Margin="0,0,4,0"/><TextBlock Text="{Binding InventoryMovements.OutQuantity}" FontWeight="SemiBold" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding Localization[RPT_Closing]}" Margin="0,0,4,0"/><TextBlock Text="{Binding InventoryMovements.ClosingQuantity}" FontWeight="Bold" Margin="0,0,4,0"/>
+      <TextBlock Text="/" Margin="0,0,4,0"/><TextBlock Text="{Binding InventoryMovements.ClosingValue}" FontWeight="Bold"/>
+     </WrapPanel>
+     <ux:PetraAccountingDataGrid ItemsSource="{Binding InventoryMovements.Lines}" SelectedItem="{Binding SelectedMovementLine}" ux:GridRowContext.Enabled="True" AutoGenerateColumns="False" IsReadOnly="True">
+      <DataGrid.InputBindings><MouseBinding MouseAction="LeftDoubleClick" Command="{Binding OpenDocumentCommand}"/></DataGrid.InputBindings>
+      <DataGrid.ContextMenu><ContextMenu><MenuItem Header="{Binding Localization[RPT_OpenDocument]}" Command="{Binding OpenDocumentCommand}"/></ContextMenu></DataGrid.ContextMenu>
+      <DataGrid.Columns>
+       <DataGridTextColumn Binding="{Binding DateUtc, StringFormat=yyyy-MM-dd}" Width="100"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_DateTime], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding Kind}" Width="120"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_VoucherKind], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding DocumentNumber}" Width="110"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_VoucherNumber], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding WarehouseCode}" Width="90"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Warehouse], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding Quantity, Converter={StaticResource Number}, ConverterParameter=quantity}" Width="100" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_BaseQuantity], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding Value, Converter={StaticResource Number}}" Width="110" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_Value], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding BalanceQuantity, Converter={StaticResource Number}, ConverterParameter=quantity}" Width="110" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_Balance], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding BalanceValue, Converter={StaticResource Number}}" Width="*" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_Value], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      </DataGrid.Columns>
+     </ux:PetraAccountingDataGrid>
+    </DockPanel>
+   </TabItem>
+
+   <!-- 8 Cash and bank statement -->
+   <TabItem Header="{Binding Localization[RPT_CashStatement]}">
+    <DockPanel>
+     <WrapPanel DockPanel.Dock="Bottom" Margin="0,6">
+      <TextBlock Text="{Binding Localization[RPT_Opening]}" Margin="0,0,4,0"/><TextBlock Text="{Binding CashStatement.OpeningBase}" FontWeight="SemiBold" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding Localization[RPT_TotalDebit]}" Margin="0,0,4,0"/><TextBlock Text="{Binding CashStatement.TotalDebit}" FontWeight="SemiBold" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding Localization[RPT_TotalCredit]}" Margin="0,0,4,0"/><TextBlock Text="{Binding CashStatement.TotalCredit}" FontWeight="SemiBold" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding Localization[RPT_Closing]}" Margin="0,0,4,0"/><TextBlock Text="{Binding CashStatement.ClosingBase}" FontWeight="Bold"/>
+     </WrapPanel>
+     <ux:PetraAccountingDataGrid ItemsSource="{Binding CashStatement.Lines}" SelectedItem="{Binding SelectedCashLine}" ux:GridRowContext.Enabled="True" AutoGenerateColumns="False" IsReadOnly="True">
+      <DataGrid.InputBindings><MouseBinding MouseAction="LeftDoubleClick" Command="{Binding OpenDocumentCommand}"/></DataGrid.InputBindings>
+      <DataGrid.ContextMenu><ContextMenu><MenuItem Header="{Binding Localization[RPT_OpenDocument]}" Command="{Binding OpenDocumentCommand}"/></ContextMenu></DataGrid.ContextMenu>
+      <DataGrid.Columns>
+       <DataGridTextColumn Binding="{Binding Date}" Width="100"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_DateTime], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding SourceNumber}" Width="110"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_VoucherNumber], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding SourceType}" Width="120"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_Source], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding Description}" Width="*"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Description], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding TransactionCurrency}" Width="60"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Currency], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding BaseDebit, Converter={StaticResource Number}}" Width="110" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_Debit], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding BaseCredit, Converter={StaticResource Number}}" Width="110" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_Credit], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+       <DataGridTextColumn Binding="{Binding BaseBalance, Converter={StaticResource Number}}" Width="120" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[RPT_Balance], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      </DataGrid.Columns>
+     </ux:PetraAccountingDataGrid>
+    </DockPanel>
+   </TabItem>
+  </TabControl>
+ </DockPanel>
+</UserControl>

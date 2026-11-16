@@ -1,0 +1,17 @@
+{
+    "version":  "2026-10-22",
+    "sources":  [
+                    "user screenshots",
+                    "PetraERP_OpenSource_Reporting_Starter_Patch.zip"
+                ],
+    "NugetPackages":  {
+                          "FastReport.OpenSource":  "2026.2.8",
+                          "FastReport.OpenSource.Export.PdfSimple":  "2026.2.8",
+                          "ClosedXML":  "0.105.1",
+                          "System.Drawing.Common":  "10.0.13"
+                      },
+    "NugetPackageBinariesIncluded":  false,
+    "SDKExecutableAvailableAtPackaging":  false,
+    "NugetNetworkAvailableAtPackaging":  false,
+    "Note":  "Package is a staged install/implementation kit; users Windows host downloads packages and builds; API+WPF not yet wired"
+}

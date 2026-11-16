@@ -1,0 +1,50 @@
+﻿<UserControl x:Class="PetraERP.Desktop.GeneralLedger.JournalWorkspacePanel" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ux="clr-namespace:PetraERP.Desktop.Controls" xmlns:ledger="clr-namespace:PetraERP.Desktop.GeneralLedger">
+ <!-- Journal header, state-driven command bar, audit trail and editor. Shared by the journal list page and journal documents. -->
+ <Grid>
+  <ux:EmptyState Glyph="&#xE70B;" Title="{Binding Localization[D_SelectJournal]}" Message="{Binding Localization[D_SelectJournalHelp]}" Visibility="{Binding IsEditorOpen, Converter={StaticResource Show}, ConverterParameter=invert}"/>
+  <DockPanel Visibility="{Binding IsEditorOpen, Converter={StaticResource Visible}}">
+   <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+    <Button DockPanel.Dock="Right" Style="{StaticResource Button.Icon}" Content="&#xE711;" Command="{Binding CloseEditorCommand}" ToolTip="{Binding Localization[D_Close]}" AutomationProperties.Name="{Binding Localization[D_Close]}"/>
+    <StackPanel Orientation="Horizontal">
+     <TextBlock Text="{Binding Localization[D_JournalEntry]}" Style="{StaticResource Text.Section}" Margin="0,0,10,0"/>
+     <ux:StatusBadge Text="{Binding CurrentStateLabel}" Kind="{Binding CurrentStateKind}"/>
+    </StackPanel>
+   </DockPanel>
+   <!-- Command bar: each command appears only when valid for state, permission and context; enabled when not busy and preconditions hold. -->
+   <Border DockPanel.Dock="Bottom" Style="{StaticResource Panel.CommandBar}" Margin="0,8,0,0">
+    <DockPanel LastChildFill="False">
+     <WrapPanel DockPanel.Dock="Left">
+      <Button Style="{StaticResource Button.Primary}" ux:Icon.Glyph="&#xE74E;" Content="{Binding Localization[D_SaveDraft]}" Command="{Binding SaveDraftCommand}" ToolTip="Ctrl+S" Visibility="{Binding CanEditDraft, Converter={StaticResource Visible}}"/>
+      <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE710;" Content="{Binding Localization[D_NewJournal]}" Command="{Binding NewDraftCommand}" ToolTip="Ctrl+N" Visibility="{Binding CanManageJournals, Converter={StaticResource Visible}}" Margin="4,0,0,0"/>
+      <Button Style="{StaticResource Button.Financial}" ux:Icon.Glyph="&#xE8C8;" Content="{Binding Localization[D_PostJournal]}" Command="{Binding PostJournalCommand}" Visibility="{Binding CanPostJournal, Converter={StaticResource Visible}}" Margin="4,0,0,0"/>
+      <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE8FB;" Content="{Binding Localization[D_ApproveDraft]}" Command="{Binding ApproveDraftCommand}" Visibility="{Binding CanApproveDraft, Converter={StaticResource Visible}}" Margin="4,0,0,0"/>
+      <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE7A7;" Content="{Binding Localization[D_ReturnToDraft]}" Command="{Binding ReturnToDraftCommand}" Visibility="{Binding CanReturnToDraft, Converter={StaticResource Visible}}" Margin="4,0,0,0"/>
+      <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE73E;" Content="{Binding Localization[D_ValidateDraft]}" Command="{Binding ValidateDraftCommand}" Visibility="{Binding CanValidateDraft, Converter={StaticResource Visible}}" Margin="4,0,0,0"/>
+      <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE7A7;" Content="{Binding Localization[D_CreateReversal]}" Command="{Binding CreateReversalCommand}" Visibility="{Binding CanCreateReversal, Converter={StaticResource Visible}}" Margin="4,0,0,0"/>
+      <Button Style="{StaticResource Button.Financial}" ux:Icon.Glyph="&#xE8C8;" Content="{Binding Localization[D_PostReversal]}" Command="{Binding PostReversalCommand}" Visibility="{Binding CanPostReversal, Converter={StaticResource Visible}}" Margin="4,0,0,0"/>
+      <Button Style="{StaticResource Button.Danger}" ux:Icon.Glyph="&#xE74D;" Content="{Binding Localization[D_DeleteDraft]}" Command="{Binding DeleteDraftCommand}" Visibility="{Binding CanDeleteDraft, Converter={StaticResource Visible}}" Margin="4,0,0,0"/>
+      <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE711;" Content="{Binding Localization[D_Close]}" Command="{Binding CloseEditorCommand}" Margin="8,0,0,0"/>
+     </WrapPanel>
+     <WrapPanel DockPanel.Dock="Right">
+      <ToggleButton x:Name="AuditToggle" Style="{StaticResource {x:Type ToggleButton}}" Margin="2" Padding="8,3" Content="{Binding Localization[D_AuditTrail]}" AutomationProperties.Name="{Binding Localization[D_AuditTrail]}"/>
+     </WrapPanel>
+    </DockPanel>
+   </Border>
+   <TextBlock DockPanel.Dock="Bottom" Text="{Binding Localization[D_ReasonNeededHelp]}" Style="{StaticResource Text.Caption}" Margin="2,0,0,6" Visibility="{Binding HasReasonCommands, Converter={StaticResource Visible}}"/>
+   <Border DockPanel.Dock="Bottom" Style="{StaticResource Panel.Flat}" Margin="0,8,0,0" MaxHeight="190" Visibility="{Binding IsChecked, ElementName=AuditToggle, Converter={StaticResource Visible}}">
+    <DataGrid ItemsSource="{Binding AuditTrail}" RowDetailsVisibilityMode="VisibleWhenSelected" IsReadOnly="True" CanUserSortColumns="False" SelectionUnit="FullRow" BorderThickness="0" AutomationProperties.Name="{Binding Localization[D_AuditTrail]}">
+     <DataGrid.RowDetailsTemplate><DataTemplate><Expander Header="{Binding DataContext.Localization[D_TechnicalDetails], RelativeSource={RelativeSource AncestorType=UserControl}}"><StackPanel><TextBlock Text="{Binding EventId}"/><TextBlock Text="{Binding ActorUserId}"/><TextBlock Text="{Binding RelatedEntryId}"/></StackPanel></Expander></DataTemplate></DataGrid.RowDetailsTemplate>
+     <DataGrid.Columns>
+      <DataGridTemplateColumn Width="140"><DataGridTemplateColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_UserName], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTemplateColumn.Header><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock><TextBlock.Text><MultiBinding Converter="{StaticResource NameLabel}"><Binding Path="ActorNameArabic"/><Binding Path="ActorNameEnglish"/><Binding Path="DataContext.Localization.IsRightToLeft" RelativeSource="{RelativeSource AncestorType=UserControl}"/></MultiBinding></TextBlock.Text></TextBlock></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+      <DataGridTemplateColumn Width="170"><DataGridTemplateColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_StateTransition], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTemplateColumn.Header><DataGridTemplateColumn.CellTemplate><DataTemplate><StackPanel Orientation="Horizontal"><TextBlock><TextBlock.Text><MultiBinding Converter="{StaticResource EnumLabel}" ConverterParameter="D_State_"><Binding Path="PreviousState"/><Binding Path="DataContext.Localization.Language" RelativeSource="{RelativeSource AncestorType=UserControl}"/></MultiBinding></TextBlock.Text></TextBlock><TextBlock Text=" → "/><TextBlock><TextBlock.Text><MultiBinding Converter="{StaticResource EnumLabel}" ConverterParameter="D_State_"><Binding Path="NewState"/><Binding Path="DataContext.Localization.Language" RelativeSource="{RelativeSource AncestorType=UserControl}"/></MultiBinding></TextBlock.Text></TextBlock></StackPanel></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+      <DataGridTextColumn Binding="{Binding OccurredAtUtc, Converter={StaticResource DateText}, ConverterParameter=time}" Width="130"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_DateTime], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      <DataGridTemplateColumn Width="130"><DataGridTemplateColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Action], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTemplateColumn.Header>
+       <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock><TextBlock.Text><MultiBinding Converter="{StaticResource EnumLabel}" ConverterParameter="D_JournalAction_"><Binding Path="ActionName"/><Binding Path="DataContext.Localization.Language" RelativeSource="{RelativeSource AncestorType=UserControl}"/></MultiBinding></TextBlock.Text></TextBlock></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+      <DataGridTextColumn Binding="{Binding Reason}" Width="*"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Reason], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+     </DataGrid.Columns>
+    </DataGrid>
+   </Border>
+   <ledger:JournalEditor/>
+  </DockPanel>
+ </Grid>
+</UserControl>

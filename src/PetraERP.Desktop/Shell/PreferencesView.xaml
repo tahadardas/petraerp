@@ -1,0 +1,140 @@
+<UserControl x:Class="PetraERP.Desktop.Shell.PreferencesView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ux="clr-namespace:PetraERP.Desktop.Controls">
+ <!-- Presentation preferences only. Every choice applies immediately; nothing here changes accounting data. -->
+ <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+  <StackPanel MaxWidth="880" HorizontalAlignment="Left">
+   <ux:PageHeader Title="{Binding Localization[UI_Preferences]}" Subtitle="{Binding Localization[UI_PreferencesHelp]}"/>
+   <WrapPanel>
+    <Border Style="{StaticResource Panel.Card}" Margin="0,0,12,12" Width="420">
+     <StackPanel>
+      <TextBlock Text="{Binding Localization[UI_Appearance]}" Style="{StaticResource Text.Section}" AutomationProperties.HeadingLevel="Level2"/>
+      <StackPanel Style="{StaticResource Field}"><TextBlock Text="{Binding Localization[UI_Theme]}" Style="{StaticResource Text.Label}"/>
+       <ComboBox ItemsSource="{Binding Themes}" SelectedItem="{Binding Theme}" DisplayMemberPath="Label" AutomationProperties.Name="{Binding Localization[UI_Theme]}"/></StackPanel>
+      <StackPanel Style="{StaticResource Field}"><TextBlock Text="{Binding Localization[UI_Skin]}" Style="{StaticResource Text.Label}"/>
+       <ComboBox ItemsSource="{Binding Skins}" SelectedItem="{Binding Skin}" DisplayMemberPath="Label" AutomationProperties.Name="{Binding Localization[UI_Skin]}"/>
+       <TextBlock Text="{Binding Localization[UI_SkinHelp]}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0"/></StackPanel>
+      <StackPanel Style="{StaticResource Field}"><TextBlock Text="{Binding Localization[UX_Language]}" Style="{StaticResource Text.Label}"/>
+       <ComboBox ItemsSource="{Binding Languages}" SelectedItem="{Binding Language}" DisplayMemberPath="Label" AutomationProperties.Name="{Binding Localization[UX_Language]}"/></StackPanel>
+      <StackPanel Style="{StaticResource Field}"><TextBlock Text="{Binding Localization[UI_Density]}" Style="{StaticResource Text.Label}"/>
+       <ComboBox ItemsSource="{Binding Densities}" SelectedItem="{Binding Density}" DisplayMemberPath="Label" AutomationProperties.Name="{Binding Localization[UI_Density]}"/>
+       <TextBlock Text="{Binding Localization[UI_DensityHelp]}" Style="{StaticResource Text.Caption}" Margin="0,4,0,0"/></StackPanel>
+      <StackPanel Style="{StaticResource Field}"><TextBlock Text="{Binding Localization[UI_WindowMode]}" Style="{StaticResource Text.Label}"/>
+       <ComboBox ItemsSource="{Binding WindowModes}" SelectedItem="{Binding WindowMode}" DisplayMemberPath="Label" AutomationProperties.Name="{Binding Localization[UI_WindowMode]}"/>
+       <TextBlock Text="{Binding Localization[UI_WindowModeHelp]}" Style="{StaticResource Text.Caption}" Margin="0,4,0,0"/></StackPanel>
+      <StackPanel Style="{StaticResource Field}"><TextBlock Text="{Binding Localization[UI_NumberDisplay]}" Style="{StaticResource Text.Label}"/>
+       <ComboBox ItemsSource="{Binding NumberModes}" SelectedItem="{Binding NumberMode}" DisplayMemberPath="Label" AutomationProperties.Name="{Binding Localization[UI_NumberDisplay]}"/>
+       <TextBlock Text="الفاصل العشري — Decimal separator"/><ComboBox ItemsSource="{Binding DecimalModes}" SelectedItem="{Binding DecimalMode}" DisplayMemberPath="Label"/>
+       <Border Style="{StaticResource Panel.Summary}" Margin="0,6,0,0"><TextBlock Text="{Binding NumberSample}" Style="{StaticResource Text.Numeric}" HorizontalAlignment="Left" AutomationProperties.Name="{Binding NumberSample}"/></Border>
+       <TextBlock Text="{Binding Localization[UI_NumberDisplayHelp]}" Style="{StaticResource Text.Caption}" Margin="0,4,0,0"/></StackPanel>
+     </StackPanel>
+    </Border>
+    <Border Style="{StaticResource Panel.Card}" Margin="0,0,12,12" Width="420">
+     <StackPanel>
+      <TextBlock Text="{Binding Localization[UI_Layouts]}" Style="{StaticResource Text.Section}" AutomationProperties.HeadingLevel="Level2"/>
+      <TextBlock Text="{Binding Localization[UI_LayoutsHelp]}" Style="{StaticResource Text.Caption}" Margin="0,0,0,8"/>
+      <WrapPanel>
+       <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE72C;" Content="{Binding Localization[UI_ResetLayouts]}" Command="{Binding ResetLayoutsCommand}"/>
+       <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE777;" Content="{Binding Localization[UI_ResetAppearance]}" Command="{Binding ResetAppearanceCommand}"/>
+      </WrapPanel>
+      <TextBlock Text="{Binding Localization[UI_SavedFilters]}" Style="{StaticResource Text.Section}" Margin="0,16,0,4" AutomationProperties.HeadingLevel="Level2"/>
+      <TextBlock Text="{Binding Localization[UI_SavedFiltersHelp]}" Style="{StaticResource Text.Caption}" Margin="0,0,0,6"/>
+      <TextBlock Text="{Binding Localization[UI_NoSavedFilters]}" Style="{StaticResource Text.Caption}" Visibility="{Binding HasFilters, Converter={StaticResource Show}, ConverterParameter=invert}"/>
+      <ItemsControl ItemsSource="{Binding Filters}" Focusable="False">
+       <ItemsControl.ItemTemplate><DataTemplate><DockPanel Margin="0,2">
+        <Button DockPanel.Dock="Right" Style="{StaticResource Button.Icon}" Content="&#xE74D;" FontSize="12"
+                Command="{Binding DataContext.DeleteFilterCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                ToolTip="{Binding DataContext.Localization[UI_DeleteFilter], RelativeSource={RelativeSource AncestorType=UserControl}}"
+                AutomationProperties.Name="{Binding DataContext.Localization[UI_DeleteFilter], RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}"/>
+       </DockPanel></DataTemplate></ItemsControl.ItemTemplate>
+      </ItemsControl>
+     </StackPanel>
+    </Border>
+    <Border Style="{StaticResource Panel.Card}" Margin="0,0,12,12" Width="852" Visibility="{Binding HasCompanyContext, Converter={StaticResource Visible}}">
+     <StackPanel>
+      <TextBlock Text="خيارات وسياسات الشركة المالية — Company Financial Policies" Style="{StaticResource Text.Section}" AutomationProperties.HeadingLevel="Level2"/>
+      <TextBlock Text="{Binding PolicyPrecedence}" Style="{StaticResource Text.Caption}" Margin="0,2,0,10"/>
+      <WrapPanel Margin="0,0,0,8">
+       <StackPanel Style="{StaticResource Field}" Width="400" Margin="0,0,16,8">
+        <TextBlock Text="سياسة إخراج المخزون السالب — Negative Inventory Issue Policy" Style="{StaticResource Text.Label}"/>
+        <ComboBox ItemsSource="{Binding NegativeIssuePolicyOptions}" SelectedValue="{Binding PolicyNegativeIssuePolicy}" SelectedValuePath="Value" DisplayMemberPath="Label" IsEnabled="{Binding CanManageCompanyPolicy}"/>
+        <TextBlock Text="الحظر هو الافتراضي. يسمح الاستثناء المفوّض بترحيل فاتورة تتجاوز رصيد المستودع فقط لمن يملك صلاحية اعتماد الإخراج بالسالب، مع سبب موثق؛ ويُقيَّم النقص بآخر تكلفة استلام مسجلة." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+       </StackPanel>
+       <StackPanel Style="{StaticResource Field}" Width="400" Margin="0,0,0,8">
+        <TextBlock Text="نطاق الترقيم الافتراضي — Default Numbering Scope" Style="{StaticResource Text.Label}"/>
+        <ComboBox ItemsSource="{Binding NumberingScopeOptions}" SelectedValue="{Binding PolicyDefaultNumberingScope}" SelectedValuePath="Value" DisplayMemberPath="Label" IsEnabled="{Binding CanManageCompanyPolicy}"/>
+        <TextBlock Text="بداية التسلسل — Initial sequence" Style="{StaticResource Text.Label}" Margin="0,6,0,0"/>
+        <TextBox Text="{Binding PolicyInitialNumberSequence}" MaxLength="12" IsReadOnly="{Binding CanManageCompanyPolicy, Converter={StaticResource Show}, ConverterParameter=invert}"/>
+       </StackPanel>
+      </WrapPanel>
+      <Border Style="{StaticResource Panel.Summary}" Margin="0,0,0,10" Padding="12">
+       <StackPanel>
+        <TextBlock Text="سياسة الحفظ والترحيل — Save and Posting" Style="{StaticResource Text.Section}" AutomationProperties.HeadingLevel="Level2"/>
+        <TextBlock Text="النطاق: الشركة / السنة المالية الحالية — Scope: company / current fiscal year" Style="{StaticResource Text.Caption}" Margin="0,2,0,8"/>
+        <RadioButton GroupName="DocumentPostingMode" Content="ترحيل يدوي: يُعتمد المستند عند الحفظ ويُرحَّل لاحقاً بقرار المستخدم"
+                     IsChecked="{Binding PolicyApproveOnlySelected}" IsEnabled="{Binding CanManageCompanyPolicy}" Margin="0,0,0,6"/>
+        <RadioButton GroupName="DocumentPostingMode" Content="ترحيل تلقائي: يُعتمد المستند ويُرحَّل مباشرة عند الحفظ"
+                     IsChecked="{Binding PolicyApproveAndPostSelected}" IsEnabled="{Binding CanManageCompanyPolicy}" Margin="0,0,0,6"/>
+        <CheckBox Content="إتاحة حفظ المستند كمسودة منفصلة" IsChecked="{Binding PolicyAllowSaveAsDraft}" IsEnabled="{Binding CanManageCompanyPolicy}" Margin="0,2,0,8"/>
+        <TextBlock Text="{Binding PolicyPostingModeExplanation}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,0,0,6"/>
+        <TextBlock Text="المسودة لا تُعتمد ولا تُرحَّل في أي وضع. سياسة الترحيل يفرضها الخادم وليست إعداد عرض فقط." Style="{StaticResource Text.Caption}" TextWrapping="Wrap"/>
+       </StackPanel>
+      </Border>
+      <WrapPanel Margin="0,0,0,8">
+       <CheckBox Content="طلب اعتماد المستندات قبل الترحيل" IsChecked="{Binding PolicyRequireDocumentApproval}" IsEnabled="{Binding CanManageCompanyPolicy}" Margin="0,0,16,6"/>
+       <CheckBox Content="إلزامية مركز الكلفة لحسابات الأرباح والخسائر" IsChecked="{Binding PolicyRequireProfitLossCostCenter}" IsEnabled="{Binding CanManageCompanyPolicy}" Margin="0,0,16,6"/>
+       <CheckBox Content="السماح بالبيع الآجل" IsChecked="{Binding PolicyAllowCreditSales}" IsEnabled="{Binding CanManageCompanyPolicy}" Margin="0,0,16,6"/>
+       <CheckBox Content="السماح بالشراء الآجل" IsChecked="{Binding PolicyAllowCreditPurchases}" IsEnabled="{Binding CanManageCompanyPolicy}" Margin="0,0,16,6"/>
+       <CheckBox Content="السماح بالترقيم اليدوي مع الصلاحية" IsChecked="{Binding PolicyAllowManualNumbering}" IsEnabled="{Binding CanManageCompanyPolicy}" Margin="0,0,16,6"/>
+       <CheckBox Content="السماح للأنماط بتجاوز سياسة الترقيم" IsChecked="{Binding PolicyAllowPatternNumberingOverrides}" IsEnabled="{Binding CanManageCompanyPolicy}" Margin="0,0,0,6"/>
+      </WrapPanel>
+      <TextBlock Text="أنماط المستندات الافتراضية — Default Document Patterns" Style="{StaticResource Text.Label}" Margin="0,8,0,4" FontWeight="SemiBold"/>
+      <WrapPanel Margin="0,0,0,8">
+       <StackPanel Style="{StaticResource Field}" Width="200" Margin="0,0,12,6">
+        <TextBlock Text="نمط المبيعات الافتراضي" Style="{StaticResource Text.Caption}"/>
+        <ComboBox ItemsSource="{Binding CompanyPolicyPatterns}" SelectedValue="{Binding PolicyDefaultSalesPatternId}" SelectedValuePath="Id" DisplayMemberPath="NameArabic" IsEnabled="{Binding CanManageCompanyPolicy}"/>
+       </StackPanel>
+       <StackPanel Style="{StaticResource Field}" Width="200" Margin="0,0,12,6">
+        <TextBlock Text="نمط المشتريات الافتراضي" Style="{StaticResource Text.Caption}"/>
+        <ComboBox ItemsSource="{Binding CompanyPolicyPatterns}" SelectedValue="{Binding PolicyDefaultPurchasePatternId}" SelectedValuePath="Id" DisplayMemberPath="NameArabic" IsEnabled="{Binding CanManageCompanyPolicy}"/>
+       </StackPanel>
+       <StackPanel Style="{StaticResource Field}" Width="200" Margin="0,0,12,6">
+        <TextBlock Text="نمط سند القبض الافتراضي" Style="{StaticResource Text.Caption}"/>
+        <ComboBox ItemsSource="{Binding CompanyPolicyPatterns}" SelectedValue="{Binding PolicyDefaultReceiptPatternId}" SelectedValuePath="Id" DisplayMemberPath="NameArabic" IsEnabled="{Binding CanManageCompanyPolicy}"/>
+       </StackPanel>
+       <StackPanel Style="{StaticResource Field}" Width="200" Margin="0,0,0,6">
+        <TextBlock Text="نمط سند الصرف الافتراضي" Style="{StaticResource Text.Caption}"/>
+        <ComboBox ItemsSource="{Binding CompanyPolicyPatterns}" SelectedValue="{Binding PolicyDefaultPaymentPatternId}" SelectedValuePath="Id" DisplayMemberPath="NameArabic" IsEnabled="{Binding CanManageCompanyPolicy}"/>
+       </StackPanel>
+      </WrapPanel>
+      <TextBlock Text="حسابات الزبائن والموردين — الحساب الرئيسي الذي يُنشأ تحته حساب الطرف الجديد" Style="{StaticResource Text.Label}" Margin="0,8,0,4" FontWeight="SemiBold"/>
+      <WrapPanel Margin="0,0,0,8">
+       <StackPanel Style="{StaticResource Field}" Width="300" Margin="0,0,12,6">
+        <TextBlock Text="الحساب الرئيسي للزبائن" Style="{StaticResource Text.Caption}"/>
+        <ComboBox ItemsSource="{Binding CompanyPolicyHeadingAccounts}" SelectedValue="{Binding PolicyCustomersParentAccountId}" SelectedValuePath="Id" DisplayMemberPath="Caption" IsEnabled="{Binding CanManageCompanyPolicy}"/>
+       </StackPanel>
+       <StackPanel Style="{StaticResource Field}" Width="300" Margin="0,0,12,6">
+        <TextBlock Text="الحساب الرئيسي للموردين" Style="{StaticResource Text.Caption}"/>
+        <ComboBox ItemsSource="{Binding CompanyPolicyHeadingAccounts}" SelectedValue="{Binding PolicySuppliersParentAccountId}" SelectedValuePath="Id" DisplayMemberPath="Caption" IsEnabled="{Binding CanManageCompanyPolicy}"/>
+       </StackPanel>
+      </WrapPanel>
+      <StackPanel Style="{StaticResource Field}" MaxWidth="600" HorizontalAlignment="Left" Margin="0,4,0,8">
+       <TextBlock Text="سبب التعديل للتدقيق — Audit reason (required)" Style="{StaticResource Text.Label}"/>
+       <TextBox Text="{Binding PolicyReason, UpdateSourceTrigger=PropertyChanged}" MaxLength="250" IsReadOnly="{Binding CanManageCompanyPolicy, Converter={StaticResource Show}, ConverterParameter=invert}"/>
+      </StackPanel>
+      <DockPanel LastChildFill="False" Margin="0,6,0,0">
+       <Button DockPanel.Dock="Left" Style="{StaticResource Button.Primary}" Content="حفظ خيارات الشركة — Save Company Options"
+               Command="{Binding SaveCompanyPolicyCommand}" Visibility="{Binding CanManageCompanyPolicy, Converter={StaticResource Visible}}"/>
+       <TextBlock DockPanel.Dock="Left" Text="{Binding PolicyStatusMessage}" Style="{StaticResource Text.Caption}" Margin="12,0,0,0" VerticalAlignment="Center"/>
+      </DockPanel>
+     </StackPanel>
+    </Border>
+    <Border Style="{StaticResource Panel.Card}" Margin="0,0,12,12" Width="852">
+     <StackPanel>
+      <TextBlock Text="{Binding Localization[UI_KeyboardTitle]}" Style="{StaticResource Text.Section}" AutomationProperties.HeadingLevel="Level2"/>
+      <TextBlock Text="{Binding Localization[UI_KeyboardHelp]}" Style="{StaticResource Text.Caption}" FlowDirection="{Binding Localization.FlowDirection}"/>
+     </StackPanel>
+    </Border>
+   </WrapPanel>
+  </StackPanel>
+ </ScrollViewer>
+</UserControl>

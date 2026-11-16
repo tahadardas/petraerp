@@ -1,0 +1,62 @@
+<UserControl x:Class="PetraERP.Desktop.Management.RateBulletinView"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:ux="clr-namespace:PetraERP.Desktop.Controls">
+ <DockPanel Margin="16">
+  <ux:PageHeader DockPanel.Dock="Top" Title="نشرة أسعار العملات اليومية">
+   <ux:PageHeader.Commands><WrapPanel>
+    <Button Style="{StaticResource Button.Financial}" Content="حفظ النشرة (كل الأسطر أو لا شيء)" Command="{Binding SaveCommand}" Margin="0,0,8,0"/>
+    <Button Style="{StaticResource Button.Command}" Content="تحديث" Command="{Binding RefreshCommand}"/>
+   </WrapPanel></ux:PageHeader.Commands>
+  </ux:PageHeader>
+  <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+   <TextBlock Text="تاريخ السريان:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+   <ux:PetraDatePicker SelectedDate="{Binding EffectiveDate}" Width="130" Margin="0,0,16,0"/>
+   <TextBlock Text="المصدر:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+   <TextBox Width="200" Text="{Binding Source, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,0"/>
+   <TextBlock Text="السبب:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+   <TextBox Width="260" Text="{Binding Reason, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,16,0"/>
+   <TextBlock Text="عملة الأساس:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+   <TextBlock Text="{Binding BaseCurrencyCode}" FontWeight="Bold" VerticalAlignment="Center"/>
+  </WrapPanel>
+  <Expander DockPanel.Dock="Bottom" Header="سجل الأسعار التاريخي ونسخ نشرة" IsExpanded="True" Margin="0,8,0,0">
+   <DockPanel>
+    <WrapPanel DockPanel.Dock="Top" Margin="0,4,0,4">
+     <TextBlock Text="العملة:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+     <TextBox Width="60" MaxLength="3" Text="{Binding HistoryCurrency, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,12,0"/>
+     <TextBlock Text="من:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+     <ux:PetraDatePicker SelectedDate="{Binding HistoryFrom}" Width="120" Margin="0,0,12,0"/>
+     <TextBlock Text="إلى:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+     <ux:PetraDatePicker SelectedDate="{Binding HistoryTo}" Width="120" Margin="0,0,12,0"/>
+     <Button Style="{StaticResource Button.Command}" Content="بحث في السجل" Command="{Binding SearchHistoryCommand}" Margin="0,0,16,0"/>
+     <TextBlock Text="نسخ نشرة تاريخ:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+     <ux:PetraDatePicker SelectedDate="{Binding CopyFromDate}" Width="120" Margin="0,0,6,0"/>
+     <Button Style="{StaticResource Button.Command}" Content="نسخ إلى النشرة" Command="{Binding CopyBulletinCommand}" Margin="0,0,12,0"/>
+     <TextBlock Text="{Binding HistoryStatus}" VerticalAlignment="Center"/>
+    </WrapPanel>
+    <DataGrid ItemsSource="{Binding History}" SelectedItem="{Binding SelectedHistory}" IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" MaxHeight="220" EnableRowVirtualization="True" AutomationProperties.Name="سجل الأسعار">
+     <DataGrid.Columns>
+      <DataGridTextColumn Header="التاريخ" Binding="{Binding EffectiveDate}" Width="110"/>
+      <DataGridTextColumn Header="العملة" Binding="{Binding CurrencyCode}" Width="80"/>
+      <DataGridTextColumn Header="السعر" Binding="{Binding Rate}" Width="140"/>
+      <DataGridTextColumn Header="المصدر" Binding="{Binding Source}" Width="*"/>
+      <DataGridTextColumn Header="السبب" Binding="{Binding Reason}" Width="*"/>
+     </DataGrid.Columns>
+    </DataGrid>
+   </DockPanel>
+  </Expander>
+  <DataGrid DockPanel.Dock="Bottom" ItemsSource="{Binding LastSaved}" IsReadOnly="True" AutoGenerateColumns="False" CanUserAddRows="False" MaxHeight="160" Margin="0,8,0,0">
+   <DataGrid.Columns>
+    <DataGridTextColumn Header="العملة (آخر نشرة محفوظة)" Binding="{Binding CurrencyCode}" Width="*"/>
+    <DataGridTextColumn Header="السعر" Binding="{Binding Rate}" Width="140"/>
+    <DataGridTextColumn Header="التاريخ" Binding="{Binding EffectiveDate}" Width="120"/>
+   </DataGrid.Columns>
+  </DataGrid>
+  <DataGrid ItemsSource="{Binding Lines}" AutoGenerateColumns="False" CanUserAddRows="False" AutomationProperties.Name="أسطر النشرة">
+   <DataGrid.Columns>
+    <DataGridTextColumn Header="العملة" Binding="{Binding Code}" IsReadOnly="True" Width="110"/>
+    <DataGridTextColumn Header="الاسم" Binding="{Binding Name}" IsReadOnly="True" Width="*"/>
+    <DataGridTextColumn Header="السعر مقابل عملة الأساس (اتركه فارغاً لاستبعاد العملة)" Binding="{Binding Rate, UpdateSourceTrigger=PropertyChanged}" Width="320"/>
+   </DataGrid.Columns>
+  </DataGrid>
+ </DockPanel>
+</UserControl>

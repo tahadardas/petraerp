@@ -1,0 +1,58 @@
+<UserControl x:Class="PetraERP.Desktop.Accounting.BackupView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ux="clr-namespace:PetraERP.Desktop.Controls">
+ <UserControl.Resources><ux:BindingProxy x:Key="Proxy" Data="{Binding}"/></UserControl.Resources>
+ <DockPanel>
+  <ux:PageHeader DockPanel.Dock="Top" Title="{Binding Localization[BK_Title]}">
+   <ux:PageHeader.Commands>
+    <WrapPanel>
+     <Button Style="{StaticResource Button.Primary}" ux:Icon.Glyph="&#xE74E;" Content="{Binding Localization[BK_Create]}" Command="{Binding BackupCommand}"/>
+     <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE73E;" Content="{Binding Localization[BK_Verify]}" Command="{Binding VerifyCommand}" Margin="8,0,0,0"/>
+     <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE777;" Content="{Binding Localization[BK_TestRestore]}" Command="{Binding TestRestoreCommand}" Margin="8,0,0,0"/>
+     <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE72C;" Content="{Binding Localization[D_Refresh]}" Command="{Binding RefreshCommand}" Margin="8,0,0,0"/>
+    </WrapPanel>
+   </ux:PageHeader.Commands>
+  </ux:PageHeader>
+
+  <Border DockPanel.Dock="Top" Style="{StaticResource Panel.Card}" Margin="0,0,0,8" Padding="8">
+   <WrapPanel>
+    <StackPanel Style="{StaticResource Field}" Width="260" Margin="0,0,12,6">
+     <TextBlock Text="{Binding Localization[BK_Database], StringFormat='{}{0} *'}" Style="{StaticResource Text.Label}"/>
+     <TextBox Text="{Binding DatabaseName, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{Binding Localization[BK_Database]}"/>
+    </StackPanel>
+    <StackPanel Style="{StaticResource Field}" Width="360" Margin="0,0,12,6">
+     <TextBlock Text="{Binding Localization[BK_Directory]}" Style="{StaticResource Text.Label}"/>
+     <TextBox Text="{Binding BackupDirectory, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{Binding Localization[BK_Directory]}"/>
+    </StackPanel>
+    <StackPanel Style="{StaticResource Field}" Width="260" Margin="0,0,12,6">
+     <TextBlock Text="{Binding Localization[BK_NewPassword]}" Style="{StaticResource Text.Label}"/>
+     <PasswordBox ux:PasswordInput.Value="{Binding NewBackupPassword, UpdateSourceTrigger=PropertyChanged}" MaxLength="128" MinHeight="{StaticResource Control.Height}" AutomationProperties.Name="{Binding Localization[BK_NewPassword]}"/>
+    </StackPanel>
+    <StackPanel Style="{StaticResource Field}" Width="260" Margin="0,0,12,6">
+     <TextBlock Text="{Binding Localization[BK_SelectedPassword]}" Style="{StaticResource Text.Label}"/>
+     <PasswordBox ux:PasswordInput.Value="{Binding SelectedBackupPassword, UpdateSourceTrigger=PropertyChanged}" MaxLength="128" MinHeight="{StaticResource Control.Height}" AutomationProperties.Name="{Binding Localization[BK_SelectedPassword]}"/>
+    </StackPanel>
+    <TextBlock Text="{Binding Localization[BK_Help]}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" MaxWidth="620" VerticalAlignment="Bottom" Margin="0,0,0,10"/>
+   </WrapPanel>
+  </Border>
+
+  <Border DockPanel.Dock="Top" Style="{StaticResource Panel.Summary}" Margin="0,0,0,8" Visibility="{Binding HasStatus, Converter={StaticResource Visible}}">
+   <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" FontWeight="SemiBold" Margin="10,6"/>
+  </Border>
+
+  <Border Style="{StaticResource Panel.Flat}">
+   <DataGrid ItemsSource="{Binding Backups}" SelectedItem="{Binding SelectedBackup}" IsReadOnly="True" SelectionUnit="FullRow"
+             AutoGenerateColumns="False" CanUserSortColumns="False" BorderThickness="0">
+    <DataGrid.Columns>
+     <DataGridTextColumn Header="{Binding Data.Localization[BK_Database], Source={StaticResource Proxy}}" Binding="{Binding DatabaseName}" Width="170"/>
+     <DataGridTextColumn Header="{Binding Data.Localization[BK_Created], Source={StaticResource Proxy}}" Binding="{Binding Created}" Width="140"/>
+     <DataGridTextColumn Header="{Binding Data.Localization[BK_VerifiedAt], Source={StaticResource Proxy}}" Binding="{Binding Verified}" Width="140"/>
+     <DataGridTextColumn Header="{Binding Data.Localization[BK_Protection], Source={StaticResource Proxy}}" Binding="{Binding Protection}" Width="190"/>
+     <DataGridTextColumn Header="{Binding Data.Localization[BK_Checksum], Source={StaticResource Proxy}}" Binding="{Binding Checksum}" Width="170"/>
+     <DataGridTextColumn Header="{Binding Data.Localization[BK_File], Source={StaticResource Proxy}}" Binding="{Binding FilePath}" Width="*"/>
+    </DataGrid.Columns>
+   </DataGrid>
+  </Border>
+ </DockPanel>
+</UserControl>

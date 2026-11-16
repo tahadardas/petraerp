@@ -1,0 +1,16 @@
+{
+    "version":  2,
+    "dependencies":  {
+                         "net10.0":  {
+                                         "petraerp.modules.abstractions":  {
+                                                                               "type":  "Project"
+                                                                           },
+                                         "petraerp.modules.packaging":  {
+                                                                            "type":  "Project",
+                                                                            "dependencies":  {
+                                                                                                 "PetraERP.Modules.Abstractions":  "[1.0.0, )"
+                                                                                             }
+                                                                        }
+                                     }
+                     }
+}

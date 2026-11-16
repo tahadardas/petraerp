@@ -1,0 +1,55 @@
+﻿<UserControl x:Class="PetraERP.Desktop.GeneralLedger.JournalsView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ux="clr-namespace:PetraERP.Desktop.Controls" xmlns:ledger="clr-namespace:PetraERP.Desktop.GeneralLedger">
+ <UserControl.InputBindings>
+  <KeyBinding Key="N" Modifiers="Control" Command="{Binding NewDraftCommand}"/>
+  <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveDraftCommand}"/>
+ </UserControl.InputBindings>
+ <DockPanel>
+  <ux:PageHeader DockPanel.Dock="Top" Title="{Binding Localization[D_Journals]}">
+   <ux:PageHeader.Commands><WrapPanel>
+    <Button Style="{StaticResource Button.Primary}" ux:Icon.Glyph="&#xE710;" Content="{Binding Localization[D_NewJournal]}" Command="{Binding NewDraftCommand}" ToolTip="Ctrl+N" Visibility="{Binding CanManageJournals, Converter={StaticResource Visible}}"/>
+    <Button Content="{Binding Localization[D_PostAll]}" Command="{Binding BulkPostCommand}" ToolTip="{Binding Localization[D_PostAllHint]}" Visibility="{Binding CanManageBulkPosting, Converter={StaticResource Visible}}" Margin="8,0,0,0"/>
+   </WrapPanel></ux:PageHeader.Commands>
+  </ux:PageHeader>
+  <ux:AdaptivePaneGrid>
+   <ux:AdaptivePaneGrid.ColumnDefinitions><ColumnDefinition Width="310" MinWidth="260"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*" MinWidth="480"/></ux:AdaptivePaneGrid.ColumnDefinitions>
+
+   <!-- Journal list -->
+   <Border ux:AdaptivePaneGrid.Label="{Binding Localization[D_Journals]}" Style="{StaticResource Panel.Flat}"><DockPanel>
+    <DockPanel DockPanel.Dock="Top" Margin="8">
+     <Button DockPanel.Dock="Right" Style="{StaticResource Button.Icon}" Content="&#xE721;" Command="{Binding SearchJournalsCommand}" AutomationProperties.Name="{Binding Localization[D_Search]}"/>
+     <TextBox Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" MaxLength="200" ux:SearchTarget.IsTarget="True" ToolTip="Ctrl+F" AutomationProperties.Name="{Binding Localization[D_SearchJournals]}">
+      <TextBox.InputBindings><KeyBinding Key="Enter" Command="{Binding SearchJournalsCommand}"/></TextBox.InputBindings>
+     </TextBox>
+    </DockPanel>
+    <WrapPanel DockPanel.Dock="Top" Margin="8,0,8,4">
+     <TextBox Width="102" Text="{Binding FromDate, StringFormat=yyyy-MM-dd, ValidatesOnExceptions=True}" ToolTip="{Binding Localization[D_FromDate]}" AutomationProperties.Name="{Binding Localization[D_FromDate]}"/>
+     <TextBox Width="102" Text="{Binding ToDate, StringFormat=yyyy-MM-dd, ValidatesOnExceptions=True}" ToolTip="{Binding Localization[D_ToDate]}" AutomationProperties.Name="{Binding Localization[D_ToDate]}"/>
+     <ComboBox Width="160" ItemsSource="{Binding FilterStates}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding StateFilter}" AutomationProperties.Name="{Binding Localization[D_JournalState]}"/>
+    </WrapPanel>
+    <DockPanel DockPanel.Dock="Bottom" Margin="8,4" LastChildFill="False">
+     <Button Style="{StaticResource Button.Icon}" Content="&#xE76B;" Command="{Binding PreviousPageCommand}" AutomationProperties.Name="{Binding Localization[D_Previous]}"/>
+     <TextBlock Text="{Binding PageStatus}" Style="{StaticResource Text.Caption}" Margin="8,0"/>
+     <Button Style="{StaticResource Button.Icon}" Content="&#xE76C;" Command="{Binding NextPageCommand}" AutomationProperties.Name="{Binding Localization[D_Next]}"/>
+    </DockPanel>
+    <DataGrid x:Name="JournalsGrid" ItemsSource="{Binding Journals}" SelectedItem="{Binding SelectedJournal}" IsReadOnly="True" CanUserSortColumns="False" SelectionUnit="FullRow" BorderThickness="0"
+              MouseDoubleClick="JournalOpened" ux:GridLayouts.Key="ledger.journals" ux:GridLayouts.Store="{Binding DataContext.Workspace, RelativeSource={RelativeSource AncestorType=Window}}" AutomationProperties.Name="{Binding Localization[D_Journals]}">
+     <DataGrid.InputBindings><KeyBinding Key="Enter" Command="{Binding OpenJournalCommand}"/></DataGrid.InputBindings>
+     <DataGrid.Columns>
+      <DataGridTextColumn Binding="{Binding AccountingDate, Converter={StaticResource DateText}}" SortMemberPath="Date" Width="90"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_AccountingDate], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      <DataGridTextColumn Binding="{Binding PostingSequence}" SortMemberPath="Number" Width="56"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_JournalNumber], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      <DataGridTextColumn Binding="{Binding Description}" SortMemberPath="Description" Width="*" MinWidth="120"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Description], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      <DataGridTemplateColumn SortMemberPath="State" Width="100"><DataGridTemplateColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_JournalState], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTemplateColumn.Header>
+       <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource Text.Caption}" FontWeight="SemiBold"><TextBlock.Text><MultiBinding Converter="{StaticResource EnumLabel}" ConverterParameter="D_State_"><Binding Path="State"/><Binding Path="DataContext.Localization.Language" RelativeSource="{RelativeSource AncestorType=UserControl}"/></MultiBinding></TextBlock.Text></TextBlock></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+      <DataGridTextColumn Binding="{Binding TotalDebit, Converter={StaticResource Money}}" SortMemberPath="Debit" Width="100" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Amount], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+     </DataGrid.Columns>
+    </DataGrid>
+   </DockPanel></Border>
+   <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="Transparent"/>
+
+   <!-- Journal workspace -->
+   <Border ux:AdaptivePaneGrid.Label="{Binding Localization[D_Details]}" ux:AdaptivePaneGrid.ActivateWhen="{Binding IsEditorOpen}" Grid.Column="2" Style="{StaticResource Panel.Card}">
+    <ledger:JournalWorkspacePanel/>
+   </Border>
+  </ux:AdaptivePaneGrid>
+ </DockPanel>
+</UserControl>

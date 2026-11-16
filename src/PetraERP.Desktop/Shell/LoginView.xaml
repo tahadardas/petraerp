@@ -1,0 +1,59 @@
+<UserControl x:Class="PetraERP.Desktop.Shell.LoginView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ux="clr-namespace:PetraERP.Desktop.Controls">
+ <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><Grid Background="{DynamicResource Surface}">
+  <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+  <Border Grid.Row="1" Width="420" Style="{StaticResource Panel.Card}" Padding="28,26">
+   <StackPanel>
+    <StackPanel Orientation="Horizontal" Margin="0,0,0,18">
+     <Border Width="36" Height="36" CornerRadius="{DynamicResource Radius.Panel}" Background="{DynamicResource Accent}"><TextBlock Text="P" Foreground="{DynamicResource Text.OnAccent}" FontWeight="Bold" FontSize="20" HorizontalAlignment="Center"/></Border>
+     <StackPanel Margin="10,0,0,0"><TextBlock Text="PetraERP" FontSize="{StaticResource Font.Display}" FontWeight="SemiBold"/><TextBlock Text="{Binding Localization[D_ProductTagline]}" Style="{StaticResource Text.Caption}"/></StackPanel>
+    </StackPanel>
+
+    <!-- Sign in -->
+    <StackPanel Visibility="{Binding ShowLogin, Converter={StaticResource Visible}}">
+     <StackPanel.InputBindings><KeyBinding Key="Enter" Command="{Binding LoginCommand}"/></StackPanel.InputBindings>
+     <TextBlock Text="{Binding Localization[D_Welcome]}" Style="{StaticResource Text.Section}"/>
+     <TextBlock Text="{Binding Localization[D_LoginHelp]}" Style="{StaticResource Text.Caption}" Margin="0,0,0,16"/>
+     <StackPanel Style="{StaticResource Field}"><TextBlock Text="{Binding Localization[UX_UserName]}" Style="{StaticResource Text.Label}"/>
+      <TextBox x:Name="UserNameBox" Text="{Binding UserName, UpdateSourceTrigger=PropertyChanged}" MaxLength="64" MinHeight="{StaticResource Control.Height}" AutomationProperties.Name="{Binding Localization[UX_UserName]}"/></StackPanel>
+     <StackPanel Style="{StaticResource Field}"><TextBlock Text="{Binding Localization[UX_Password]}" Style="{StaticResource Text.Label}"/>
+      <PasswordBox ux:PasswordInput.Value="{Binding Password, UpdateSourceTrigger=PropertyChanged}" MaxLength="128" MinHeight="{StaticResource Control.Height}" AutomationProperties.Name="{Binding Localization[UX_Password]}"/></StackPanel>
+     <TextBlock Text="{Binding Operation.Error}" Style="{StaticResource Text.Error}" Margin="0,0,0,10" Visibility="{Binding Operation.Error, Converter={StaticResource Show}}" AutomationProperties.LiveSetting="Assertive"/>
+     <Button Style="{StaticResource Button.Primary}" ContentTemplate="{x:Null}" Command="{Binding LoginCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" MinHeight="36"
+             AutomationProperties.Name="{Binding Localization[UX_SignIn]}" AutomationProperties.HelpText="{Binding Operation.Connection}">
+      <StackPanel Orientation="Horizontal">
+       <ProgressBar IsIndeterminate="True" Width="30" Height="3" Margin="0,0,8,0" Visibility="{Binding Operation.IsBusy, Converter={StaticResource Visible}}"/>
+       <TextBlock Text="{Binding Localization[UX_SignIn]}" FontWeight="SemiBold"/>
+      </StackPanel>
+     </Button>
+     <TextBlock Text="{Binding Localization[D_ProtectedSession]}" Style="{StaticResource Text.Caption}" Margin="0,14,0,0"/>
+    </StackPanel>
+
+    <!-- Mandatory password change -->
+    <StackPanel Visibility="{Binding PasswordChangeRequired, Converter={StaticResource Visible}}">
+     <StackPanel.InputBindings><KeyBinding Key="Enter" Command="{Binding ChangePasswordCommand}"/></StackPanel.InputBindings>
+     <TextBlock Text="{Binding Localization[D_PasswordRequired]}" Style="{StaticResource Text.Section}" TextWrapping="Wrap"/>
+     <StackPanel Style="{StaticResource Field}"><TextBlock Text="{Binding Localization[D_CurrentPassword]}" Style="{StaticResource Text.Label}"/><PasswordBox ux:PasswordInput.Value="{Binding CurrentPassword}" MaxLength="128" AutomationProperties.Name="{Binding Localization[D_CurrentPassword]}"/></StackPanel>
+     <StackPanel Style="{StaticResource Field}"><TextBlock Text="{Binding Localization[UX_NewPassword]}" Style="{StaticResource Text.Label}"/><PasswordBox ux:PasswordInput.Value="{Binding NewPassword}" MaxLength="128" AutomationProperties.Name="{Binding Localization[UX_NewPassword]}"/></StackPanel>
+     <StackPanel Style="{StaticResource Field}"><TextBlock Text="{Binding Localization[D_ConfirmPassword]}" Style="{StaticResource Text.Label}"/><PasswordBox ux:PasswordInput.Value="{Binding ConfirmPassword}" MaxLength="128" AutomationProperties.Name="{Binding Localization[D_ConfirmPassword]}"/></StackPanel>
+     <TextBlock Text="{Binding Localization[D_PasswordPolicyHint]}" Style="{StaticResource Text.Caption}" Margin="0,0,0,10"/>
+     <TextBlock Text="{Binding Operation.Error}" Style="{StaticResource Text.Error}" Margin="0,0,0,10" Visibility="{Binding Operation.Error, Converter={StaticResource Show}}"/>
+     <DockPanel LastChildFill="False">
+      <Button DockPanel.Dock="Right" Style="{StaticResource Button.Primary}" ux:Icon.Glyph="&#xE8D7;" Content="{Binding Localization[UX_ChangePassword]}" Command="{Binding ChangePasswordCommand}"/>
+      <Button DockPanel.Dock="Left" Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xF3B1;" Content="{Binding Localization[UX_SignOut]}" Command="{Binding LogoutCommand}"/>
+     </DockPanel>
+    </StackPanel>
+   </StackPanel>
+  </Border>
+  <DockPanel Grid.Row="3" Margin="16,8" LastChildFill="False">
+   <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+    <Ellipse Width="8" Height="8" Margin="0,0,6,0"><Ellipse.Style><Style TargetType="Ellipse"><Setter Property="Fill" Value="{DynamicResource Error}"/><Style.Triggers><DataTrigger Binding="{Binding Operation.IsOnline}" Value="True"><Setter Property="Fill" Value="{DynamicResource Success}"/></DataTrigger></Style.Triggers></Style></Ellipse.Style></Ellipse>
+    <TextBlock Text="{Binding ServerLabel}" Style="{StaticResource Text.Caption}"/>
+   </StackPanel>
+   <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+    <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xF2B7;" Content="{Binding Localization[UX_Language]}" Command="{Binding ToggleLanguageCommand}"/>
+    <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE793;" Content="{Binding ThemeLabel}" Command="{Binding ToggleThemeCommand}"/>
+    <TextBlock Text="{Binding Version}" Style="{StaticResource Text.Caption}" Margin="8,0,0,0"/>
+   </StackPanel>
+  </DockPanel>
+ </Grid></ScrollViewer>
+</UserControl>

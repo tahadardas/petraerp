@@ -1,0 +1,161 @@
+<UserControl x:Class="PetraERP.Desktop.Inventory.StocktakingWizardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ux="clr-namespace:PetraERP.Desktop.Controls">
+  <UserControl.Resources>
+    <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+  </UserControl.Resources>
+
+  <UserControl.InputBindings>
+    <KeyBinding Key="F5" Command="{Binding LoadBalancesCommand}"/>
+  </UserControl.InputBindings>
+
+  <DockPanel Margin="16">
+    <!-- Header -->
+    <ux:PageHeader DockPanel.Dock="Top" Title="{Binding Localization[INV_StocktakingWizard]}">
+      <ux:PageHeader.Commands>
+        <WrapPanel>
+          <Button Style="{StaticResource Button.Command}" Content="مطابقة الجميع مع الدفتري" Command="{Binding SetAllCountsToBookCommand}" Margin="0,0,8,0"/>
+          <Button Style="{StaticResource Button.Financial}" Content="{Binding Localization[INV_ReconcileAndPost]}" Command="{Binding ReconcileAndPostCommand}"/>
+        </WrapPanel>
+      </ux:PageHeader.Commands>
+    </ux:PageHeader>
+
+    <!-- Success Banner when Reconciled -->
+    <Border DockPanel.Dock="Top" Background="{DynamicResource Success.Subtle}" BorderBrush="{DynamicResource Success}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Control}" Padding="16,12" Margin="0,0,0,12"
+            Visibility="{Binding IsReconciled, Converter={StaticResource BoolToVis}}">
+      <DockPanel>
+        <Button DockPanel.Dock="Right" Style="{StaticResource Button.Command}" Content="جرد جديد" Command="{Binding ResetWizardCommand}"/>
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+          <TextBlock Text="✔ " Foreground="{DynamicResource Success}" FontWeight="Bold" FontSize="16"/>
+          <TextBlock Text="تم توليد وترحيل تسوية الجرد الفعلي بنجاح! رقم المستند: " Foreground="{DynamicResource Success}" FontWeight="SemiBold"/>
+          <TextBlock Text="{Binding ReconciledDocumentNumber}" Foreground="{DynamicResource Success}" FontWeight="Bold"/>
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
+    <!-- Warehouse & Options Ribbon -->
+    <Border DockPanel.Dock="Top" Background="{DynamicResource Alternate}" BorderBrush="{DynamicResource Divider}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Control}" Padding="12,10" Margin="0,0,0,12">
+      <WrapPanel VerticalAlignment="Center">
+        <TextBlock Text="{Binding Localization[INV_SelectWarehouse]}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0"/>
+        <ComboBox ItemsSource="{Binding Warehouses}" DisplayMemberPath="NameArabic" SelectedValuePath="Id" SelectedValue="{Binding SelectedWarehouseId}" Width="200" Margin="0,0,16,0"/>
+
+        <TextBlock Text="تاريخ الجرد:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0"/>
+        <ux:PetraDatePicker SelectedDate="{Binding CountDate}" Width="130" Margin="0,0,16,0"/>
+
+        <Button Style="{StaticResource Button.Command}" Content="{Binding Localization[INV_LoadBookBalances]}" Command="{Binding LoadBalancesCommand}"/>
+      </WrapPanel>
+    </Border>
+
+    <!-- Summary KPI Cards Banner -->
+    <Border DockPanel.Dock="Top" Background="{DynamicResource Input}" BorderBrush="{DynamicResource Divider}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Control}" Padding="12,8" Margin="0,0,0,12">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Total Items -->
+        <Border Grid.Column="0" Background="{DynamicResource Alternate}" CornerRadius="{DynamicResource Radius.Control}" Padding="8,6" Margin="0,0,4,0">
+          <StackPanel>
+            <TextBlock Text="{Binding Localization[INV_TotalCounted]}" Style="{StaticResource Text.Caption}"/>
+            <TextBlock Text="{Binding TotalCountedItems}" FontWeight="Bold" FontSize="15" Margin="0,2,0,0"/>
+          </StackPanel>
+        </Border>
+
+        <!-- Matched Items -->
+        <Border Grid.Column="1" Background="{DynamicResource Success.Subtle}" CornerRadius="{DynamicResource Radius.Control}" Padding="8,6" Margin="4,0">
+          <StackPanel>
+            <TextBlock Text="{Binding Localization[INV_Matched]}" Foreground="{DynamicResource Success}" Style="{StaticResource Text.Caption}"/>
+            <TextBlock Text="{Binding MatchedItemsCount}" Foreground="{DynamicResource Success}" FontWeight="Bold" FontSize="15" Margin="0,2,0,0"/>
+          </StackPanel>
+        </Border>
+
+        <!-- Surplus Items -->
+        <Border Grid.Column="2" Background="{DynamicResource Info.Subtle}" CornerRadius="{DynamicResource Radius.Control}" Padding="8,6" Margin="4,0">
+          <StackPanel>
+            <TextBlock Text="{Binding Localization[INV_Surplus]}" Foreground="{DynamicResource Info}" Style="{StaticResource Text.Caption}"/>
+            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+              <TextBlock Text="{Binding SurplusItemsCount}" Foreground="{DynamicResource Info}" FontWeight="Bold" FontSize="15"/>
+              <TextBlock Text=" (" Foreground="{DynamicResource Info}"/>
+              <TextBlock Text="{Binding TotalSurplusValue, StringFormat={}{0:F2}}" Foreground="{DynamicResource Info}" FontWeight="SemiBold"/>
+              <TextBlock Text=" د.أ)" Foreground="{DynamicResource Info}"/>
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <!-- Deficit Items -->
+        <Border Grid.Column="3" Background="{DynamicResource Error.Subtle}" CornerRadius="{DynamicResource Radius.Control}" Padding="8,6" Margin="4,0">
+          <StackPanel>
+            <TextBlock Text="{Binding Localization[INV_Deficit]}" Foreground="{DynamicResource Error}" Style="{StaticResource Text.Caption}"/>
+            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+              <TextBlock Text="{Binding DeficitItemsCount}" Foreground="{DynamicResource Error}" FontWeight="Bold" FontSize="15"/>
+              <TextBlock Text=" (" Foreground="{DynamicResource Error}"/>
+              <TextBlock Text="{Binding TotalDeficitValue, StringFormat={}{0:F2}}" Foreground="{DynamicResource Error}" FontWeight="SemiBold"/>
+              <TextBlock Text=" د.أ)" Foreground="{DynamicResource Error}"/>
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <!-- Net Variance -->
+        <Border Grid.Column="4" Background="{DynamicResource Accent.Subtle}" CornerRadius="{DynamicResource Radius.Control}" Padding="8,6" Margin="4,0,0,0">
+          <StackPanel>
+            <TextBlock Text="{Binding Localization[INV_NetVariance]}" Foreground="{DynamicResource Accent}" Style="{StaticResource Text.Caption}"/>
+            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+              <TextBlock Text="{Binding NetVarianceValue, StringFormat={}{0:F2}}" Foreground="{DynamicResource Accent}" FontWeight="Bold" FontSize="15"/>
+              <TextBlock Text=" د.أ" Foreground="{DynamicResource Accent}"/>
+            </StackPanel>
+          </StackPanel>
+        </Border>
+      </Grid>
+    </Border>
+
+    <!-- Filters & Search Toolbar -->
+    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+      <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+        <ComboBox SelectedIndex="{Binding FilterMode}" Width="160" Margin="0,0,8,0">
+          <ComboBoxItem Content="{Binding Localization[INV_AllItems]}"/>
+          <ComboBoxItem Content="{Binding Localization[INV_DiscrepanciesOnly]}"/>
+          <ComboBoxItem Content="{Binding Localization[INV_SurplusOnly]}"/>
+          <ComboBoxItem Content="{Binding Localization[INV_DeficitOnly]}"/>
+        </ComboBox>
+      </StackPanel>
+      <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Width="240" HorizontalAlignment="Right"/>
+    </DockPanel>
+
+    <!-- Main Comparison DataGrid -->
+    <ux:PetraAccountingDataGrid ItemsSource="{Binding VisibleItems}"
+              AutoGenerateColumns="False"
+              CanUserAddRows="False"
+              SelectionMode="Single"
+              ux:GridEntry.Enabled="True"
+              ux:GridRowContext.Enabled="True"
+              ux:GridRowNumbers.Enabled="True">
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="رمز المادة" Binding="{Binding ItemCode}" Width="110" IsReadOnly="True"/>
+        <DataGridTextColumn Header="اسم المادة" Binding="{Binding ItemName}" Width="*" IsReadOnly="True"/>
+        <DataGridTextColumn Header="الوحدة" Binding="{Binding UnitName}" Width="80" IsReadOnly="True"/>
+        <DataGridTextColumn Header="الرصيد الدفتري" Binding="{Binding BookQuantity, Converter={StaticResource Number}, ConverterParameter=quantity}" Width="120" IsReadOnly="True" ElementStyle="{StaticResource Text.Numeric}"/>
+        
+        <!-- Editable Physical Count Column -->
+        <DataGridTemplateColumn Header="الكمية المجرودة (الفعلية)" Width="140">
+          <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate>
+              <TextBox Text="{Binding PhysicalCountText, UpdateSourceTrigger=PropertyChanged}"
+                       FontWeight="SemiBold"
+                       HorizontalContentAlignment="Right"/>
+            </DataTemplate>
+          </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+
+        <DataGridTextColumn Header="فرق الكمية" Binding="{Binding VarianceQuantity, Converter={StaticResource Number}, ConverterParameter=quantity}" Width="110" IsReadOnly="True" ElementStyle="{StaticResource Text.Numeric}"/>
+        <DataGridTextColumn Header="التكلفة الفردية" Binding="{Binding UnitCost, Converter={StaticResource Number}}" Width="100" IsReadOnly="True" ElementStyle="{StaticResource Text.Numeric}"/>
+        <DataGridTextColumn Header="قيمة الفرق" Binding="{Binding VarianceValue, Converter={StaticResource Number}}" Width="110" IsReadOnly="True" ElementStyle="{StaticResource Text.Numeric}"/>
+        <DataGridTextColumn Header="الحالة" Binding="{Binding VarianceStatus}" Width="80" IsReadOnly="True"/>
+      </DataGrid.Columns>
+    </ux:PetraAccountingDataGrid>
+  </DockPanel>
+</UserControl>

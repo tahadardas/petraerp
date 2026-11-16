@@ -1,0 +1,106 @@
+<UserControl x:Class="PetraERP.Desktop.Reporting.PetraInteractiveReportGrid"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:ux="clr-namespace:PetraERP.Desktop.Controls"
+ Focusable="False">
+ <Grid>
+  <ux:PetraAccountingDataGrid x:Name="Results"
+   AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+   ColumnHeaderHeight="56"
+   CanUserReorderColumns="True" CanUserResizeColumns="True" CanUserSortColumns="True"
+   IsReadOnly="True" SelectionMode="Extended" SelectionUnit="FullRow"
+   Background="{DynamicResource Surface.Primary}" Foreground="{DynamicResource Text.Primary}"
+   RowBackground="{DynamicResource Surface.Primary}" AlternatingRowBackground="{DynamicResource Grid.Alternate}"
+   HorizontalGridLinesBrush="{DynamicResource Border.Normal}" VerticalGridLinesBrush="{DynamicResource Border.Normal}"
+   EnableRowVirtualization="True" EnableColumnVirtualization="True"
+   VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
+   VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+   ScrollViewer.CanContentScroll="True" ScrollViewer.IsDeferredScrollingEnabled="True"
+   ux:GridRowNumbers.Enabled="True" ux:GridRowContext.Enabled="True"
+   AutomationProperties.Name="نتائج التقرير / Report results"
+   Sorting="ResultsSorting" SelectionChanged="ResultsSelectionChanged"
+   MouseDoubleClick="ResultsMouseDoubleClick" PreviewKeyDown="ResultsPreviewKeyDown">
+   <DataGrid.GroupStyle>
+    <GroupStyle>
+     <GroupStyle.ContainerStyle>
+      <Style TargetType="GroupItem">
+       <Setter Property="Template">
+        <Setter.Value>
+         <ControlTemplate TargetType="GroupItem">
+          <Expander IsExpanded="True" Background="{DynamicResource Surface.Secondary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="0,0,0,1">
+           <Expander.Header>
+            <DockPanel Margin="8,5">
+             <TextBlock DockPanel.Dock="Right" Text="{Binding ItemCount, StringFormat='{}{0} rows'}" Foreground="{DynamicResource Text.Secondary}" FontSize="{DynamicResource Font.Caption}" FlowDirection="LeftToRight"/>
+             <TextBlock Text="{Binding Name}" Foreground="{DynamicResource Text.Primary}" FontWeight="SemiBold"/>
+            </DockPanel>
+           </Expander.Header>
+           <ItemsPresenter/>
+          </Expander>
+         </ControlTemplate>
+        </Setter.Value>
+       </Setter>
+      </Style>
+     </GroupStyle.ContainerStyle>
+    </GroupStyle>
+   </DataGrid.GroupStyle>
+  </ux:PetraAccountingDataGrid>
+
+  <!-- An executed report with no matching rows used to render an empty white box, which is indistinguishable from a
+       broken viewer; the grid says so instead. -->
+  <Border x:Name="EmptyState" Visibility="Collapsed" IsHitTestVisible="False" Margin="0,56,0,0">
+   <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+    <TextBlock Text="لا توجد سجلات مطابقة للمعايير" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource Text.Primary}" HorizontalAlignment="Center"/>
+    <TextBlock Text="No rows matched these criteria — adjust the criteria or widen the period." FontSize="11" Foreground="{DynamicResource Text.Secondary}" HorizontalAlignment="Center" Margin="0,6,0,0" FlowDirection="LeftToRight"/>
+   </StackPanel>
+  </Border>
+
+  <!-- Excel-like column header distinct values filter popup -->
+  <Popup x:Name="HeaderFilterPopup" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade">
+   <Border Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Control}" Padding="10" MinWidth="250" MaxWidth="340" MaxHeight="420"
+    Effect="{DynamicResource Shadow.Elevation2}">
+    <Grid>
+     <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+     </Grid.RowDefinitions>
+
+     <DockPanel Grid.Row="0" Margin="0,0,0,6">
+      <Button x:Name="CloseHeaderPopupButton" Content="×" DockPanel.Dock="Right" Padding="6,1" Click="CloseHeaderPopupClicked"/>
+      <TextBlock x:Name="HeaderPopupTitle" FontWeight="SemiBold" FontSize="12" TextTrimming="CharacterEllipsis"/>
+     </DockPanel>
+
+     <TextBox x:Name="HeaderPopupSearchBox" Grid.Row="1" Margin="0,0,0,6" TextChanged="HeaderPopupSearchChanged"
+      ToolTip="بحث في القيم / Search values"/>
+
+     <DockPanel Grid.Row="2" Margin="0,0,0,6">
+      <Button x:Name="SelectAllValuesButton" Content="تحديد الكل" Click="SelectAllValuesClicked" Padding="6,2" Margin="0,0,4,0"/>
+      <Button x:Name="ClearAllValuesButton" Content="إلغاء التحديد" Click="ClearAllValuesClicked" Padding="6,2"/>
+     </DockPanel>
+
+     <!-- Bounded + virtualized: at most VisibleLimit rows are bound; the search and select-all cover every distinct value. -->
+     <ListBox x:Name="DistinctValuesList" Grid.Row="3" MaxHeight="220" BorderThickness="0" Background="Transparent"
+              VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
+              ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto">
+      <ListBox.ItemTemplate>
+       <DataTemplate>
+        <CheckBox Content="{Binding DisplayLabel}" IsChecked="{Binding IsSelected, Mode=TwoWay}" Margin="0,2"/>
+       </DataTemplate>
+      </ListBox.ItemTemplate>
+     </ListBox>
+
+     <TextBlock x:Name="DistinctValuesNote" Grid.Row="4" Margin="0,4,0,0" FontSize="11" TextWrapping="Wrap" Opacity="0.75"/>
+
+     <Grid Grid.Row="5" Margin="0,8,0,0">
+      <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+      <Button x:Name="ApplyHeaderPopupButton" Content="تطبيق / Apply" Click="ApplyHeaderPopupClicked" Padding="8,4" Margin="0,0,4,0" Background="{DynamicResource Brand.Navy}" Foreground="{DynamicResource Text.OnBrand}"/>
+      <Button x:Name="ClearHeaderPopupButton" Grid.Column="1" Content="مسح التصفية" Click="ClearHeaderPopupClicked" Padding="8,4"/>
+     </Grid>
+    </Grid>
+   </Border>
+  </Popup>
+ </Grid>
+</UserControl>

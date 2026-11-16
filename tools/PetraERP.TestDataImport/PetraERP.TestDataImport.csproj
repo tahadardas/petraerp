@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    TEST-DATA ONLY. Loads a read-only Ameen export into a disposable PetraERP test database through the
+    public HTTP API, so every record passes the same validation, authorization and posting rules as the UI.
+    This is not the production legacy migration (SRS-LEG-003..007 remain open).
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>PetraERP.TestDataImport</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PetraERP.ApiClient\PetraERP.ApiClient.csproj" />
+  </ItemGroup>
+</Project>

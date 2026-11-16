@@ -1,0 +1,134 @@
+﻿<UserControl x:Class="PetraERP.Desktop.Sales.SalesInvoicesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ux="clr-namespace:PetraERP.Desktop.Controls">
+ <UserControl.InputBindings>
+  <KeyBinding Key="N" Modifiers="Control" Command="{Binding NewInvoiceCommand}"/>
+  <KeyBinding Key="F5" Command="{Binding RefreshCommand}"/>
+  <KeyBinding Key="Enter" Command="{Binding OpenCardCommand}"/>
+ </UserControl.InputBindings>
+ <DockPanel>
+  <ux:PageHeader DockPanel.Dock="Top" Title="{Binding Localization[D_SalesInvoices]}">
+   <ux:PageHeader.Commands>
+    <WrapPanel>
+     <Button x:Name="NewInvoiceButton" Style="{StaticResource Button.Primary}" ux:Icon.Glyph="&#xE710;" Content="{Binding Localization[D_NewSalesInvoice]}" Command="{Binding NewInvoiceCommand}" ToolTip="Ctrl+N" Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+     <ItemsControl x:Name="PatternButtons" ItemsSource="{Binding PatternShortcuts}" Visibility="{Binding CanManage, Converter={StaticResource Visible}}" Focusable="False">
+      <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
+       <DataTemplate>
+        <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE710;" Content="{Binding Name}" Margin="8,0,0,0"
+                Command="{Binding DataContext.NewByPatternCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"/>
+       </DataTemplate>
+      </ItemsControl.ItemTemplate>
+     </ItemsControl>
+     <Button x:Name="RefreshButton" Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE72C;" Content="{Binding Localization[D_Refresh]}" Command="{Binding RefreshCommand}" ToolTip="F5"/>
+     <Button x:Name="BulkPostButton" Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE8A5;" Content="{Binding Localization[D_PostAll]}" Command="{Binding BulkPostCommand}" ToolTip="{Binding Localization[D_PostAllHint]}" Visibility="{Binding CanManagePostingBatches, Converter={StaticResource Visible}}" Margin="8,0,0,0"/>
+    </WrapPanel>
+   </ux:PageHeader.Commands>
+  </ux:PageHeader>
+
+  <TextBlock DockPanel.Dock="Top" Text="{Binding Localization[D_DirectoryEntryHelp]}" Style="{StaticResource Text.Caption}" Margin="4,0,4,8"/>
+  <Border DockPanel.Dock="Top" Style="{StaticResource Panel.Card}" Margin="0,0,0,8" Padding="8">
+   <WrapPanel VerticalAlignment="Center">
+    <ux:PetraSearchBox Placeholder="{Binding Localization[D_Search]}" x:Name="SearchBox" Text="{Binding Search, UpdateSourceTrigger=PropertyChanged, Delay=150}" Width="220" Margin="0,0,12,0" ToolTip="Ctrl+F" AutomationProperties.Name="{Binding Localization[D_Search]}"/>
+
+    <ux:LookupPicker ItemsSource="{Binding Customers, Converter={StaticResource EntryLookups}}" AsyncSearchProvider="{Binding SearchCustomersAsync}" SelectedId="{Binding SelectedCustomerId}" Width="180" Margin="0,0,12,0" Placeholder="{Binding DataContext.Localization[D_PrefixSearchHelp], RelativeSource={RelativeSource AncestorType=UserControl}}" IsArabic="{Binding DataContext.Localization.IsRightToLeft, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+
+    <ux:LookupPicker ItemsSource="{Binding Warehouses, Converter={StaticResource EntryLookups}}" SelectedId="{Binding SelectedWarehouseId}" Width="160" Margin="0,0,12,0" Placeholder="{Binding DataContext.Localization[D_PrefixSearchHelp], RelativeSource={RelativeSource AncestorType=UserControl}}" IsArabic="{Binding DataContext.Localization.IsRightToLeft, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+
+    <ComboBox x:Name="StatusFilter" ItemsSource="{Binding StatusFilterOptions}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding SelectedStatus}" Width="130" Margin="0,0,12,0" AutomationProperties.Name="الحالة"/>
+
+    <DatePicker x:Name="FromDateFilter" SelectedDate="{Binding FromDateValue}" Width="130" Margin="0,0,6,0" AutomationProperties.Name="من تاريخ" ToolTip="من تاريخ"/>
+    <DatePicker x:Name="ToDateFilter" SelectedDate="{Binding ToDateValue}" Width="130" Margin="0,0,12,0" AutomationProperties.Name="إلى تاريخ" ToolTip="إلى تاريخ"/>
+
+    <Button x:Name="ClearFiltersButton" Style="{StaticResource Button.Command}" Content="مسح التصفية" Command="{Binding ClearFiltersCommand}" Margin="0,0,12,0"/>
+
+    <TextBlock VerticalAlignment="Center" Style="{StaticResource Text.Caption}">
+     <Run Text="{Binding Invoices.Count, Mode=OneWay}"/><Run Text=" / "/><Run Text="{Binding TotalCount, Mode=OneWay}"/>
+    </TextBlock>
+   </WrapPanel>
+  </Border>
+
+  <Border Style="{StaticResource Panel.Flat}">
+   <DataGrid x:Name="InvoicesGrid" ItemsSource="{Binding VisibleInvoices}" SelectedItem="{Binding SelectedInvoice}" IsReadOnly="True" SelectionUnit="FullRow" CanUserSortColumns="True" Sorting="ColumnSorting" BorderThickness="0"
+             ux:GridRowContext.Enabled="True" MouseDoubleClick="RowOpened" AutomationProperties.Name="{Binding Localization[D_SalesInvoices]}">
+    <DataGrid.ContextMenu>
+     <ContextMenu x:Name="InvoiceMenu" DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}" FlowDirection="{Binding PlacementTarget.FlowDirection, RelativeSource={RelativeSource Self}}">
+      <MenuItem Header="{Binding Localization[D_ViewSalesInvoice]}" Command="{Binding OpenCardCommand}" InputGestureText="Enter"/>
+      <MenuItem Header="{Binding Localization[D_ApproveInvoice]}" Command="{Binding ApproveInvoiceCommand}" Visibility="{Binding CanApprove, Converter={StaticResource Visible}}"/>
+      <Separator Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+      <MenuItem Header="{Binding Localization[D_NewSalesInvoice]}" Command="{Binding NewInvoiceCommand}" Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+     </ContextMenu>
+    </DataGrid.ContextMenu>
+
+    <DataGrid.Columns>
+     <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="50" ElementStyle="{StaticResource Text.Numeric}"/>
+     <DataGridTextColumn Header="رقم الفاتورة / المرجع" Binding="{Binding InvoiceNumberDisplay}" Width="150" SortMemberPath="InvoiceNumber">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock"><Setter Property="FlowDirection" Value="LeftToRight"/><Setter Property="HorizontalAlignment" Value="Right"/></Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+     <DataGridTextColumn Header="النمط" Binding="{Binding PatternCode}" Width="90" SortMemberPath="PatternCode"/>
+     <DataGridTextColumn Header="التاريخ" Binding="{Binding DateDisplay}" Width="110" SortMemberPath="InvoiceDateUtc"/>
+     <DataGridTextColumn Header="العميل" Binding="{Binding CustomerName}" Width="*" MinWidth="120" SortMemberPath="CustomerName"/>
+     <DataGridTextColumn Header="المستودع" Binding="{Binding WarehouseCode}" Width="90" SortMemberPath="WarehouseCode"/>
+     <DataGridTextColumn Header="طريقة الدفع" Binding="{Binding PaymentMethodDisplay}" Width="100" SortMemberPath="PaymentMethod"/>
+     <DataGridTextColumn Header="المجموع الصافي" Binding="{Binding GrandTotal, Converter={StaticResource Number}}" Width="110" SortMemberPath="GrandTotal" ElementStyle="{StaticResource Text.Numeric}"/>
+     <DataGridTextColumn Header="المدفوع" Binding="{Binding SettledDisplay, Converter={StaticResource Number}}" Width="90" ElementStyle="{StaticResource Text.Numeric}"/>
+     <DataGridTextColumn Header="المرتجع" Binding="{Binding ReturnedDisplay, Converter={StaticResource Number}}" Width="90" ElementStyle="{StaticResource Text.Numeric}"/>
+     <DataGridTextColumn Header="المتبقي" Binding="{Binding OutstandingDisplay, Converter={StaticResource Number}}" Width="90" ElementStyle="{StaticResource Text.Numeric}"/>
+     <DataGridTextColumn Header="العملة" Binding="{Binding CurrencyCode}" Width="70" SortMemberPath="CurrencyCode"/>
+
+     <DataGridTemplateColumn Header="الحالة" Width="90" SortMemberPath="Status">
+      <DataGridTemplateColumn.CellTemplate>
+       <DataTemplate>
+        <Border Padding="6,2" CornerRadius="{DynamicResource Radius.Small}" HorizontalAlignment="Center">
+         <Border.Style>
+          <Style TargetType="Border">
+           <Setter Property="Background" Value="{DynamicResource SubtleSuccessBackground}"/>
+           <Style.Triggers>
+            <DataTrigger Binding="{Binding Status}" Value="Draft">
+             <Setter Property="Background" Value="{DynamicResource SubtleMutedBackground}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="Approved">
+             <Setter Property="Background" Value="{DynamicResource SubtleInfoBackground}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="Reversed">
+             <Setter Property="Background" Value="{DynamicResource SubtleWarningBackground}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="Cancelled">
+             <Setter Property="Background" Value="{DynamicResource SubtleErrorBackground}"/>
+            </DataTrigger>
+           </Style.Triggers>
+          </Style>
+         </Border.Style>
+         <TextBlock FontSize="11" Text="{Binding StatusDisplay}">
+          <TextBlock.Style>
+           <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
+            <Setter Property="Foreground" Value="{DynamicResource Success}"/>
+            <Style.Triggers>
+             <DataTrigger Binding="{Binding Status}" Value="Draft">
+              <Setter Property="Foreground" Value="{DynamicResource MutedText}"/>
+             </DataTrigger>
+             <DataTrigger Binding="{Binding Status}" Value="Approved">
+              <Setter Property="Foreground" Value="{DynamicResource Info}"/>
+             </DataTrigger>
+             <DataTrigger Binding="{Binding Status}" Value="Reversed">
+              <Setter Property="Foreground" Value="{DynamicResource Warning}"/>
+             </DataTrigger>
+             <DataTrigger Binding="{Binding Status}" Value="Cancelled">
+              <Setter Property="Foreground" Value="{DynamicResource Error}"/>
+             </DataTrigger>
+            </Style.Triggers>
+           </Style>
+          </TextBlock.Style>
+         </TextBlock>
+        </Border>
+       </DataTemplate>
+      </DataGridTemplateColumn.CellTemplate>
+     </DataGridTemplateColumn>
+    </DataGrid.Columns>
+   </DataGrid>
+  </Border>
+ </DockPanel>
+</UserControl>

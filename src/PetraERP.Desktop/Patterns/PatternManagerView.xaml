@@ -1,0 +1,25 @@
+<UserControl x:Class="PetraERP.Desktop.Patterns.PatternManagerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ux="clr-namespace:PetraERP.Desktop.Controls">
+ <!-- Al-Ameen pattern manager: the families on one side; the explanation and the buttons of the chosen family on the other. -->
+ <Grid Margin="4">
+  <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="170"/></Grid.ColumnDefinitions>
+  <Border Grid.Column="0" Style="{StaticResource Panel.Card}" Padding="12" Margin="0,0,8,0">
+   <StackPanel VerticalAlignment="Top">
+    <TextBlock Text="{Binding SelectedCategory.Title}" Style="{StaticResource Text.Section}" Margin="0,0,0,8"/>
+    <TextBlock Text="{Binding SelectedCategory.Description}" TextWrapping="Wrap" Margin="0,0,0,12"/>
+    <StackPanel Orientation="Horizontal">
+     <Button Style="{StaticResource Button.Primary}" ux:Icon.Glyph="&#xE70F;" Content="{Binding Localization[D_PM_Edit]}" Command="{Binding EditCommand}" Margin="0,0,8,0"/>
+     <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE710;" Content="{Binding Localization[D_NewPattern]}" Command="{Binding NewCommand}"
+             Visibility="{Binding CanCreate, Converter={StaticResource Visible}}"/>
+    </StackPanel>
+   </StackPanel>
+  </Border>
+  <Border Grid.Column="1" Style="{StaticResource Panel.Flat}">
+   <ListBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory, Mode=TwoWay}" BorderThickness="0" AutomationProperties.Name="{Binding Localization[D_PM_Title]}">
+    <ListBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Title}"/></DataTemplate></ListBox.ItemTemplate>
+   </ListBox>
+  </Border>
+ </Grid>
+</UserControl>

@@ -1,0 +1,179 @@
+<UserControl x:Class="PetraERP.Desktop.Patterns.DocumentPatternsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ux="clr-namespace:PetraERP.Desktop.Controls">
+ <UserControl.InputBindings>
+  <KeyBinding Key="N" Modifiers="Control" Command="{Binding NewPatternCommand}"/>
+  <KeyBinding Key="F5" Command="{Binding RefreshCommand}"/>
+  <KeyBinding Key="Enter" Command="{Binding OpenCardCommand}"/>
+ </UserControl.InputBindings>
+ <DockPanel>
+  <ux:PageHeader DockPanel.Dock="Top" Title="{Binding Localization[D_DocumentPatterns]}">
+   <ux:PageHeader.Commands>
+    <WrapPanel>
+     <Button x:Name="NewPatternButton" Style="{StaticResource Button.Primary}" ux:Icon.Glyph="&#xE710;" Content="{Binding Localization[D_NewPattern]}" Command="{Binding NewPatternCommand}" ToolTip="Ctrl+N" Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+     <Button x:Name="RefreshButton" Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE72C;" Content="{Binding Localization[D_Refresh]}" Command="{Binding RefreshCommand}" ToolTip="F5"/>
+    </WrapPanel>
+   </ux:PageHeader.Commands>
+  </ux:PageHeader>
+
+  <TextBlock DockPanel.Dock="Top" Text="{Binding Localization[D_PatternDirectoryHelp]}" Style="{StaticResource Text.Caption}" Margin="4,0,4,8"/>
+  <Border DockPanel.Dock="Top" Style="{StaticResource Panel.Card}" Margin="0,0,0,8" Padding="8">
+   <WrapPanel VerticalAlignment="Center">
+    <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
+     <RadioButton Content="{Binding Localization[D_All]}" IsChecked="{Binding FilterTab, Converter={StaticResource Equal}, ConverterParameter=all, Mode=TwoWay}" Style="{StaticResource {x:Type ToggleButton}}" Padding="12,4" Margin="0,0,4,0"/>
+     <RadioButton Content="{Binding Localization[D_Invoices]}" IsChecked="{Binding FilterTab, Converter={StaticResource Equal}, ConverterParameter=invoices, Mode=TwoWay}" Style="{StaticResource {x:Type ToggleButton}}" Padding="12,4" Margin="0,0,4,0"/>
+     <RadioButton Content="{Binding Localization[D_Vouchers]}" IsChecked="{Binding FilterTab, Converter={StaticResource Equal}, ConverterParameter=vouchers, Mode=TwoWay}" Style="{StaticResource {x:Type ToggleButton}}" Padding="12,4" Margin="0,0,4,0"/>
+     <RadioButton Content="{Binding Localization[D_PM_Cash]}" IsChecked="{Binding FilterTab, Converter={StaticResource Equal}, ConverterParameter=cash, Mode=TwoWay}" Style="{StaticResource {x:Type ToggleButton}}" Padding="12,4" Margin="0,0,4,0"/>
+     <RadioButton Content="{Binding Localization[D_PM_Inventory]}" IsChecked="{Binding FilterTab, Converter={StaticResource Equal}, ConverterParameter=inventory, Mode=TwoWay}" Style="{StaticResource {x:Type ToggleButton}}" Padding="12,4"/>
+    </StackPanel>
+
+    <ux:PetraSearchBox Placeholder="{Binding Localization[D_Search]}" x:Name="SearchBox" Text="{Binding Search, UpdateSourceTrigger=PropertyChanged, Delay=150}" Width="220" Margin="0,0,12,0" ToolTip="Ctrl+F" AutomationProperties.Name="{Binding Localization[D_Search]}"/>
+
+    <CheckBox Content="{Binding Localization[D_ActiveOnly]}" IsChecked="{Binding ActiveOnly}" VerticalAlignment="Center" Margin="0,0,16,0"/>
+
+    <TextBlock Text="{Binding TotalCount, StringFormat='Σ {0}'}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center"/>
+   </WrapPanel>
+  </Border>
+
+  <Border Style="{StaticResource Panel.Flat}">
+   <DataGrid x:Name="PatternsGrid" ItemsSource="{Binding VisiblePatterns}" SelectedItem="{Binding SelectedPattern}" IsReadOnly="True" SelectionUnit="FullRow" CanUserSortColumns="True" BorderThickness="0"
+             ux:GridRowContext.Enabled="True" MouseDoubleClick="RowOpened" AutomationProperties.Name="{Binding Localization[D_DocumentPatterns]}">
+    <DataGrid.ContextMenu>
+     <ContextMenu x:Name="PatternMenu" DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}" FlowDirection="{Binding PlacementTarget.FlowDirection, RelativeSource={RelativeSource Self}}">
+      <MenuItem Header="{Binding Localization[D_ViewPatternCard]}" Command="{Binding OpenCardCommand}" InputGestureText="Enter"/>
+      <MenuItem Header="{Binding Localization[D_DuplicatePattern]}" Command="{Binding DuplicatePatternCommand}" Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+      <Separator Visibility="{Binding CanPublish, Converter={StaticResource Visible}}"/>
+      <MenuItem Header="{Binding Localization[D_PublishRevision]}" Command="{Binding PublishRevisionCommand}" Visibility="{Binding CanPublish, Converter={StaticResource Visible}}"/>
+      <MenuItem Header="{Binding Localization[D_RetirePattern]}" Command="{Binding RetirePatternCommand}" Visibility="{Binding CanPublish, Converter={StaticResource Visible}}"/>
+      <Separator Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+      <MenuItem Header="{Binding Localization[D_ToggleActive]}" Command="{Binding ToggleActiveCommand}" Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+     </ContextMenu>
+    </DataGrid.ContextMenu>
+
+    <DataGrid.Columns>
+     <DataGridTemplateColumn Width="40" CanUserSort="False">
+      <DataGridTemplateColumn.CellTemplate>
+       <DataTemplate>
+        <Button FontSize="12" MinWidth="24" MinHeight="24" Padding="0"
+                Command="{Binding DataContext.ToggleFavoriteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}">
+         <Button.Style>
+          <Style TargetType="Button" BasedOn="{StaticResource Button.Icon}">
+           <Setter Property="Content" Value="&#xE734;"/>
+           <Setter Property="Foreground" Value="{DynamicResource MutedText}"/>
+           <Style.Triggers>
+            <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+             <Setter Property="Content" Value="&#xE735;"/>
+             <Setter Property="Foreground" Value="{DynamicResource Warning}"/>
+            </DataTrigger>
+           </Style.Triggers>
+          </Style>
+         </Button.Style>
+        </Button>
+       </DataTemplate>
+      </DataGridTemplateColumn.CellTemplate>
+     </DataGridTemplateColumn>
+
+     <DataGridTextColumn Binding="{Binding Code}" Width="120" SortMemberPath="Code"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Code], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+     <DataGridTextColumn Binding="{Binding ShortCode}" Width="80" SortMemberPath="ShortCode"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_ShortCode], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+
+     <DataGridTemplateColumn Width="*" SortMemberPath="NameArabic"><DataGridTemplateColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Name], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTemplateColumn.Header>
+      <DataGridTemplateColumn.CellTemplate>
+       <DataTemplate>
+        <StackPanel Orientation="Horizontal">
+         <TextBlock Style="{StaticResource Text.Icon}" Text="{Binding Icon}" Margin="0,0,6,0" Visibility="{Binding Icon, Converter={StaticResource Show}}"/>
+         <TextBlock TextTrimming="CharacterEllipsis">
+          <TextBlock.Text>
+           <MultiBinding Converter="{StaticResource NameLabel}">
+            <Binding Path="NameArabic"/>
+            <Binding Path="NameEnglish"/>
+            <Binding Path="DataContext.Localization.IsRightToLeft" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+           </MultiBinding>
+          </TextBlock.Text>
+         </TextBlock>
+        </StackPanel>
+       </DataTemplate>
+      </DataGridTemplateColumn.CellTemplate>
+     </DataGridTemplateColumn>
+
+     <DataGridTemplateColumn Width="140" SortMemberPath="OperationKind"><DataGridTemplateColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_OperationKind], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTemplateColumn.Header>
+      <DataGridTemplateColumn.CellTemplate>
+       <DataTemplate>
+        <TextBlock>
+         <TextBlock.Text>
+          <MultiBinding Converter="{StaticResource EnumLabel}" ConverterParameter="BusinessOperationKind_">
+           <Binding Path="OperationKind"/>
+           <Binding Path="DataContext.Localization.Language" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+          </MultiBinding>
+         </TextBlock.Text>
+        </TextBlock>
+       </DataTemplate>
+      </DataGridTemplateColumn.CellTemplate>
+     </DataGridTemplateColumn>
+
+     <DataGridTextColumn Binding="{Binding BranchDisplay}" Width="110"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_BranchesColumn], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+
+     <DataGridTemplateColumn Width="90" SortMemberPath="ActiveRevisionNumber"><DataGridTemplateColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_RevisionColumn], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTemplateColumn.Header>
+      <DataGridTemplateColumn.CellTemplate>
+       <DataTemplate>
+        <StackPanel Orientation="Horizontal" Visibility="{Binding ActiveRevisionNumber, Converter={StaticResource Visible}}">
+         <TextBlock Text="v." Style="{StaticResource Text.Caption}"/>
+         <TextBlock Text="{Binding ActiveRevisionNumber}"/>
+        </StackPanel>
+       </DataTemplate>
+      </DataGridTemplateColumn.CellTemplate>
+     </DataGridTemplateColumn>
+
+     <DataGridTemplateColumn Width="90" SortMemberPath="IsActive"><DataGridTemplateColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Status], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTemplateColumn.Header>
+      <DataGridTemplateColumn.CellTemplate>
+       <DataTemplate>
+        <TextBlock>
+         <TextBlock.Text>
+          <MultiBinding Converter="{StaticResource EnumLabel}" ConverterParameter="D_ActiveState_">
+           <Binding Path="IsActive"/>
+           <Binding Path="DataContext.Localization.Language" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+          </MultiBinding>
+         </TextBlock.Text>
+        </TextBlock>
+       </DataTemplate>
+      </DataGridTemplateColumn.CellTemplate>
+     </DataGridTemplateColumn>
+
+     <DataGridTemplateColumn Width="90" SortMemberPath="IsRunnable"><DataGridTemplateColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_RunnableColumn], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTemplateColumn.Header>
+      <DataGridTemplateColumn.CellTemplate>
+       <DataTemplate>
+        <Border CornerRadius="{DynamicResource Radius.Small}" Padding="6,2" HorizontalAlignment="Center">
+         <Border.Style>
+          <Style TargetType="Border">
+           <Setter Property="Background" Value="{DynamicResource Alternate}"/>
+           <Style.Triggers>
+            <DataTrigger Binding="{Binding IsRunnable}" Value="True">
+             <Setter Property="Background" Value="{DynamicResource SuccessSurface}"/>
+            </DataTrigger>
+           </Style.Triggers>
+          </Style>
+         </Border.Style>
+         <TextBlock FontSize="{DynamicResource Font.Caption}">
+          <TextBlock.Style>
+           <Style TargetType="TextBlock">
+            <Setter Property="Text" Value="{Binding DataContext.Localization[D_RunnablePlanned], RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource MutedText}"/>
+            <Style.Triggers>
+             <DataTrigger Binding="{Binding IsRunnable}" Value="True">
+              <Setter Property="Text" Value="{Binding DataContext.Localization[D_RunnableReady], RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+              <Setter Property="Foreground" Value="{DynamicResource Success}"/>
+              <Setter Property="FontWeight" Value="SemiBold"/>
+             </DataTrigger>
+            </Style.Triggers>
+           </Style>
+          </TextBlock.Style>
+         </TextBlock>
+        </Border>
+       </DataTemplate>
+      </DataGridTemplateColumn.CellTemplate>
+     </DataGridTemplateColumn>
+    </DataGrid.Columns>
+   </DataGrid>
+  </Border>
+ </DockPanel>
+</UserControl>

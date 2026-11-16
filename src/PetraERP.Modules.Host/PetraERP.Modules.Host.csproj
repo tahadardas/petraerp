@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>PetraERP.Modules.Host</RootNamespace>
+    <AssemblyName>PetraERP.Modules.Host</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PetraERP.Modules.Abstractions\PetraERP.Modules.Abstractions.csproj" />
+    <ProjectReference Include="..\PetraERP.Modules.Packaging\PetraERP.Modules.Packaging.csproj" />
+  </ItemGroup>
+</Project>

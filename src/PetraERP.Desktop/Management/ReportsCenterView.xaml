@@ -1,0 +1,34 @@
+<UserControl x:Class="PetraERP.Desktop.Management.ReportsCenterView"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:ux="clr-namespace:PetraERP.Desktop.Controls" xmlns:local="clr-namespace:PetraERP.Desktop.Management">
+ <DockPanel Margin="16">
+  <ux:PageHeader DockPanel.Dock="Top" Title="مركز التقارير">
+   <ux:PageHeader.Commands><WrapPanel>
+    <Button Style="{StaticResource Button.Financial}" Content="فتح التقرير" Command="{Binding OpenCommand}" Margin="0,0,8,0"/>
+    <Button Style="{StaticResource Button.Command}" Content="تحديث" Command="{Binding RefreshCommand}"/>
+   </WrapPanel></ux:PageHeader.Commands>
+  </ux:PageHeader>
+  <TextBlock DockPanel.Dock="Top" Text="{Binding Summary}" FontWeight="SemiBold" Margin="0,0,0,6"/>
+  <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+   <TextBox Width="260" ux:Watermark.Text="بحث بالاسم أو الرمز" Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0"/>
+   <ComboBox Width="150" ItemsSource="{Binding Groups}" SelectedItem="{Binding GroupFilter}" Margin="0,0,8,0" ToolTip="المجموعة"/>
+   <ComboBox Width="150" ItemsSource="{Binding Deliveries}" SelectedItem="{Binding DeliveryFilter}" ToolTip="حالة التنفيذ"/>
+  </WrapPanel>
+  <!-- Reports grouped by the menu they live in (the same reports as the menus; the catalogue is the only list). -->
+  <TreeView x:Name="ReportTree" ItemsSource="{Binding Tree}" SelectedItemChanged="OnSelectedItemChanged" MouseDoubleClick="OnTreeDoubleClick" AutomationProperties.Name="فهرس التقارير">
+   <TreeView.Resources>
+    <HierarchicalDataTemplate DataType="{x:Type local:ReportTreeNode}" ItemsSource="{Binding Reports}">
+     <TextBlock FontWeight="SemiBold"><Run Text="{Binding Title, Mode=OneWay}"/><Run Text=" ("/><Run Text="{Binding Reports.Count, Mode=OneWay}"/><Run Text=")"/></TextBlock>
+    </HierarchicalDataTemplate>
+    <DataTemplate DataType="{x:Type local:ReportEntryRow}">
+     <DockPanel ToolTip="{Binding Entry.Note}">
+      <TextBlock DockPanel.Dock="Left" Text="{Binding Id}" Width="80" FlowDirection="LeftToRight"/>
+      <TextBlock DockPanel.Dock="Right" Text="{Binding StateLabel}" Width="70" Margin="12,0,0,0"/>
+      <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
+      <DockPanel.Style><Style TargetType="DockPanel"><Style.Triggers><DataTrigger Binding="{Binding IsOpenable}" Value="False"><Setter Property="Opacity" Value="0.55"/></DataTrigger></Style.Triggers></Style></DockPanel.Style>
+     </DockPanel>
+    </DataTemplate>
+   </TreeView.Resources>
+  </TreeView>
+ </DockPanel>
+</UserControl>

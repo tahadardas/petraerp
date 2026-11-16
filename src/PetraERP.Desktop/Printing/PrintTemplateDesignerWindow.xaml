@@ -1,0 +1,149 @@
+<Window x:Class="PetraERP.Desktop.Printing.PrintTemplateDesignerWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ Title="مصمم قوالب الطباعة" Width="{StaticResource Window.ToolWidth}" Height="{StaticResource Window.ToolHeight}" MinWidth="980" MinHeight="600"
+ Style="{StaticResource Window.Dialog}" WindowStartupLocation="CenterOwner" FlowDirection="RightToLeft" PreviewKeyDown="OnPreviewKeyDown" Closing="OnClosing">
+ <!-- Template designer: bands on a page (page header, document header, lines table, document footer, page footer), elements placed in millimeters
+      (text with [Field] tokens, logo/picture, line, rectangle), columns of the lines table, live preview through FastReport. -->
+ <DockPanel Margin="8">
+  <Border DockPanel.Dock="Top" Style="{StaticResource Panel.Card}" Padding="8" Margin="0,0,0,8">
+   <WrapPanel>
+    <TextBlock Text="اسم النمط" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+    <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" MinWidth="240" Margin="0,0,10,0" AutomationProperties.Name="اسم النمط"/>
+    <Button Style="{StaticResource Button.Primary}" Content="حفظ" Click="OnSave" ToolTip="Ctrl+S" Margin="0,0,6,0"/>
+    <Button Style="{StaticResource Button.Command}" Content="حفظ باسم…" Click="OnSaveAs" Margin="0,0,6,0"/>
+    <Button Style="{StaticResource Button.Command}" Content="اعتماد كافتراضي" Click="OnSetDefault" Margin="0,0,6,0"/>
+    <Button Style="{StaticResource Button.Command}" Content="حذف النمط" Click="OnDelete" Margin="0,0,14,0"/>
+    <Button Style="{StaticResource Button.Command}" Content="استيراد…" Click="OnImport" Margin="0,0,6,0"/>
+    <Button Style="{StaticResource Button.Command}" Content="تصدير…" Click="OnExport" Margin="0,0,14,0"/>
+    <TextBlock Text="تكبير" VerticalAlignment="Center" Margin="0,0,6,0"/>
+    <Slider x:Name="ZoomSlider" Minimum="0.6" Maximum="2" Value="1" Width="120" ValueChanged="OnZoomChanged" VerticalAlignment="Center" AutomationProperties.Name="تكبير"/>
+    <TextBlock x:Name="StatusText" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="14,0,0,0"/>
+   </WrapPanel>
+  </Border>
+
+  <!-- Right: palette and properties -->
+  <Border DockPanel.Dock="Right" Width="360" Style="{StaticResource Panel.Card}" Margin="8,0,0,0" Padding="0">
+   <TabControl x:Name="SideTabs">
+    <TabItem Header="العنصر">
+     <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="10">
+      <TextBlock Text="إضافة عنصر إلى القسم المحدد" Style="{StaticResource Text.Label}"/>
+      <WrapPanel Margin="0,4,0,10">
+       <Button Style="{StaticResource Button.Command}" Content="نص" Click="OnAddText" Margin="0,0,4,4"/>
+       <Button Style="{StaticResource Button.Command}" Content="صورة / شعار" Click="OnAddImage" Margin="0,0,4,4"/>
+       <Button Style="{StaticResource Button.Command}" Content="خط" Click="OnAddLine" Margin="0,0,4,4"/>
+       <Button Style="{StaticResource Button.Command}" Content="إطار" Click="OnAddRectangle" Margin="0,0,4,4"/>
+       <Button Style="{StaticResource Button.Command}" Content="نسخ" Click="OnDuplicate" Margin="0,0,4,4"/>
+       <Button Style="{StaticResource Button.Danger}" Content="حذف" Click="OnDeleteElement" ToolTip="Delete" Margin="0,0,4,4"/>
+      </WrapPanel>
+      <StackPanel x:Name="ElementPanel" DataContext="{Binding SelectedElement}">
+       <StackPanel.Style><Style TargetType="StackPanel"><Setter Property="Visibility" Value="Visible"/>
+        <Style.Triggers><DataTrigger Binding="{Binding}" Value="{x:Null}"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></StackPanel.Style>
+       <TextBlock Text="النص (يمكن إدراج [الحقول] من تبويب الحقول)" Style="{StaticResource Text.Label}"/>
+       <TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="54" TextWrapping="Wrap" Margin="0,2,0,8" AutomationProperties.Name="النص"/>
+       <UniformGrid Columns="2">
+        <StackPanel Margin="0,0,4,6"><TextBlock Text="س (مم)" Style="{StaticResource Text.Caption}"/><TextBox Text="{Binding X, ConverterCulture=en-US, UpdateSourceTrigger=LostFocus}"/></StackPanel>
+        <StackPanel Margin="0,0,0,6"><TextBlock Text="ص (مم)" Style="{StaticResource Text.Caption}"/><TextBox Text="{Binding Y, ConverterCulture=en-US, UpdateSourceTrigger=LostFocus}"/></StackPanel>
+        <StackPanel Margin="0,0,4,6"><TextBlock Text="العرض (مم)" Style="{StaticResource Text.Caption}"/><TextBox Text="{Binding Width, ConverterCulture=en-US, UpdateSourceTrigger=LostFocus}"/></StackPanel>
+        <StackPanel Margin="0,0,0,6"><TextBlock Text="الارتفاع (مم)" Style="{StaticResource Text.Caption}"/><TextBox Text="{Binding Height, ConverterCulture=en-US, UpdateSourceTrigger=LostFocus}"/></StackPanel>
+        <StackPanel Margin="0,0,4,6"><TextBlock Text="حجم الخط" Style="{StaticResource Text.Caption}"/><TextBox Text="{Binding FontSize, ConverterCulture=en-US, UpdateSourceTrigger=LostFocus}"/></StackPanel>
+        <StackPanel Margin="0,0,0,6"><TextBlock Text="الخط (فارغ = خط الصفحة)" Style="{StaticResource Text.Caption}"/><ComboBox x:Name="FontBox" IsEditable="True" Text="{Binding FontFamily, UpdateSourceTrigger=LostFocus}"/></StackPanel>
+        <StackPanel Margin="0,0,4,6"><TextBlock Text="لون النص #RRGGBB" Style="{StaticResource Text.Caption}"/><TextBox Text="{Binding Color, UpdateSourceTrigger=LostFocus}" FlowDirection="LeftToRight"/></StackPanel>
+        <StackPanel Margin="0,0,0,6"><TextBlock Text="لون الخلفية (فارغ = شفاف)" Style="{StaticResource Text.Caption}"/><TextBox Text="{Binding Fill, UpdateSourceTrigger=LostFocus}" FlowDirection="LeftToRight"/></StackPanel>
+       </UniformGrid>
+       <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+        <CheckBox Content="غامق" IsChecked="{Binding Bold}" Margin="0,0,12,0"/>
+        <CheckBox Content="مائل" IsChecked="{Binding Italic}" Margin="0,0,12,0"/>
+        <CheckBox Content="إطار" IsChecked="{Binding Border}"/>
+       </StackPanel>
+       <TextBlock Text="المحاذاة على الورقة" Style="{StaticResource Text.Caption}"/>
+       <ComboBox x:Name="AlignBox" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding Align}" Margin="0,2,0,8"/>
+       <Button Style="{StaticResource Button.Command}" Content="اختيار صورة…" Click="OnPickImage" HorizontalAlignment="Left"/>
+      </StackPanel>
+     </StackPanel></ScrollViewer>
+    </TabItem>
+
+    <TabItem Header="الصفحة والأقسام">
+     <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="10">
+      <TextBlock Text="الورقة" Style="{StaticResource Text.Label}"/>
+      <ComboBox x:Name="PaperBox" DisplayMemberPath="Label" SelectionChanged="OnPaperChanged" Margin="0,2,0,6" AutomationProperties.Name="حجم الورقة"/>
+      <CheckBox Content="أفقي" IsChecked="{Binding Landscape}" Margin="0,0,0,6"/>
+      <CheckBox Content="اتجاه النص من اليمين لليسار" IsChecked="{Binding RightToLeft}" Margin="0,0,0,6"/>
+      <UniformGrid Columns="2">
+       <StackPanel Margin="0,0,4,6"><TextBlock Text="هامش يسار (مم)" Style="{StaticResource Text.Caption}"/><TextBox Text="{Binding MarginLeftMm, ConverterCulture=en-US, UpdateSourceTrigger=LostFocus}"/></StackPanel>
+       <StackPanel Margin="0,0,0,6"><TextBlock Text="هامش يمين (مم)" Style="{StaticResource Text.Caption}"/><TextBox Text="{Binding MarginRightMm, ConverterCulture=en-US, UpdateSourceTrigger=LostFocus}"/></StackPanel>
+       <StackPanel Margin="0,0,4,6"><TextBlock Text="هامش علوي (مم)" Style="{StaticResource Text.Caption}"/><TextBox Text="{Binding MarginTopMm, ConverterCulture=en-US, UpdateSourceTrigger=LostFocus}"/></StackPanel>
+       <StackPanel Margin="0,0,0,6"><TextBlock Text="هامش سفلي (مم)" Style="{StaticResource Text.Caption}"/><TextBox Text="{Binding MarginBottomMm, ConverterCulture=en-US, UpdateSourceTrigger=LostFocus}"/></StackPanel>
+      </UniformGrid>
+      <TextBlock Text="خط الصفحة" Style="{StaticResource Text.Caption}"/>
+      <ComboBox x:Name="PageFontBox" IsEditable="True" Text="{Binding PageFontFamily, UpdateSourceTrigger=LostFocus}" Margin="0,2,0,12"/>
+      <TextBlock Text="القسم المحدد (انقر على اسم القسم في الورقة)" Style="{StaticResource Text.Label}"/>
+      <StackPanel DataContext="{Binding SelectedBand}">
+       <TextBlock Text="ارتفاع القسم (مم) — أو اسحب حافته السفلية" Style="{StaticResource Text.Caption}"/>
+       <TextBox Text="{Binding HeightMm, ConverterCulture=en-US, UpdateSourceTrigger=LostFocus}" Margin="0,2,0,12"/>
+      </StackPanel>
+      <TextBlock Text="جدول الأسطر" Style="{StaticResource Text.Label}"/>
+      <UniformGrid Columns="2">
+       <StackPanel Margin="0,0,4,6"><TextBlock Text="ارتفاع العنوان (مم)" Style="{StaticResource Text.Caption}"/><TextBox Text="{Binding TableHeaderHeightMm, ConverterCulture=en-US, UpdateSourceTrigger=LostFocus}"/></StackPanel>
+       <StackPanel Margin="0,0,0,6"><TextBlock Text="ارتفاع السطر (مم)" Style="{StaticResource Text.Caption}"/><TextBox Text="{Binding TableRowHeightMm, ConverterCulture=en-US, UpdateSourceTrigger=LostFocus}"/></StackPanel>
+       <StackPanel Margin="0,0,4,6"><TextBlock Text="حجم خط الجدول" Style="{StaticResource Text.Caption}"/><TextBox Text="{Binding TableFontSize, ConverterCulture=en-US, UpdateSourceTrigger=LostFocus}"/></StackPanel>
+       <StackPanel Margin="0,0,0,6"><TextBlock Text="لون عنوان الجدول" Style="{StaticResource Text.Caption}"/><TextBox Text="{Binding TableHeaderFill, UpdateSourceTrigger=LostFocus}" FlowDirection="LeftToRight"/></StackPanel>
+      </UniformGrid>
+      <CheckBox Content="حدود الجدول" IsChecked="{Binding TableBorders}"/>
+     </StackPanel></ScrollViewer>
+    </TabItem>
+
+    <TabItem Header="أعمدة الأسطر">
+     <DockPanel Margin="10">
+      <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+       <ComboBox x:Name="ColumnFieldBox" DisplayMemberPath="Arabic" MinWidth="130" Margin="0,0,4,4" AutomationProperties.Name="حقل العمود"/>
+       <Button Style="{StaticResource Button.Command}" Content="إضافة عمود" Click="OnAddColumn" Margin="0,0,4,4"/>
+       <Button Style="{StaticResource Button.Command}" Content="حذف" Click="OnRemoveColumn" Margin="0,0,4,4"/>
+       <Button Style="{StaticResource Button.Command}" Content="▲" Click="OnColumnUp" MinWidth="30" Margin="0,0,4,4" AutomationProperties.Name="أعلى"/>
+       <Button Style="{StaticResource Button.Command}" Content="▼" Click="OnColumnDown" MinWidth="30" Margin="0,0,4,4" AutomationProperties.Name="أسفل"/>
+       <Button Style="{StaticResource Button.Command}" Content="ملء العرض" Click="OnFitColumns" Margin="0,0,4,4" ToolTip="يضبط الأعمدة لتملأ عرض الطباعة"/>
+      </WrapPanel>
+      <TextBlock DockPanel.Dock="Top" Text="العمود الأول يظهر عند حافة القراءة (اليمين في العربية)" Style="{StaticResource Text.Caption}" Margin="0,0,0,6"/>
+      <DataGrid x:Name="ColumnsGrid" ItemsSource="{Binding Columns}" SelectedItem="{Binding SelectedColumn}" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column">
+       <DataGrid.Columns>
+        <DataGridTextColumn Header="العنوان" Binding="{Binding Heading, UpdateSourceTrigger=LostFocus}" Width="*"/>
+        <DataGridTextColumn Header="الحقل" Binding="{Binding Field}" IsReadOnly="True" Width="95"/>
+        <DataGridTextColumn Header="العرض (مم)" Binding="{Binding WidthMm, ConverterCulture=en-US, UpdateSourceTrigger=LostFocus}" Width="70"/>
+       </DataGrid.Columns>
+      </DataGrid>
+     </DockPanel>
+    </TabItem>
+
+    <TabItem Header="الحقول">
+     <DockPanel Margin="10">
+      <TextBlock DockPanel.Dock="Top" Text="انقر مرتين على حقل لإدراجه في النص المحدد (أو في عنصر جديد)" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,0,0,6"/>
+      <ListBox x:Name="FieldList" MouseDoubleClick="OnFieldDoubleClick">
+       <ListBox.GroupStyle><GroupStyle><GroupStyle.HeaderTemplate><DataTemplate><TextBlock Text="{Binding Name}" FontWeight="SemiBold" Margin="0,6,0,2"/></DataTemplate></GroupStyle.HeaderTemplate></GroupStyle></ListBox.GroupStyle>
+       <ListBox.ItemTemplate><DataTemplate><StackPanel Orientation="Horizontal"><TextBlock Text="{Binding Arabic}" Width="130"/><TextBlock Text="{Binding Key}" Foreground="{DynamicResource Text.Secondary}" FlowDirection="LeftToRight"/></StackPanel></DataTemplate></ListBox.ItemTemplate>
+      </ListBox>
+     </DockPanel>
+    </TabItem>
+   </TabControl>
+  </Border>
+
+  <!-- Center: design surface and preview -->
+  <TabControl x:Name="CenterTabs" SelectionChanged="OnCenterTabChanged">
+   <TabItem Header="التصميم">
+    <ScrollViewer x:Name="DesignScroll" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="{DynamicResource Alternate}">
+     <Border x:Name="PageBorder" Background="White" BorderBrush="{DynamicResource Divider}" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="20" SnapsToDevicePixels="True" FlowDirection="LeftToRight">
+      <StackPanel x:Name="BandsPanel"/>
+     </Border>
+    </ScrollViewer>
+   </TabItem>
+   <TabItem Header="معاينة بالبيانات">
+    <DockPanel>
+     <TextBlock x:Name="PreviewNote" DockPanel.Dock="Top" Style="{StaticResource Text.Caption}" Margin="8,6" TextWrapping="Wrap"/>
+     <ScrollViewer Background="{DynamicResource Alternate}" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+      <ItemsControl x:Name="PreviewPages" Margin="16" FlowDirection="LeftToRight">
+       <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel HorizontalAlignment="Center"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+       <ItemsControl.ItemTemplate><DataTemplate><Border Background="White" BorderBrush="{DynamicResource Divider}" BorderThickness="1" Margin="0,0,0,16"><Image Source="{Binding Source}" Width="{Binding WidthDip}" Height="{Binding HeightDip}"/></Border></DataTemplate></ItemsControl.ItemTemplate>
+      </ItemsControl>
+     </ScrollViewer>
+    </DockPanel>
+   </TabItem>
+  </TabControl>
+ </DockPanel>
+</Window>

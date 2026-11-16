@@ -1,0 +1,261 @@
+﻿<UserControl x:Class="PetraERP.Desktop.Treasury.ChequesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ux="clr-namespace:PetraERP.Desktop.Controls">
+  <UserControl.Resources>
+    <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+  </UserControl.Resources>
+
+  <UserControl.InputBindings>
+    <KeyBinding Key="F5" Command="{Binding RefreshCommand}"/>
+  </UserControl.InputBindings>
+
+  <DockPanel Margin="16">
+    <!-- Header -->
+    <ux:PageHeader DockPanel.Dock="Top" Title="{Binding Localization[D_CommercialPapers]}">
+      <ux:PageHeader.Commands>
+        <WrapPanel>
+          <Button Style="{StaticResource Button.Primary}" Content="{Binding Localization[D_NewCheque]}" Command="{Binding NewChequeCommand}"/>
+          <Button Style="{StaticResource Button.Command}" Content="{Binding Localization[D_Refresh]}" Command="{Binding RefreshCommand}" Margin="8,0,0,0"/>
+        </WrapPanel>
+      </ux:PageHeader.Commands>
+    </ux:PageHeader>
+
+    <!-- Maturity Alerts Summary Banner -->
+    <Border DockPanel.Dock="Top" Background="{DynamicResource Alternate}" BorderBrush="{DynamicResource Divider}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Control}" Padding="12,8" Margin="0,0,0,12">
+      <DockPanel>
+        <TextBlock Text="{Binding Localization[D_DueDate]}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,16,0"/>
+        <StackPanel Orientation="Horizontal">
+          <!-- Overdue -->
+          <Border Background="{DynamicResource Error.Subtle}" BorderBrush="{DynamicResource Error}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Control}" Padding="8,4" Margin="0,0,8,0">
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Text="⚠ " Foreground="{DynamicResource Error}" FontWeight="Bold"/>
+              <TextBlock Text="{Binding Localization[D_OverdueCount]}" Foreground="{DynamicResource Error}" FontWeight="SemiBold"/>
+              <TextBlock Text=": " Foreground="{DynamicResource Error}"/>
+              <TextBlock Text="{Binding OverdueCount}" Foreground="{DynamicResource Error}" FontWeight="Bold"/>
+            </StackPanel>
+          </Border>
+          <!-- Due Today -->
+          <Border Background="{DynamicResource Warning.Subtle}" BorderBrush="{DynamicResource Warning}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Control}" Padding="8,4" Margin="0,0,8,0">
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Text="⏰ " Foreground="{DynamicResource Warning}" FontWeight="Bold"/>
+              <TextBlock Text="{Binding Localization[D_DueTodayCount]}" Foreground="{DynamicResource Warning}" FontWeight="SemiBold"/>
+              <TextBlock Text=": " Foreground="{DynamicResource Warning}"/>
+              <TextBlock Text="{Binding DueTodayCount}" Foreground="{DynamicResource Warning}" FontWeight="Bold"/>
+            </StackPanel>
+          </Border>
+          <!-- Due Soon -->
+          <Border Background="{DynamicResource Accent.Subtle}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Control}" Padding="8,4">
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Text="📅 " Foreground="{DynamicResource Accent}" FontWeight="Bold"/>
+              <TextBlock Text="{Binding Localization[D_DueSoonCount]}" Foreground="{DynamicResource Accent}" FontWeight="SemiBold"/>
+              <TextBlock Text=": " Foreground="{DynamicResource Accent}"/>
+              <TextBlock Text="{Binding DueSoonCount}" Foreground="{DynamicResource Accent}" FontWeight="Bold"/>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
+    <!-- Action Bar for Selected Cheque -->
+    <Border DockPanel.Dock="Top" Background="{DynamicResource Alternate}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Control}" Padding="8" Margin="0,0,0,12">
+      <WrapPanel VerticalAlignment="Center">
+        <TextBlock Text="{Binding Localization[UX_Status]}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="4,0,12,0"/>
+        <Button Style="{StaticResource Button.Command}" Content="{Binding Localization[D_DepositUnderCollection]}" Command="{Binding StartDepositUnderCollectionCommand}" Margin="4,0"/>
+        <Button Style="{StaticResource Button.Command}" Content="{Binding Localization[D_ClearCheque]}" Command="{Binding StartClearChequeCommand}" Margin="4,0"/>
+        <Button Style="{StaticResource Button.Command}" Content="{Binding Localization[D_BounceCheque]}" Command="{Binding StartBounceChequeCommand}" Margin="4,0"/>
+        <Button Style="{StaticResource Button.Command}" Content="{Binding Localization[D_EndorseCheque]}" Command="{Binding StartEndorseChequeCommand}" Margin="4,0"/>
+        <Button Style="{StaticResource Button.Command}" Content="{Binding Localization[D_CancelCheque]}" Command="{Binding StartCancelChequeCommand}" Margin="4,0"/>
+      </WrapPanel>
+    </Border>
+
+    <!-- Filters & Search Toolbar -->
+    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+      <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+        <ComboBox ItemsSource="{Binding KindOptions}" DisplayMemberPath="Label" SelectedValuePath="Kind" SelectedValue="{Binding KindFilter}" Width="160" Margin="0,0,8,0"/>
+        <ComboBox ItemsSource="{Binding StatusOptions}" DisplayMemberPath="Label" SelectedValuePath="Status" SelectedValue="{Binding StatusFilter}" Width="160" Margin="0,0,8,0"/>
+      </StackPanel>
+      <TextBox Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}" Width="220" HorizontalAlignment="Right">
+        <TextBox.InputBindings>
+          <KeyBinding Key="Enter" Command="{Binding RefreshCommand}"/>
+        </TextBox.InputBindings>
+      </TextBox>
+    </DockPanel>
+
+    <!-- Content Area: DataGrid + Registration/Transition Split -->
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+
+      <!-- Cheques Table -->
+      <DataGrid Grid.Column="0"
+                ItemsSource="{Binding Papers}"
+                SelectedItem="{Binding SelectedPaper}"
+                AutoGenerateColumns="False"
+                IsReadOnly="True"
+                SelectionMode="Single"
+                CanUserAddRows="False"
+                ux:GridRowContext.Enabled="True"
+                ux:GridRowNumbers.Enabled="True">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="#" Binding="{Binding PaperNumber}" Width="110"/>
+          <DataGridTextColumn Header="النوع" Binding="{Binding PaperKind}" Width="100"/>
+          <DataGridTextColumn Header="البنك" Binding="{Binding BankName}" Width="120"/>
+          <DataGridTextColumn Header="الساحب" Binding="{Binding DrawerName}" Width="130"/>
+          <DataGridTextColumn Header="المستفيد / العميل" Binding="{Binding PartyName}" Width="140"/>
+          <DataGridTextColumn Header="تاريخ الاستحقاق" Binding="{Binding DueDate, StringFormat=yyyy-MM-dd}" Width="110"/>
+          <DataGridTextColumn Header="المبلغ" Binding="{Binding Amount}" Width="100"/>
+          <DataGridTextColumn Header="العملة" Binding="{Binding CurrencyCode}" Width="60"/>
+          <DataGridTextColumn Header="الحالة" Binding="{Binding Status}" Width="100"/>
+          <DataGridTextColumn Header="ملاحظات" Binding="{Binding Notes}" Width="*"/>
+        </DataGrid.Columns>
+      </DataGrid>
+
+      <!-- Inline Registration Panel (Al-Ameen 10 Commercial Paper Card) -->
+      <Border Grid.Column="1" Width="440" Background="{DynamicResource Panel.Card}" BorderBrush="{DynamicResource Divider}" BorderThickness="1,0,0,0" Padding="14"
+              Visibility="{Binding IsRegistering, Converter={StaticResource BoolToVis}}" Margin="8,0,0,0">
+        <DockPanel>
+          <Border DockPanel.Dock="Top" BorderBrush="{DynamicResource Divider}" BorderThickness="0,0,0,1" Padding="0,0,0,8" Margin="0,0,0,10">
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="16"/>
+              <TextBlock Text="{Binding Localization[D_NewCheque]}" Style="{StaticResource Text.Section}" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Border>
+
+          <!-- Docked Bottom Command Bar -->
+          <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource Divider}" BorderThickness="0,1,0,0" Padding="0,8,0,0" Margin="0,8,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+              <Button Style="{StaticResource Button.Primary}" Content="{Binding Localization[D_Save]}" Command="{Binding SaveNewChequeCommand}" MinWidth="80" Margin="0,0,8,0" ToolTip="Ctrl+S"/>
+              <Button Style="{StaticResource Button.Command}" Content="{Binding Localization[D_Cancel]}" Command="{Binding CancelNewChequeCommand}" MinWidth="80" ToolTip="Esc"/>
+            </StackPanel>
+          </Border>
+
+          <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+              <!-- 2-Column Master Field Grid -->
+              <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="10"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Row 0: Kind & Paper Number -->
+                <StackPanel Style="{StaticResource Field}" Grid.Column="0">
+                  <TextBlock Text="{Binding Localization[D_VoucherKind]}" Style="{StaticResource Text.Label}"/>
+                  <ComboBox ItemsSource="{Binding KindOptions}" DisplayMemberPath="Label" SelectedValuePath="Kind" SelectedValue="{Binding NewPaperKind}"/>
+                </StackPanel>
+                <StackPanel Style="{StaticResource Field}" Grid.Column="2">
+                  <TextBlock Text="{Binding Localization[D_ChequeNumber]}" Style="{StaticResource Text.Label}"/>
+                  <TextBox Text="{Binding NewPaperNumber, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+
+                <!-- Row 1: Bank & Branch -->
+                <StackPanel Style="{StaticResource Field}" Grid.Row="1" Grid.Column="0">
+                  <TextBlock Text="{Binding Localization[D_BankName]}" Style="{StaticResource Text.Label}"/>
+                  <TextBox Text="{Binding NewBankName, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+                <StackPanel Style="{StaticResource Field}" Grid.Row="1" Grid.Column="2">
+                  <TextBlock Text="الفرع" Style="{StaticResource Text.Label}"/>
+                  <TextBox Text="{Binding NewBranchName, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+
+                <!-- Row 2: Drawer & Payee -->
+                <StackPanel Style="{StaticResource Field}" Grid.Row="2" Grid.Column="0">
+                  <TextBlock Text="{Binding Localization[D_DrawerName]}" Style="{StaticResource Text.Label}"/>
+                  <TextBox Text="{Binding NewDrawerName, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+                <StackPanel Style="{StaticResource Field}" Grid.Row="2" Grid.Column="2">
+                  <TextBlock Text="{Binding Localization[D_PayeeName]}" Style="{StaticResource Text.Label}"/>
+                  <TextBox Text="{Binding NewPayeeName, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+
+                <!-- Row 3: Issue Date & Due Date -->
+                <StackPanel Style="{StaticResource Field}" Grid.Row="3" Grid.Column="0">
+                  <TextBlock Text="{Binding Localization[D_IssueDate]}" Style="{StaticResource Text.Label}"/>
+                  <ux:PetraDatePicker SelectedDate="{Binding NewIssueDate}"/>
+                </StackPanel>
+                <StackPanel Style="{StaticResource Field}" Grid.Row="3" Grid.Column="2">
+                  <TextBlock Text="{Binding Localization[D_DueDate]}" Style="{StaticResource Text.Label}"/>
+                  <ux:PetraDatePicker SelectedDate="{Binding NewDueDate}"/>
+                </StackPanel>
+
+                <!-- Row 4: Amount & Currency/Rate -->
+                <StackPanel Style="{StaticResource Field}" Grid.Row="4" Grid.Column="0">
+                  <TextBlock Text="{Binding Localization[D_Amount]}" Style="{StaticResource Text.Label}"/>
+                  <TextBox Text="{Binding NewAmount, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+                <StackPanel Style="{StaticResource Field}" Grid.Row="4" Grid.Column="2">
+                  <TextBlock Text="{Binding Localization[CUR_Currency]}" Style="{StaticResource Text.Label}"/>
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="65"/>
+                      <ColumnDefinition Width="4"/>
+                      <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <ComboBox Grid.Column="0" ItemsSource="{Binding CurrencyOptions}" IsEditable="False" SelectedItem="{Binding NewCurrencyCode, Mode=TwoWay}"
+                              FlowDirection="LeftToRight" AutomationProperties.Name="{Binding Localization[CUR_Currency]}"/>
+                    <ux:PetraNumericTextBox Grid.Column="2" Kind="Rate" MaximumScale="8" Text="{Binding NewExchangeRate, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight"
+                             ToolTip="{Binding Localization[CUR_RateHelp]}"/>
+                  </Grid>
+                </StackPanel>
+
+                <!-- Row 5: Party & Portfolio Account -->
+                <StackPanel Style="{StaticResource Field}" Grid.Row="5" Grid.Column="0">
+                  <TextBlock Text="{Binding Localization[D_VoucherParty]}" Style="{StaticResource Text.Label}"/>
+                  <ComboBox ItemsSource="{Binding Parties}" DisplayMemberPath="NameArabic" SelectedValuePath="Id" SelectedValue="{Binding NewPartyId}"/>
+                </StackPanel>
+                <StackPanel Style="{StaticResource Field}" Grid.Row="5" Grid.Column="2">
+                  <TextBlock Text="{Binding Localization[D_PortfolioAccount]}" Style="{StaticResource Text.Label}"/>
+                  <ComboBox ItemsSource="{Binding Accounts}" DisplayMemberPath="Label" SelectedValuePath="Id" SelectedValue="{Binding NewPortfolioAccountId}"/>
+                </StackPanel>
+              </Grid>
+
+              <!-- Notes -->
+              <StackPanel Style="{StaticResource Field}">
+                <TextBlock Text="ملاحظات" Style="{StaticResource Text.Label}"/>
+                <TextBox Text="{Binding NewNotes, UpdateSourceTrigger=PropertyChanged}" Height="45" TextWrapping="Wrap"/>
+              </StackPanel>
+            </StackPanel>
+          </ScrollViewer>
+        </DockPanel>
+      </Border>
+
+      <!-- Inline Status Transition Panel -->
+      <Border Grid.Column="1" Width="360" Background="{DynamicResource Input}" BorderBrush="{DynamicResource Divider}" BorderThickness="1,0,0,0" Padding="16"
+              Visibility="{Binding IsTransitioning, Converter={StaticResource BoolToVis}}" Margin="8,0,0,0">
+        <StackPanel>
+          <TextBlock Text="{Binding TransitionTitle}" Style="{StaticResource Text.Title}" Margin="0,0,0,16"/>
+
+          <StackPanel Visibility="{Binding NeedsTargetAccount, Converter={StaticResource BoolToVis}}" Margin="0,0,0,8">
+            <TextBlock Text="{Binding Localization[D_TargetBankAccount]}" Style="{StaticResource Text.Label}"/>
+            <ComboBox ItemsSource="{Binding Accounts}" DisplayMemberPath="Label" SelectedValuePath="Id" SelectedValue="{Binding TargetAccountId}"/>
+          </StackPanel>
+
+          <StackPanel Visibility="{Binding NeedsEndorsedParty, Converter={StaticResource BoolToVis}}" Margin="0,0,0,8">
+            <TextBlock Text="{Binding Localization[D_VoucherParty]}" Style="{StaticResource Text.Label}"/>
+            <ComboBox ItemsSource="{Binding Parties}" DisplayMemberPath="NameArabic" SelectedValuePath="Id" SelectedValue="{Binding EndorsedPartyId}"/>
+          </StackPanel>
+
+          <TextBlock Text="بيان العملية / سبب الإجراء" Style="{StaticResource Text.Label}"/>
+          <TextBox Text="{Binding TransitionReason, UpdateSourceTrigger=PropertyChanged}" Height="60" TextWrapping="Wrap" Margin="0,0,0,16"/>
+
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Style="{StaticResource Button.Command}" Content="إلغاء" Command="{Binding CancelTransitionCommand}" Margin="0,0,8,0"/>
+            <Button Style="{StaticResource Button.Primary}" Content="تأكيد وترحيل القيد" Command="{Binding ExecuteTransitionCommand}"/>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
+  </DockPanel>
+</UserControl>

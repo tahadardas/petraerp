@@ -1,0 +1,143 @@
+﻿<UserControl x:Class="PetraERP.Desktop.GeneralLedger.JournalEditor" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ux="clr-namespace:PetraERP.Desktop.Controls">
+ <!-- Journal header + lines + summary. All accounting fields are read-only unless the typed state allows editing (IsDraftReadOnly). -->
+ <DockPanel Validation.Error="InputValidationChanged">
+  <TextBlock DockPanel.Dock="Top" Text="{Binding Localization[D_RequiredEntryHelp]}" Style="{StaticResource Text.Caption}" Margin="4,0,4,8"/>
+  <!-- Al-Ameen Top Bar: Navigator + Secrecy Indicator -->
+  <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+   <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+    <TextBlock Text="درجة السرية" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,6,0"/>
+    <Path Data="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,7A3,3 0 0,1 15,10A3,3 0 0,1 12,13A3,3 0 0,1 9,10A3,3 0 0,1 12,7M12,15C14.67,15 20,16.33 20,19V20H4V19C4,16.33 9.33,15 12,15Z"
+          Fill="{DynamicResource Success}" Width="16" Height="16" Stretch="Uniform" Margin="0,0,6,0"/>
+    <ComboBox Width="65" SelectedIndex="0">
+        <ComboBoxItem Content="1"/>
+        <ComboBoxItem Content="2"/>
+        <ComboBoxItem Content="3"/>
+    </ComboBox>
+   </StackPanel>
+   <ux:RecordNavigator RecordNumber="{Binding PostingNumber}"
+                      StatusText="{Binding CurrentStateName}"
+                      FirstCommand="{Binding FirstCommand}"
+                      PreviousCommand="{Binding PreviousCommand}"
+                      NextCommand="{Binding NextCommand}"
+                      LastCommand="{Binding LastCommand}"/>
+  </DockPanel>
+  <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+   <Grid.ColumnDefinitions><ColumnDefinition Width="130"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="160"/></Grid.ColumnDefinitions>
+   <StackPanel><TextBlock Text="{Binding Localization[D_AccountingDate], StringFormat='{}{0} *'}" Style="{StaticResource Text.Label}"/>
+    <TextBox Text="{Binding AccountingDate, StringFormat=yyyy-MM-dd, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, ValidatesOnDataErrors=True, NotifyOnValidationError=True}" IsReadOnly="{Binding IsDraftReadOnly}" FlowDirection="LeftToRight" AutomationProperties.Name="{Binding Localization[D_AccountingDate]}"/></StackPanel>
+   <StackPanel Grid.Column="2"><TextBlock Text="{Binding Localization[D_Description], StringFormat='{}{0} *'}" Style="{StaticResource Text.Label}"/>
+    <TextBox Text="{Binding JournalDescription, UpdateSourceTrigger=PropertyChanged}" MaxLength="1000" IsReadOnly="{Binding IsDraftReadOnly}" AutomationProperties.Name="{Binding Localization[D_Description]}"/></StackPanel>
+   <StackPanel Grid.Column="4"><TextBlock Text="{Binding Localization[UX_Branch]}" Style="{StaticResource Text.Label}"/>
+    <TextBlock Text="{Binding BranchLabel}" Style="{StaticResource Text.Value}" MinHeight="{StaticResource Density.Row}"/></StackPanel>
+  </Grid>
+
+  <!-- Posting facts and reversal links -->
+  <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+   <StackPanel Orientation="Horizontal" Margin="0,0,16,0" Visibility="{Binding IsPosted, Converter={StaticResource Visible}}">
+    <TextBlock Text="{Binding Localization[D_JournalNumber]}" Style="{StaticResource Text.Label}" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="{Binding PostingNumber}" Style="{StaticResource Text.Value}" FlowDirection="LeftToRight"/></StackPanel>
+   <StackPanel Orientation="Horizontal" Margin="0,0,16,0" Visibility="{Binding PostingPeriod, Converter={StaticResource Show}}">
+    <TextBlock Text="{Binding Localization[D_FiscalPeriod]}" Style="{StaticResource Text.Label}" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="{Binding PostingPeriod}" Style="{StaticResource Text.Value}"/></StackPanel>
+   <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE72B;" Content="{Binding Localization[D_OpenOriginal]}" Command="{Binding OpenOriginalCommand}" Visibility="{Binding IsReversal, Converter={StaticResource Visible}}"/>
+   <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE72A;" Content="{Binding Localization[D_OpenReversal]}" Command="{Binding OpenReversalCommand}" Visibility="{Binding IsReversed, Converter={StaticResource Visible}}"/>
+  </WrapPanel>
+
+    <Border DockPanel.Dock="Top" Background="{DynamicResource SubtleErrorBackground}"
+          BorderBrush="{DynamicResource ErrorSurface}"
+          BorderThickness="1" CornerRadius="{DynamicResource Radius.Control}" Padding="8,4" Margin="0,0,0,6"
+          Visibility="{Binding HasValidationErrors, Converter={StaticResource Visible}}">
+   <DockPanel>
+    <TextBlock Text="&#xE783;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource ErrorSurface}"
+               VerticalAlignment="Center" Margin="0,0,8,0"/>
+    <TextBlock Text="{Binding ValidationMessage}" Foreground="{DynamicResource ErrorSurface}"
+               FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center"/>
+   </DockPanel>
+  </Border>
+ <TextBlock DockPanel.Dock="Top" Text="{Binding Localization[D_PreviewTotals]}" Style="{StaticResource Text.Caption}" Visibility="{Binding IsTotalsPreview, Converter={StaticResource Visible}}"/>
+ <!-- Action reason (audit) -->
+  <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+   <TextBlock Text="{Binding Localization[D_ActionReason]}" Style="{StaticResource Text.Label}"/>
+   <TextBox Text="{Binding ActionReason, UpdateSourceTrigger=PropertyChanged}" MaxLength="500" AutomationProperties.Name="{Binding Localization[D_ActionReason]}" ToolTip="{Binding Localization[D_ActionReasonHelp]}"/>
+  </StackPanel>
+
+  <!-- Summary: Signature Al-Ameen Blue Totals Bar -->
+  <Border DockPanel.Dock="Bottom" Margin="0,8,0,0" Background="{DynamicResource Accent.Subtle}" BorderBrush="{DynamicResource Accent}" BorderThickness="0,2,0,0" Padding="8,4" Visibility="{Binding IsPreviewValid, Converter={StaticResource Visible}}">
+   <DockPanel LastChildFill="False">
+    <WrapPanel DockPanel.Dock="Left" VerticalAlignment="Center">
+     <TextBlock Text="{Binding Localization[D_TotalDebit]}" Style="{StaticResource Text.Label}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+     <Border Background="{DynamicResource Brand.Navy}" Padding="8,3" Margin="0,0,12,0" MinWidth="110" CornerRadius="{DynamicResource Radius.Small}">
+      <TextBlock Text="{Binding TotalDebit, Converter={StaticResource Number}}" Foreground="{DynamicResource Text.OnBrand}" FlowDirection="LeftToRight" FontWeight="SemiBold"/>
+     </Border>
+     <TextBlock Text="{Binding Localization[D_TotalCredit]}" Style="{StaticResource Text.Label}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+     <Border Background="{DynamicResource Brand.Navy}" Padding="8,3" Margin="0,0,12,0" MinWidth="110" CornerRadius="{DynamicResource Radius.Small}">
+      <TextBlock Text="{Binding TotalCredit, Converter={StaticResource Number}}" Foreground="{DynamicResource Text.OnBrand}" FlowDirection="LeftToRight" FontWeight="SemiBold"/>
+     </Border>
+     <TextBlock Text="{Binding Localization[D_Difference]}" Style="{StaticResource Text.Label}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+     <Border Background="{DynamicResource Brand.Navy}" Padding="8,3" Margin="0,0,10,0" MinWidth="110" CornerRadius="{DynamicResource Radius.Small}">
+      <TextBlock Text="{Binding Difference, Converter={StaticResource Number}, ConverterParameter=signed}" Foreground="{DynamicResource Text.OnBrand}" FlowDirection="LeftToRight" FontWeight="SemiBold"/>
+     </Border>
+     <TextBlock Text="{Binding BaseCurrencyCode}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+    </WrapPanel>
+    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+     <ux:StatusBadge Kind="Success" Text="{Binding Localization[D_Balanced]}" Visibility="{Binding IsBalanced, Converter={StaticResource Visible}}"/>
+     <ux:StatusBadge Kind="Warning" Text="{Binding Localization[D_NotBalanced]}" Visibility="{Binding IsBalanced, Converter={StaticResource Show}, ConverterParameter=invert}"/>
+    </StackPanel>
+   </DockPanel>
+  </Border>
+
+  <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4" LastChildFill="False">
+   <TextBlock Text="{Binding Localization[D_JournalLines]}" Style="{StaticResource Text.Label}" VerticalAlignment="Center"/>
+   <Button DockPanel.Dock="Right" Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE710;" Content="{Binding Localization[D_AddLine]}" Command="{Binding AddLineCommand}" Visibility="{Binding CanEditDraft, Converter={StaticResource Visible}}"/>
+  </DockPanel>
+  <ux:PetraAccountingDataGrid ux:GridRowNumbers.Enabled="True" x:Name="LinesGrid" ItemsSource="{Binding Lines}" CanUserAddRows="False" IsReadOnly="{Binding IsDraftReadOnly}" SelectionUnit="CellOrRowHeader" CanUserSortColumns="False"
+            AlternatingRowBackground="{DynamicResource Grid.Alternate}" GridLinesVisibility="All" HorizontalGridLinesBrush="{DynamicResource Divider}" VerticalGridLinesBrush="{DynamicResource Divider}"
+            ux:GridEntry.Enabled="True" MinHeight="340"
+            AutoGrowCommand="{Binding AutoGrowCommand}"
+            ux:GridLayouts.Key="ledger.journal-lines" ux:GridLayouts.Store="{Binding DataContext.Workspace, RelativeSource={RelativeSource AncestorType=Window}}" AutomationProperties.Name="{Binding Localization[D_JournalLines]}">
+   <DataGrid.InputBindings>
+    <KeyBinding Key="Insert" Command="{Binding AddLineCommand}"/>
+    <KeyBinding Key="Delete" Modifiers="Control" Command="{Binding RemoveLineCommand}" CommandParameter="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+    <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveDraftCommand}"/>
+   </DataGrid.InputBindings>
+   <DataGrid.Columns>
+    <DataGridTextColumn Binding="{Binding Debit, Converter={StaticResource Number}, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, ValidatesOnDataErrors=True, NotifyOnValidationError=True}" SortMemberPath="Debit" Width="110" MinWidth="100" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Debit], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+    <DataGridTextColumn Binding="{Binding Credit, Converter={StaticResource Number}, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, ValidatesOnDataErrors=True, NotifyOnValidationError=True}" SortMemberPath="Credit" Width="110" MinWidth="100" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Credit], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+    <DataGridTemplateColumn SortMemberPath="Account" Width="180">
+     <DataGridTemplateColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Account], RelativeSource={RelativeSource AncestorType=UserControl}, StringFormat='{}{0} *'}"/></DataGridTemplateColumn.Header>
+     <DataGridTemplateColumn.CellTemplate><DataTemplate>
+      <DockPanel>
+       <Button DockPanel.Dock="Right" Style="{StaticResource Button.Icon}" Content="&#xE82D;" MinWidth="24" Padding="2"
+               Command="{Binding DataContext.OpenLineLedgerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+               ToolTip="{Binding DataContext.Localization[D_OpenAccountLedger], RelativeSource={RelativeSource AncestorType=UserControl}}"
+               AutomationProperties.Name="{Binding DataContext.Localization[D_OpenAccountLedger], RelativeSource={RelativeSource AncestorType=UserControl}}"
+               Visibility="{Binding DataContext.CanViewAccountLedgers, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Visible}}"/>
+       <ux:LookupPicker ItemsSource="{Binding DataContext.AccountItems, RelativeSource={RelativeSource AncestorType=UserControl}}" SelectedId="{Binding AccountId, Converter={StaticResource GuidOrNull}}"
+                       IsArabic="{Binding DataContext.Localization.IsRightToLeft, RelativeSource={RelativeSource AncestorType=UserControl}}" IsReadOnly="{Binding DataContext.IsDraftReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                       Placeholder="{Binding DataContext.Localization[D_LookupHint], RelativeSource={RelativeSource AncestorType=UserControl}}" AutomationProperties.Name="{Binding DataContext.Localization[D_Account], RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+      </DockPanel>
+     </DataTemplate></DataGridTemplateColumn.CellTemplate>
+    </DataGridTemplateColumn>
+    <DataGridTextColumn Binding="{Binding Description, UpdateSourceTrigger=PropertyChanged}" SortMemberPath="Description" Width="*" MinWidth="100"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Description], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+    <DataGridTemplateColumn SortMemberPath="Currency" Width="68">
+     <DataGridTemplateColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Currency], RelativeSource={RelativeSource AncestorType=UserControl}, StringFormat='{}{0} *'}"/></DataGridTemplateColumn.Header>
+     <DataGridTemplateColumn.CellTemplate><DataTemplate><ComboBox ItemsSource="{Binding DataContext.Currencies, RelativeSource={RelativeSource AncestorType=UserControl}}" SelectedItem="{Binding CurrencyCode, UpdateSourceTrigger=PropertyChanged}" Margin="0" Padding="2" FlowDirection="LeftToRight"
+       IsEnabled="{Binding DataContext.CanEditDraft, RelativeSource={RelativeSource AncestorType=UserControl}}" AutomationProperties.Name="{Binding DataContext.Localization[D_Currency], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataTemplate></DataGridTemplateColumn.CellTemplate>
+    </DataGridTemplateColumn>
+    <DataGridTextColumn Binding="{Binding Rate, Converter={StaticResource Number}, ConverterParameter=rate, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, ValidatesOnDataErrors=True, NotifyOnValidationError=True}" SortMemberPath="Rate" Width="100" MinWidth="90" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Rate], RelativeSource={RelativeSource AncestorType=UserControl}, StringFormat='{}{0} *'}"/></DataGridTextColumn.Header></DataGridTextColumn>
+    <DataGridTemplateColumn SortMemberPath="CostCenter" Width="110">
+     <DataGridTemplateColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_CostCenter], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTemplateColumn.Header>
+     <DataGridTemplateColumn.CellTemplate><DataTemplate>
+      <ux:LookupPicker ItemsSource="{Binding DataContext.CostCenterItems, RelativeSource={RelativeSource AncestorType=UserControl}}" SelectedId="{Binding CostCenterId}"
+                       IsArabic="{Binding DataContext.Localization.IsRightToLeft, RelativeSource={RelativeSource AncestorType=UserControl}}" IsReadOnly="{Binding DataContext.IsDraftReadOnly, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                       AutomationProperties.Name="{Binding DataContext.Localization[D_CostCenter], RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+     </DataTemplate></DataGridTemplateColumn.CellTemplate>
+    </DataGridTemplateColumn>
+    <DataGridTemplateColumn Width="32">
+     <DataGridTemplateColumn.CellTemplate><DataTemplate>
+      <Button Style="{StaticResource Button.Icon}" Content="&#xE74D;" FontSize="11" MinHeight="22" Padding="2" Command="{Binding DataContext.RemoveLineCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+              Visibility="{Binding DataContext.CanEditDraft, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Visible}}" AutomationProperties.Name="{Binding DataContext.Localization[D_RemoveLine], RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+     </DataTemplate></DataGridTemplateColumn.CellTemplate>
+    </DataGridTemplateColumn>
+   </DataGrid.Columns>
+  </ux:PetraAccountingDataGrid>
+ </DockPanel>
+</UserControl>

@@ -1,0 +1,243 @@
+<UserControl x:Class="PetraERP.Desktop.Reporting.ProfessionalReportParametersView"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ Background="{DynamicResource Surface}" Foreground="{DynamicResource Text}">
+ <UserControl.Resources>
+  <ResourceDictionary>
+   <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="ReportingStyles.xaml"/>
+   </ResourceDictionary.MergedDictionaries>
+
+   <!-- Classic Ameen GroupBox Style -->
+   <Style x:Key="AmeenGroupBox" TargetType="GroupBox">
+    <Setter Property="Margin" Value="0,0,0,5"/>
+    <Setter Property="Padding" Value="6,4,6,6"/>
+    <Setter Property="Foreground" Value="{DynamicResource Text}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Border}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Template">
+     <Setter.Value>
+      <ControlTemplate TargetType="GroupBox">
+       <Grid SnapsToDevicePixels="True">
+        <Grid.RowDefinitions>
+         <RowDefinition Height="Auto"/>
+         <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Border Grid.RowSpan="2" Margin="0,7,0,0"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{DynamicResource Radius.Small}"
+                Background="{DynamicResource Surface}"/>
+        <Border Grid.Row="0" HorizontalAlignment="Right" Margin="0,0,8,0"
+                Padding="4,0" Background="{DynamicResource Surface}">
+         <ContentPresenter ContentSource="Header" RecognizesAccessKey="True"
+                           TextElement.FontWeight="SemiBold"
+                           TextElement.FontSize="11"
+                           TextElement.Foreground="{DynamicResource Accent}"/>
+        </Border>
+        <ContentPresenter Grid.Row="1" Margin="{TemplateBinding Padding}"/>
+       </Grid>
+      </ControlTemplate>
+     </Setter.Value>
+    </Setter>
+   </Style>
+
+   <!-- Ameen Action Button Style -->
+   <Style x:Key="AmeenActionButton" TargetType="Button">
+    <Setter Property="Width" Value="86"/>
+    <Setter Property="Height" Value="26"/>
+    <Setter Property="Margin" Value="0,0,0,4"/>
+    <Setter Property="Padding" Value="4,2"/>
+    <Setter Property="FontSize" Value="11"/>
+    <Setter Property="Background" Value="{DynamicResource Surface.Raised}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Border}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Template">
+     <Setter.Value>
+      <ControlTemplate TargetType="Button">
+       <Border x:Name="Frame" Background="{TemplateBinding Background}"
+               BorderBrush="{TemplateBinding BorderBrush}"
+               BorderThickness="{TemplateBinding BorderThickness}"
+               CornerRadius="{DynamicResource Radius.Small}" Padding="{TemplateBinding Padding}">
+        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True"/>
+       </Border>
+       <ControlTemplate.Triggers>
+        <Trigger Property="IsMouseOver" Value="True">
+         <Setter TargetName="Frame" Property="Background" Value="{DynamicResource Accent.Subtle}"/>
+         <Setter TargetName="Frame" Property="BorderBrush" Value="{DynamicResource Accent}"/>
+        </Trigger>
+        <Trigger Property="IsPressed" Value="True">
+         <Setter TargetName="Frame" Property="Background" Value="{DynamicResource Surface.Sunken}"/>
+        </Trigger>
+        <Trigger Property="IsEnabled" Value="False">
+         <Setter Property="Opacity" Value="0.6"/>
+        </Trigger>
+       </ControlTemplate.Triggers>
+      </ControlTemplate>
+     </Setter.Value>
+    </Setter>
+   </Style>
+
+   <!-- Ameen Arrow Button Style (Blue Arrows) -->
+   <Style x:Key="AmeenArrowButton" TargetType="Button">
+    <Setter Property="Width" Value="22"/>
+    <Setter Property="Height" Value="24"/>
+    <Setter Property="Margin" Value="0,0,0,3"/>
+    <Setter Property="Background" Value="{DynamicResource Surface.Raised}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Border}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Template">
+     <Setter.Value>
+      <ControlTemplate TargetType="Button">
+       <Border x:Name="Frame" Background="{TemplateBinding Background}"
+               BorderBrush="{TemplateBinding BorderBrush}"
+               BorderThickness="{TemplateBinding BorderThickness}"
+               CornerRadius="{DynamicResource Radius.Small}">
+        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+       </Border>
+       <ControlTemplate.Triggers>
+        <Trigger Property="IsMouseOver" Value="True">
+         <Setter TargetName="Frame" Property="Background" Value="{DynamicResource Accent.Subtle}"/>
+         <Setter TargetName="Frame" Property="BorderBrush" Value="{DynamicResource Accent}"/>
+        </Trigger>
+        <Trigger Property="IsEnabled" Value="False">
+         <Setter Property="Opacity" Value="0.4"/>
+        </Trigger>
+       </ControlTemplate.Triggers>
+      </ControlTemplate>
+     </Setter.Value>
+    </Setter>
+   </Style>
+
+   <!-- Ameen Tab Button Style (for bottom tabs) -->
+   <Style x:Key="AmeenTabButton" TargetType="Button">
+    <Setter Property="Height" Value="24"/>
+    <Setter Property="Margin" Value="0,0,0,2"/>
+    <Setter Property="FontSize" Value="11"/>
+    <Setter Property="Background" Value="{DynamicResource Surface.Secondary}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Border}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Template">
+     <Setter.Value>
+      <ControlTemplate TargetType="Button">
+       <Border x:Name="Frame" Background="{TemplateBinding Background}"
+               BorderBrush="{TemplateBinding BorderBrush}"
+               BorderThickness="{TemplateBinding BorderThickness}"
+               CornerRadius="{DynamicResource Radius.Small}" Padding="6,2">
+        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+       </Border>
+       <ControlTemplate.Triggers>
+        <Trigger Property="IsMouseOver" Value="True">
+         <Setter TargetName="Frame" Property="Background" Value="{DynamicResource Accent.Subtle}"/>
+         <Setter TargetName="Frame" Property="BorderBrush" Value="{DynamicResource Accent}"/>
+        </Trigger>
+       </ControlTemplate.Triggers>
+      </ControlTemplate>
+     </Setter.Value>
+    </Setter>
+   </Style>
+
+   <Style x:Key="ReportPane" TargetType="ScrollViewer">
+    <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+    <Setter Property="HorizontalScrollBarVisibility" Value="Disabled"/>
+    <Setter Property="Padding" Value="6,4,6,4"/>
+   </Style>
+
+   <DataTemplate x:Key="ReportChoice">
+    <StackPanel Margin="0,1">
+     <CheckBox Content="{Binding Label}" FontSize="11" IsChecked="{Binding IsSelected, Mode=TwoWay}"
+      IsEnabled="{Binding IsSupported}" ToolTip="{Binding Reason}"/>
+    </StackPanel>
+   </DataTemplate>
+  </ResourceDictionary>
+ </UserControl.Resources>
+
+ <DockPanel LastChildFill="True">
+  <!-- Top: Error / Status bar (only visible when message is present) -->
+  <Border DockPanel.Dock="Top" x:Name="MessageBar" Background="{DynamicResource Error.Subtle}" BorderBrush="{DynamicResource Error}"
+          BorderThickness="0,0,0,1" Padding="10,4" Visibility="Collapsed">
+   <TextBlock x:Name="MessageText" Foreground="{DynamicResource Error}" FontSize="11" TextWrapping="Wrap"/>
+  </Border>
+
+  <!-- Top bar status & indicators (compact, doesn't distort dialog) -->
+  <Border DockPanel.Dock="Top" Background="Transparent" Padding="10,2">
+   <Grid>
+    <Grid.ColumnDefinitions>
+     <ColumnDefinition Width="*"/>
+     <ColumnDefinition Width="Auto"/>
+    </Grid.ColumnDefinitions>
+    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+     <ProgressBar x:Name="BusyIndicator" IsIndeterminate="True" Width="72" Height="3" Margin="0,0,8,0" VerticalAlignment="Center" Visibility="Collapsed"/>
+     <TextBlock x:Name="StatusLabel" FontSize="{DynamicResource Font.Caption}" Foreground="{DynamicResource Text.Secondary}" VerticalAlignment="Center"/>
+    </StackPanel>
+    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+     <TextBlock x:Name="AuthorityLabel" FontSize="{DynamicResource Font.Caption}" Foreground="{DynamicResource Text.Muted}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+     <TextBlock x:Name="PresetLabel" FontSize="{DynamicResource Font.Caption}" Foreground="{DynamicResource Text.Muted}" VerticalAlignment="Center"
+                Text="{Binding SelectedPreset.Name, StringFormat=إعداد: {0}}"/>
+    </StackPanel>
+   </Grid>
+  </Border>
+
+  <!-- Main Body: 3 panes + Action buttons -->
+  <Grid Margin="6,2,6,6">
+   <Grid x:Name="WideLayout">
+    <Grid.ColumnDefinitions>
+     <ColumnDefinition Width="Auto"/> <!-- Col 0 in RTL = Far Right: Action Buttons -->
+     <ColumnDefinition Width="1.25*"/> <!-- Col 1 in RTL = Right: Parameters -->
+     <ColumnDefinition Width="1.05*"/> <!-- Col 2 in RTL = Middle: Fields & Options -->
+     <ColumnDefinition Width="1*"/>    <!-- Col 3 in RTL = Left: Sources & Tabs -->
+    </Grid.ColumnDefinitions>
+
+    <!-- Column 0 (Far Right): Action Buttons Stack -->
+    <StackPanel Grid.Column="0" Orientation="Vertical" Width="90" Margin="4,4,6,0">
+     <Button x:Name="PreviewButton" Command="{Binding PreviewCommand}" Style="{StaticResource AmeenActionButton}" IsDefault="True">
+      <StackPanel Orientation="Horizontal">
+       <TextBlock Text="🔍" FontSize="{DynamicResource Font.Caption}" Margin="0,0,4,0" VerticalAlignment="Center"/>
+       <TextBlock Text="معاينة" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
+      </StackPanel>
+     </Button>
+     <Button x:Name="SummaryButton" Command="{Binding SummaryCommand}" Style="{StaticResource AmeenActionButton}">
+      <TextBlock Text="مختصر" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
+     </Button>
+     <Button x:Name="PrintButton" Command="{Binding PrintCommand}" Style="{StaticResource AmeenActionButton}">
+      <StackPanel Orientation="Horizontal">
+       <TextBlock Text="🖨️" FontSize="{DynamicResource Font.Caption}" Margin="0,0,4,0" VerticalAlignment="Center"/>
+       <TextBlock Text="طباعة" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
+      </StackPanel>
+     </Button>
+     <Button x:Name="CancelButton" Command="{Binding CloseCommand}" Style="{StaticResource AmeenActionButton}">
+      <StackPanel Orientation="Horizontal">
+       <TextBlock Text="❌" FontSize="{DynamicResource Font.Caption}" Foreground="{DynamicResource Error}" Margin="0,0,4,0" VerticalAlignment="Center"/>
+       <TextBlock Text="إلغاء الأمر" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
+      </StackPanel>
+     </Button>
+    </StackPanel>
+
+    <!-- Column 1 (Right): Criteria / Parameters -->
+    <Border Grid.Column="1" BorderBrush="{DynamicResource Border}" BorderThickness="0,0,1,0" Padding="0,0,6,0">
+     <ContentControl x:Name="ParametersHost"/>
+    </Border>
+
+    <!-- Column 2 (Middle): Fields & Options -->
+    <Border Grid.Column="2" BorderBrush="{DynamicResource Border}" BorderThickness="0,0,1,0" Padding="6,0,6,0">
+     <ContentControl x:Name="OptionsHost"/>
+    </Border>
+
+    <!-- Column 3 (Left): Sources & Tabs -->
+    <Border Grid.Column="3" Padding="6,0,0,0">
+     <ContentControl x:Name="SourcesHost"/>
+    </Border>
+   </Grid>
+
+   <!-- Compact Fallback when Width < 1000 -->
+   <TabControl x:Name="CompactLayout" Visibility="Collapsed" BorderThickness="0">
+    <TabItem x:Name="ParametersTab"><ContentControl x:Name="CompactParametersHost"/></TabItem>
+    <TabItem x:Name="OptionsTab"><ContentControl x:Name="CompactOptionsHost"/></TabItem>
+    <TabItem x:Name="SourcesTab"><ContentControl x:Name="CompactSourcesHost"/></TabItem>
+   </TabControl>
+  </Grid>
+ </DockPanel>
+</UserControl>

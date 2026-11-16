@@ -1,0 +1,51 @@
+﻿<UserControl x:Class="PetraERP.Desktop.Accounting.AccountLedgerView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ux="clr-namespace:PetraERP.Desktop.Controls">
+ <UserControl.InputBindings>
+  <KeyBinding Key="F5" Command="{Binding RunCommand}"/>
+  <KeyBinding Key="Enter" Command="{Binding RunCommand}"/>
+ </UserControl.InputBindings>
+ <DockPanel>
+  <ux:PageHeader DockPanel.Dock="Top" Title="{Binding Localization[D_AccountLedger]}" Subtitle="{Binding AccountTitle}"/>
+  <Border DockPanel.Dock="Top" Style="{StaticResource Panel.Filter}">
+   <WrapPanel>
+    <StackPanel Margin="0,0,8,0" Width="300"><TextBlock Text="{Binding Localization[D_Account]}" Style="{StaticResource Text.Label}"/>
+     <ux:PetraAccountPicker ItemsSource="{Binding Lookups.Accounts}" SelectedId="{Binding AccountId}" IsArabic="{Binding Localization.IsRightToLeft}" Placeholder="{Binding Localization[D_LookupHint]}" ux:SearchTarget.IsTarget="True" AutomationProperties.Name="{Binding Localization[D_Account]}"/></StackPanel>
+    <StackPanel Margin="0,0,8,0"><TextBlock Text="{Binding Localization[D_From]}" Style="{StaticResource Text.Label}"/><ux:PetraDatePicker Width="130" SelectedDate="{Binding FromDate}" AutomationProperties.Name="{Binding Localization[D_From]}"/></StackPanel>
+    <StackPanel Margin="0,0,8,0"><TextBlock Text="{Binding Localization[D_To]}" Style="{StaticResource Text.Label}"/><ux:PetraDatePicker Width="130" SelectedDate="{Binding ToDate}" AutomationProperties.Name="{Binding Localization[D_To]}"/></StackPanel>
+    <CheckBox Content="{Binding Localization[D_AllBranches]}" IsChecked="{Binding Consolidated}" VerticalAlignment="Bottom" Margin="0,0,10,6" ToolTip="{Binding Localization[D_AllBranchesHelp]}"/>
+    <Button Style="{StaticResource Button.Primary}" ux:Icon.Glyph="&#xE768;" Content="{Binding Localization[D_RunReport]}" Command="{Binding RunCommand}" VerticalAlignment="Bottom"/>
+    <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE734;" Content="{Binding Localization[UI_SaveFilter]}" Command="{Binding SaveFilterCommand}" VerticalAlignment="Bottom" ToolTip="{Binding Localization[UI_SaveFilterHelp]}"/>
+   </WrapPanel>
+  </Border>
+  <UniformGrid DockPanel.Dock="Top" Columns="4" Margin="-4,0,-4,8" Visibility="{Binding HasResult, Converter={StaticResource Visible}}">
+   <Border Style="{StaticResource Panel.Card}" Margin="4" Padding="10,6"><StackPanel><TextBlock Text="{Binding Localization[D_OpeningBalance]}" Style="{StaticResource Text.Label}"/><TextBlock Text="{Binding Opening}" Style="{StaticResource Text.NumericTotal}" FontSize="{StaticResource Font.Subtitle}"/></StackPanel></Border>
+   <Border Style="{StaticResource Panel.Card}" Margin="4" Padding="10,6"><StackPanel><TextBlock Text="{Binding Localization[D_PeriodDebit]}" Style="{StaticResource Text.Label}"/><TextBlock Text="{Binding PeriodDebit}" Style="{StaticResource Text.NumericTotal}" FontSize="{StaticResource Font.Subtitle}"/></StackPanel></Border>
+   <Border Style="{StaticResource Panel.Card}" Margin="4" Padding="10,6"><StackPanel><TextBlock Text="{Binding Localization[D_PeriodCredit]}" Style="{StaticResource Text.Label}"/><TextBlock Text="{Binding PeriodCredit}" Style="{StaticResource Text.NumericTotal}" FontSize="{StaticResource Font.Subtitle}"/></StackPanel></Border>
+   <Border Style="{StaticResource Panel.Card}" Margin="4" Padding="10,6" Background="{DynamicResource Accent.Subtle}" BorderBrush="{DynamicResource Accent}" BorderThickness="1.5" CornerRadius="{DynamicResource Radius.Control}"><StackPanel><TextBlock Text="{Binding Localization[D_ClosingBalance]}" Style="{StaticResource Text.Label}" FontWeight="SemiBold" Foreground="{DynamicResource Accent}"/><TextBlock Text="{Binding Closing}" Style="{StaticResource Text.NumericTotal}" FontSize="{StaticResource Font.Subtitle}" Foreground="{DynamicResource Accent}" FontWeight="Bold"/></StackPanel></Border>
+  </UniformGrid>
+  <DockPanel DockPanel.Dock="Bottom" Margin="0,6,0,0" LastChildFill="False" Visibility="{Binding HasResult, Converter={StaticResource Visible}}">
+   <Button Style="{StaticResource Button.Icon}" Content="&#xE76B;" Command="{Binding PreviousPageCommand}" AutomationProperties.Name="{Binding Localization[D_Previous]}"/>
+   <TextBlock Text="{Binding PageStatus}" Style="{StaticResource Text.Caption}" Margin="8,0"/>
+   <Button Style="{StaticResource Button.Icon}" Content="&#xE76C;" Command="{Binding NextPageCommand}" AutomationProperties.Name="{Binding Localization[D_Next]}"/>
+   <TextBlock DockPanel.Dock="Right" Text="{Binding Localization[D_BalanceSignHelp]}" Style="{StaticResource Text.Caption}"/>
+   <TextBlock DockPanel.Dock="Right" Text="{Binding Localization[D_IncludesDescendants]}" Style="{StaticResource Text.Caption}" Margin="0,0,16,0" Visibility="{Binding IncludesDescendants, Converter={StaticResource Visible}}"/>
+  </DockPanel>
+  <Border Style="{StaticResource Panel.Flat}">
+   <Grid>
+    <ux:EmptyState Glyph="&#xE82D;" Title="{Binding Localization[D_SelectAccountForLedger]}" Visibility="{Binding HasResult, Converter={StaticResource Show}, ConverterParameter=invert}"/>
+    <ux:PetraAccountingDataGrid ux:GridRowNumbers.Enabled="True" ItemsSource="{Binding Lines}" SelectedItem="{Binding SelectedLine}" IsReadOnly="True" SelectionUnit="FullRow" CanUserSortColumns="False" BorderThickness="0" MouseDoubleClick="RowOpened"
+              Visibility="{Binding HasResult, Converter={StaticResource Visible}}" ux:GridLayouts.Key="ledger.account-ledger" ux:GridLayouts.Store="{Binding DataContext.Workspace, RelativeSource={RelativeSource AncestorType=Window}}" AutomationProperties.Name="{Binding Localization[D_AccountLedger]}">
+     <DataGrid.InputBindings><KeyBinding Key="Enter" Command="{Binding OpenJournalCommand}"/></DataGrid.InputBindings>
+     <DataGrid.Columns>
+      <DataGridTextColumn Binding="{Binding AccountingDate, Converter={StaticResource DateText}}" SortMemberPath="Date" Width="95"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_AccountingDate], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      <DataGridTextColumn Binding="{Binding PostingSequence}" SortMemberPath="Number" Width="70"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_JournalNumber], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      <DataGridTextColumn Binding="{Binding LineDescription}" SortMemberPath="Description" Width="*" MinWidth="120"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Description], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      <DataGridTextColumn Binding="{Binding CostCenterCode}" SortMemberPath="CostCenter" Width="90"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_CostCenter], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      <DataGridTextColumn Binding="{Binding BaseDebit, Converter={StaticResource MoneyBlank}}" SortMemberPath="Debit" Width="110" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Debit], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      <DataGridTextColumn Binding="{Binding BaseCredit, Converter={StaticResource MoneyBlank}}" SortMemberPath="Credit" Width="110" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Credit], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      <DataGridTextColumn Binding="{Binding RunningBalance, Converter={StaticResource Money}, ConverterParameter=signed}" SortMemberPath="Balance" Width="120" ElementStyle="{StaticResource Text.NumericTotal}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_RunningBalance], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+     </DataGrid.Columns>
+    </ux:PetraAccountingDataGrid>
+   </Grid>
+  </Border>
+ </DockPanel>
+</UserControl>

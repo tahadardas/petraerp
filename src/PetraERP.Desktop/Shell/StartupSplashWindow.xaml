@@ -1,0 +1,37 @@
+<Window x:Class="PetraERP.Desktop.Shell.StartupSplashWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Width="560" Height="310" ResizeMode="NoResize" WindowStyle="None"
+        WindowStartupLocation="CenterScreen" ShowInTaskbar="False" Topmost="True"
+        Background="{DynamicResource Brand.Navy}" Foreground="{DynamicResource Text.OnBrand}"
+        FontFamily="{StaticResource Font.Family}" UseLayoutRounding="True"
+        AutomationProperties.Name="Petra ERP — بدء التشغيل">
+ <Border BorderBrush="{DynamicResource Brand.NavyHover}" BorderThickness="1" Background="{DynamicResource Brand.Navy}">
+  <Grid Margin="42,34">
+   <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+   <StackPanel VerticalAlignment="Center">
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" FlowDirection="LeftToRight">
+     <Border Width="56" Height="56" CornerRadius="{DynamicResource Radius.Dialog}" Background="{DynamicResource Brand.Teal}" Margin="0,0,16,0">
+      <TextBlock Text="P" Foreground="{DynamicResource Text.OnAccent}" FontSize="30" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+     </Border>
+     <StackPanel VerticalAlignment="Center">
+      <TextBlock Text="PETRA ERP" FontSize="30" FontWeight="SemiBold" Foreground="{DynamicResource Text.OnBrand}"/>
+      <TextBlock Text="Precision Accounting Workspace" FontSize="12" Foreground="{DynamicResource Text.OnBrand}" Opacity="0.8" FlowDirection="LeftToRight"/>
+     </StackPanel>
+    </StackPanel>
+    <TextBlock Text="المحاسبة والمستودعات" FontSize="18" HorizontalAlignment="Center" Margin="0,24,0,0" Foreground="{DynamicResource Text.OnBrand}"/>
+   </StackPanel>
+
+   <StackPanel Grid.Row="1" Margin="0,12,0,0">
+    <TextBlock x:Name="StageText" Text="تهيئة التطبيق..." HorizontalAlignment="Center" FontSize="13"
+               AutomationProperties.LiveSetting="Polite" AutomationProperties.Name="حالة بدء التشغيل"/>
+    <Grid Height="4" Margin="60,12,60,0">
+     <ProgressBar x:Name="Activity" IsIndeterminate="True" Height="3" Background="{DynamicResource Brand.NavyHover}" Foreground="{DynamicResource Brand.Teal}"/>
+     <Ellipse x:Name="ReducedMotionMarker" Width="8" Height="8" Fill="{DynamicResource Brand.Teal}" HorizontalAlignment="Center" Visibility="Collapsed"/>
+    </Grid>
+   </StackPanel>
+
+   <TextBlock Grid.Row="2" Text="Petra ERP" HorizontalAlignment="Center" Margin="0,18,0,0" FontSize="11" Foreground="{DynamicResource Text.OnBrand}" Opacity="0.7"/>
+  </Grid>
+ </Border>
+</Window>

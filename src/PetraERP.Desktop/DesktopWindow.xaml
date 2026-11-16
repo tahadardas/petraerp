@@ -1,0 +1,345 @@
+﻿<Window x:Class="PetraERP.Desktop.DesktopWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ux="clr-namespace:PetraERP.Desktop.Controls"
+        xmlns:shell="clr-namespace:PetraERP.Desktop.Shell"
+        Title="الفاتورة الإلكترونية 21 - برنامج الأمين"
+        Width="1366" Height="768"
+        MinWidth="{StaticResource Window.MinimumWidth}" MinHeight="{StaticResource Window.MinimumHeight}"
+        Style="{StaticResource {x:Type Window}}"
+        FlowDirection="{Binding Localization.FlowDirection}"
+        Background="{DynamicResource Surface.Secondary}"
+        Language="{Binding Localization.XmlLanguage}"
+        PreviewKeyDown="OnShortcut">
+ <Window.Resources>
+  <ResourceDictionary>
+   <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="Shell/DocumentTemplates.xaml"/>
+   </ResourceDictionary.MergedDictionaries>
+
+   <!-- Nested Menu Item Styles -->
+   <Style x:Key="Menu.Node" TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+    <Setter Property="Header" Value="{Binding Label}"/>
+    <Setter Property="AutomationProperties.Name" Value="{Binding Label}"/>
+    <Setter Property="ItemsSource" Value="{Binding Children}"/>
+    <Setter Property="ItemContainerStyle" Value="{DynamicResource Menu.Node}"/>
+    <Style.Triggers>
+     <DataTrigger Binding="{Binding IsLeaf}" Value="True">
+      <Setter Property="Command" Value="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+      <Setter Property="CommandParameter" Value="{Binding Id}"/>
+     </DataTrigger>
+    </Style.Triggers>
+   </Style>
+
+   <Style x:Key="Menu.Route" TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+    <Setter Property="Header" Value="{Binding Label}"/>
+    <Setter Property="AutomationProperties.Name" Value="{Binding Label}"/>
+    <Setter Property="Command" Value="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+    <Setter Property="CommandParameter" Value="{Binding Id}"/>
+   </Style>
+
+   <!-- Al-Ameen Toolbar Button Style (Large Colorful 3D/Flat Shaded Icons) -->
+   <Style x:Key="Am.ToolbarButton" TargetType="Button">
+    <Setter Property="Width" Value="32"/>
+    <Setter Property="Height" Value="32"/>
+    <Setter Property="Margin" Value="1,1"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Padding" Value="2"/>
+    <Setter Property="Template">
+     <Setter.Value>
+      <ControlTemplate TargetType="Button">
+       <Border x:Name="bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource Radius.Small}">
+        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+       </Border>
+       <ControlTemplate.Triggers>
+        <Trigger Property="IsMouseOver" Value="True">
+         <Setter TargetName="bd" Property="Background" Value="{DynamicResource Accent.Subtle}"/>
+         <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource Accent}"/>
+        </Trigger>
+        <Trigger Property="IsPressed" Value="True">
+         <Setter TargetName="bd" Property="Background" Value="{DynamicResource Grid.Selection}"/>
+         <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource Accent}"/>
+        </Trigger>
+       </ControlTemplate.Triggers>
+      </ControlTemplate>
+     </Setter.Value>
+    </Setter>
+   </Style>
+
+   <!-- Al-Ameen Quick Navigation Tab Style (Center Workspace Header) -->
+   <Style x:Key="Am.CanvasTab" TargetType="Button">
+    <Setter Property="Background" Value="{DynamicResource Surface.Primary}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource Border.Normal}"/>
+    <Setter Property="BorderThickness" Value="1,1,1,0"/>
+    <Setter Property="Margin" Value="2,0,2,0"/>
+    <Setter Property="Padding" Value="12,4"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="FontSize" Value="11"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Template">
+     <Setter.Value>
+      <ControlTemplate TargetType="Button">
+       <Border x:Name="tabBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="3,3,0,0" Padding="{TemplateBinding Padding}">
+        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+       </Border>
+       <ControlTemplate.Triggers>
+        <Trigger Property="IsMouseOver" Value="True">
+         <Setter TargetName="tabBorder" Property="Background" Value="{DynamicResource Accent.Subtle}"/>
+        </Trigger>
+       </ControlTemplate.Triggers>
+      </ControlTemplate>
+     </Setter.Value>
+    </Setter>
+   </Style>
+
+   <!-- Bottom Status Bar Quick Link Style -->
+   <Style x:Key="Am.StatusLink" TargetType="Button">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Foreground" Value="{DynamicResource Accent}"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="FontSize" Value="11"/>
+    <Setter Property="Margin" Value="6,0"/>
+    <Setter Property="Template">
+     <Setter.Value>
+      <ControlTemplate TargetType="Button">
+       <TextBlock Text="{TemplateBinding Content}" TextDecorations="Underline" Cursor="Hand" VerticalAlignment="Center"/>
+      </ControlTemplate>
+     </Setter.Value>
+    </Setter>
+   </Style>
+  </ResourceDictionary>
+ </Window.Resources>
+
+ <Grid Background="{DynamicResource Surface.Secondary}">
+  <!-- Sign-in and mandatory password change -->
+  <shell:LoginView Visibility="{Binding IsAuthenticated, Converter={StaticResource Show}, ConverterParameter=invert}"/>
+
+  <!-- Main Application Shell -->
+  <Grid x:Name="ShellRoot" Visibility="{Binding IsAuthenticated, Converter={StaticResource Visible}}">
+   <Grid.RowDefinitions>
+    <RowDefinition Height="Auto"/> <!-- Row 0: Top Menu Bar (MainMenu) -->
+    <RowDefinition Height="Auto"/> <!-- Row 1: Al-Ameen Large Icon Toolbar (Toolbar) -->
+    <RowDefinition Height="Auto"/> <!-- Row 2: DocumentTabsStrip (for non-MDI fallback) -->
+    <RowDefinition Height="*"/>    <!-- Row 3: Main 3-Column Workstation Layout -->
+    <RowDefinition Height="Auto"/> <!-- Row 4: Al-Ameen Bottom Status Bar -->
+   </Grid.RowDefinitions>
+
+   <!-- ========================================================================= -->
+   <!-- ROW 0: TOP AL-AMEEN MENU BAR (ملف، فاتورة، سندات، زبائن، مواد، حسابات...)  -->
+   <!-- ========================================================================= -->
+   <Border Grid.Row="0" Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="0,0,0,1">
+    <DockPanel LastChildFill="True">
+     <!-- Company & Branch Pickers -->
+     <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center" Margin="8,1">
+      <ComboBox Width="160" MaxWidth="160" ItemsSource="{Binding Companies}" SelectedItem="{Binding Company, Mode=OneWay}" ux:SelectionCommand.Command="{Binding SelectCompanyCommand}" AutomationProperties.Name="{Binding Localization[UX_Company]}" ToolTip="{Binding Localization[UX_Company]}" Margin="2,1" VerticalAlignment="Center" Height="22">
+       <ComboBox.ItemTemplate><DataTemplate><TextBlock><TextBlock.Text><MultiBinding Converter="{StaticResource NameLabel}"><Binding Path="NameArabic"/><Binding Path="NameEnglish"/><Binding Path="DataContext.Localization.IsRightToLeft" RelativeSource="{RelativeSource AncestorType=Window}"/></MultiBinding></TextBlock.Text></TextBlock></DataTemplate></ComboBox.ItemTemplate>
+      </ComboBox>
+      <ComboBox Width="130" MaxWidth="130" ItemsSource="{Binding Branches}" SelectedItem="{Binding Branch, Mode=OneWay}" ux:SelectionCommand.Command="{Binding SelectBranchCommand}" AutomationProperties.Name="{Binding Localization[UX_Branch]}" ToolTip="{Binding Localization[UX_Branch]}" Margin="2,1" VerticalAlignment="Center" Height="22">
+       <ComboBox.ItemTemplate><DataTemplate><TextBlock><TextBlock.Text><MultiBinding Converter="{StaticResource NameLabel}"><Binding Path="NameArabic"/><Binding Path="NameEnglish"/><Binding Path="DataContext.Localization.IsRightToLeft" RelativeSource="{RelativeSource AncestorType=Window}"/></MultiBinding></TextBlock.Text></TextBlock></DataTemplate></ComboBox.ItemTemplate>
+      </ComboBox>
+     </StackPanel>
+
+     <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+      <Menu x:Name="MainMenu" Background="Transparent" VerticalAlignment="Center" Margin="2,1" FontSize="12" AutomationProperties.Name="{Binding Localization[D_MainMenu]}"/>
+     </ScrollViewer>
+    </DockPanel>
+   </Border>
+
+   <!-- ========================================================================= -->
+   <!-- ROW 1: AL-AMEEN COLORFUL ICON TOOLBAR (Image 3)                           -->
+   <!-- ========================================================================= -->
+   <Border Grid.Row="1" Background="{DynamicResource Surface.Secondary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="0,0,0,1" Height="38">
+    <DockPanel LastChildFill="False">
+     <StackPanel x:Name="Toolbar" Orientation="Horizontal" Margin="4,2" VerticalAlignment="Center" DockPanel.Dock="Right" AutomationProperties.Name="{Binding Localization[D_Toolbar]}">
+      <!-- 1. Security / Admin -->
+      <Button Style="{StaticResource Am.ToolbarButton}" ToolTip="إدارة الأمان والصلاحيات" Command="{Binding NavigateCommand}" CommandParameter="users">
+       <TextBlock Text="&#xE72E;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="{DynamicResource Accent}"/>
+      </Button>
+
+      <!-- 2. Users -->
+      <Button Style="{StaticResource Am.ToolbarButton}" ToolTip="المستخدمين" Command="{Binding NavigateCommand}" CommandParameter="users">
+       <TextBlock Text="&#xE77B;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="{DynamicResource Success}"/>
+      </Button>
+
+      <Border Width="1" Height="22" Background="{DynamicResource Surface.Recessed}" Margin="4,0"/>
+
+      <!-- 3. New Sales Invoice -->
+      <Button Style="{StaticResource Am.ToolbarButton}" ToolTip="فاتورة مبيعات جديدة" Command="{Binding NavigateCommand}" CommandParameter="sales-invoices">
+       <TextBlock Text="&#xE8A1;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="{DynamicResource Warning}"/>
+      </Button>
+
+      <!-- 4. Daily Journal Voucher -->
+      <Button Style="{StaticResource Am.ToolbarButton}" ToolTip="سند قيد يومية جديد" Command="{Binding NewJournalCommand}">
+       <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="{DynamicResource Info}"/>
+      </Button>
+
+      <!-- 5. Chart of Accounts -->
+      <Button Style="{StaticResource Am.ToolbarButton}" ToolTip="دليل وشجرة الحسابات (Ctrl+F11)" Command="{Binding NavigateCommand}" CommandParameter="accounts">
+       <TextBlock Text="&#xE8F2;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="{DynamicResource Success}"/>
+      </Button>
+
+      <!-- 6. General Ledger -->
+      <Button Style="{StaticResource Am.ToolbarButton}" ToolTip="دفتر الأستاذ (Ctrl+L)" Command="{Binding NavigateCommand}" CommandParameter="account-ledger">
+       <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="{DynamicResource Info}"/>
+      </Button>
+
+      <!-- 7. Trial Balance -->
+      <Button Style="{StaticResource Am.ToolbarButton}" ToolTip="ميزان المراجعة" Command="{Binding NavigateCommand}" CommandParameter="trial-balance">
+       <TextBlock Text="&#xE9D2;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="{DynamicResource Accent}"/>
+      </Button>
+
+      <Border Width="1" Height="22" Background="{DynamicResource Surface.Recessed}" Margin="4,0"/>
+
+      <!-- 8. Items / Materials Directory -->
+      <Button Style="{StaticResource Am.ToolbarButton}" ToolTip="دليل المواد (F7)" Command="{Binding NavigateCommand}" CommandParameter="item-directory">
+       <TextBlock Text="&#xE71D;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="{DynamicResource Warning}"/>
+      </Button>
+
+      <!-- 9. Warehouses -->
+      <Button Style="{StaticResource Am.ToolbarButton}" ToolTip="المستودعات" Command="{Binding NavigateCommand}" CommandParameter="warehouses">
+       <TextBlock Text="&#xE80F;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="{DynamicResource Accent}"/>
+      </Button>
+
+      <!-- 10. Cost Centers -->
+      <Button Style="{StaticResource Am.ToolbarButton}" ToolTip="مراكز الكلفة" Command="{Binding NavigateCommand}" CommandParameter="cost-centers">
+       <TextBlock Text="&#xE8B9;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="{DynamicResource Error}"/>
+      </Button>
+
+      <!-- 11. Reports Center -->
+      <Button Style="{StaticResource Am.ToolbarButton}" ToolTip="مركز التقارير" Command="{Binding NavigateCommand}" CommandParameter="reports-center">
+       <TextBlock Text="&#xE7BA;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="{DynamicResource Text.Primary}"/>
+      </Button>
+
+      <Border Width="1" Height="22" Background="{DynamicResource Surface.Recessed}" Margin="4,0"/>
+
+      <!-- 12. MDI Window Management (Cascade, Tile H, Tile V, Restore, Close) -->
+      <Button Style="{StaticResource Am.ToolbarButton}" ToolTip="تعاقب النوافذ" Command="{Binding CascadeWindowsCommand}">
+       <TextBlock Text="&#xE746;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="{DynamicResource Text.Secondary}"/>
+      </Button>
+      <Button Style="{StaticResource Am.ToolbarButton}" ToolTip="ترتيب أفقياً" Command="{Binding TileHorizontallyCommand}">
+       <TextBlock Text="&#xE745;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="{DynamicResource Text.Secondary}"/>
+      </Button>
+      <Button Style="{StaticResource Am.ToolbarButton}" ToolTip="ترتيب عمودياً" Command="{Binding TileVerticallyCommand}">
+       <TextBlock Text="&#xE747;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="{DynamicResource Text.Secondary}"/>
+      </Button>
+      <Button Style="{StaticResource Am.ToolbarButton}" ToolTip="استعادة الكل" Command="{Binding RestoreMinimizedDocumentsCommand}">
+       <TextBlock Text="&#xE792;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="{DynamicResource Text.Secondary}"/>
+      </Button>
+      <Button Style="{StaticResource Am.ToolbarButton}" ToolTip="إغلاق الكل" Command="{Binding CloseAllDocumentsCommand}">
+       <TextBlock Text="&#xE8BB;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="{DynamicResource Error}"/>
+      </Button>
+
+      <Border Width="1" Height="22" Background="{DynamicResource Surface.Recessed}" Margin="4,0"/>
+
+      <!-- 13. Refresh & Search -->
+      <Button Style="{StaticResource Am.ToolbarButton}" ToolTip="تحديث (F5)" Command="{Binding RefreshCommand}">
+       <TextBlock Text="&#xE72C;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="{DynamicResource Success}"/>
+      </Button>
+      <Button Style="{StaticResource Am.ToolbarButton}" ToolTip="البحث السريع (Ctrl+K)" Command="{Binding Palette.OpenCommand}">
+       <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="{DynamicResource Accent}"/>
+      </Button>
+     </StackPanel>
+    </DockPanel>
+   </Border>
+
+   <!-- Row 2: DocumentTabsStrip (for non-MDI fallback; collapsed in MDI mode) -->
+   <ScrollViewer x:Name="DocumentTabsStrip" Grid.Row="2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Margin="8,4,8,0" Visibility="Collapsed">
+    <ItemsControl x:Name="DocumentTabs" ItemsSource="{Binding Documents.Documents}" Focusable="False">
+     <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+     <ItemsControl.ItemTemplate>
+      <DataTemplate>
+       <Border x:Name="TabChrome" Margin="0,0,3,0" Padding="10,3,4,3" CornerRadius="4,4,0,0" Background="{DynamicResource Alternate}">
+        <StackPanel Orientation="Horizontal">
+         <Button x:Name="TabTitle" Content="{Binding Title}" Padding="0" Background="Transparent" BorderThickness="0" Cursor="Hand" FontSize="12"
+                 Command="{Binding DataContext.ActivateDocumentCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"
+                 AutomationProperties.Name="{Binding Title}"/>
+         <Button Content="&#x2715;" Margin="8,0,0,0" Padding="4,0" Background="Transparent" BorderThickness="0" Cursor="Hand" FontSize="{DynamicResource Font.Caption}"
+                 Visibility="{Binding IsClosable, Converter={StaticResource Visible}}"
+                 Command="{Binding DataContext.CloseDocumentCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"
+                 ToolTip="{Binding Title}" AutomationProperties.Name="Close"/>
+        </StackPanel>
+       </Border>
+       <DataTemplate.Triggers>
+        <DataTrigger Binding="{Binding IsActive}" Value="True">
+         <Setter TargetName="TabChrome" Property="Background" Value="{DynamicResource Accent}"/>
+         <Setter TargetName="TabTitle" Property="FontWeight" Value="SemiBold"/>
+        </DataTrigger>
+       </DataTemplate.Triggers>
+      </DataTemplate>
+     </ItemsControl.ItemTemplate>
+    </ItemsControl>
+   </ScrollViewer>
+
+   <!-- ========================================================================= -->
+   <!-- ROW 3: MDI WORKSPACE & CANVAS                                             -->
+   <!-- ========================================================================= -->
+   <DockPanel Grid.Row="3" x:Name="WorkspaceArea" Margin="0">
+    <ProgressBar DockPanel.Dock="Top" IsIndeterminate="{Binding Operation.IsBusy}" Height="2" Margin="0,0,0,4" Visibility="{Binding Operation.IsBusy, Converter={StaticResource Visible}}" AutomationProperties.Name="{Binding Localization[D_Busy]}"/>
+    <TextBlock DockPanel.Dock="Top" Text="{Binding Operation.Error}" Style="{StaticResource Text.Error}" Visibility="{Binding Operation.Error, Converter={StaticResource Show}}" Margin="0,0,0,4"/>
+    <TextBlock DockPanel.Dock="Top" Text="{Binding Workspace.Error}" Style="{StaticResource Text.Error}" Visibility="{Binding Workspace.Error, Converter={StaticResource Show}}" Margin="0,0,0,4"/>
+    <ux:WorkspaceViewport x:Name="WorkspaceViewport" MinimumContentHeight="{StaticResource Workspace.MinimumHeight}">
+     <Grid>
+      <!-- Home Dashboard Surface (Visible in background / when IsHome is true) -->
+      <shell:HomeView x:Name="HomeSurface"/>
+
+      <!-- Page Surface for fallback loading -->
+      <ux:LoadingHost x:Name="PageSurface" State="{Binding ActiveLoading}" Visibility="Collapsed">
+       <ContentControl x:Name="PageHost" Content="{Binding CurrentView}" Focusable="False"/>
+      </ux:LoadingHost>
+
+      <!-- Classic Al-Ameen MDI Floating Windows Host -->
+      <ux:MdiWorkspaceHost x:Name="MdiHost" Visibility="Visible"/>
+     </Grid>
+    </ux:WorkspaceViewport>
+   </DockPanel>
+
+   <!-- ========================================================================= -->
+   <!-- ROW 4: AL-AMEEN BOTTOM STATUS BAR (Image 3)                               -->
+   <!-- ========================================================================= -->
+   <Border Grid.Row="4" Background="{DynamicResource Surface.Recessed}" BorderBrush="{DynamicResource Border.Strong}" BorderThickness="0,1,0,0" Height="26">
+    <DockPanel Margin="6,0" LastChildFill="False">
+     <!-- Left Side (RTL): Quick Management Tabs: جديد | سلة المحذوفات | إفراغ سلة المحذوفات | ملف التسجيل -->
+     <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+      <Button Style="{StaticResource Am.StatusLink}" Content="جديد"/>
+      <TextBlock Text="|" Foreground="{DynamicResource Text.Secondary}" VerticalAlignment="Center"/>
+      <Button Style="{StaticResource Am.StatusLink}" Content="سلة المحذوفات"/>
+      <TextBlock Text="|" Foreground="{DynamicResource Text.Secondary}" VerticalAlignment="Center"/>
+      <Button Style="{StaticResource Am.StatusLink}" Content="إفراغ سلة المحذوفات"/>
+      <TextBlock Text="|" Foreground="{DynamicResource Text.Secondary}" VerticalAlignment="Center"/>
+      <Button Style="{StaticResource Am.StatusLink}" Content="ملف التسجيل"/>
+     </StackPanel>
+
+     <!-- Right Side (RTL): System & Server Status Indicators -->
+     <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center" TextElement.FontSize="11">
+      <!-- Connection Status -->
+      <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+       <Ellipse Width="8" Height="8" Margin="0,0,5,0" Fill="{DynamicResource Success}" VerticalAlignment="Center"/>
+       <TextBlock Text="الخادم متصل" Foreground="{DynamicResource Success}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+      </StackPanel>
+      <TextBlock Text="|" Foreground="{DynamicResource Text.Secondary}" VerticalAlignment="Center" Margin="4,0"/>
+
+      <TextBlock Text="{Binding CompanyLabel}" FontWeight="SemiBold" Foreground="{DynamicResource Text.Primary}" VerticalAlignment="Center" Margin="4,0"/>
+      <TextBlock Text="|" Foreground="{DynamicResource Text.Secondary}" VerticalAlignment="Center" Margin="4,0"/>
+
+      <TextBlock Text="{Binding BranchLabel}" Foreground="{DynamicResource Text.Secondary}" VerticalAlignment="Center" Margin="4,0"/>
+      <TextBlock Text="|" Foreground="{DynamicResource Text.Secondary}" VerticalAlignment="Center" Margin="4,0"/>
+
+      <TextBlock Text="{Binding PeriodLabel}" Foreground="{DynamicResource Text.Secondary}" VerticalAlignment="Center" Margin="4,0"/>
+      <TextBlock Text="|" Foreground="{DynamicResource Text.Secondary}" VerticalAlignment="Center" Margin="4,0"/>
+
+      <TextBlock Text="{Binding Company.BaseCurrencyCode}" FontWeight="Bold" Foreground="{DynamicResource Text.Primary}" VerticalAlignment="Center" Margin="4,0"/>
+      <TextBlock Text="|" Foreground="{DynamicResource Text.Secondary}" VerticalAlignment="Center" Margin="4,0"/>
+
+      <TextBlock Text="{Binding UserLabel}" Foreground="{DynamicResource Accent}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="4,0"/>
+     </StackPanel>
+    </DockPanel>
+   </Border>
+
+   <shell:ShellOverlays Grid.RowSpan="5"/>
+  </Grid>
+ </Grid>
+</Window>

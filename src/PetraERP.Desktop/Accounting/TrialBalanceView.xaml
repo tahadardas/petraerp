@@ -1,0 +1,89 @@
+﻿<UserControl x:Class="PetraERP.Desktop.Accounting.TrialBalanceView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ux="clr-namespace:PetraERP.Desktop.Controls">
+ <UserControl.InputBindings>
+  <KeyBinding Key="F5" Command="{Binding RunCommand}"/>
+  <KeyBinding Key="Enter" Command="{Binding RunCommand}"/>
+ </UserControl.InputBindings>
+ <UserControl.Resources><ux:BindingProxy x:Key="Proxy" Data="{Binding}"/></UserControl.Resources>
+ <DockPanel>
+  <ux:PageHeader DockPanel.Dock="Top" Title="{Binding Localization[D_TrialBalance]}">
+   <ux:PageHeader.Status><ux:StatusBadge Text="{Binding BalanceText}" Kind="{Binding BalanceKind}" Visibility="{Binding HasResult, Converter={StaticResource Visible}}"/></ux:PageHeader.Status>
+  </ux:PageHeader>
+  <Border DockPanel.Dock="Top" Style="{StaticResource Panel.Filter}">
+   <WrapPanel>
+    <StackPanel Margin="0,0,8,0" Width="230" Visibility="{Binding CanPickPeriod, Converter={StaticResource Visible}}"><TextBlock Text="{Binding Localization[D_FiscalPeriod]}" Style="{StaticResource Text.Label}"/>
+     <ux:LookupPicker ItemsSource="{Binding PeriodOptions}" SelectedId="{Binding PeriodId}" IsArabic="{Binding Localization.IsRightToLeft}" Placeholder="{Binding Localization[D_PeriodOrDates]}" AutomationProperties.Name="{Binding Localization[D_FiscalPeriod]}"/></StackPanel>
+    <StackPanel Margin="0,0,8,0"><TextBlock Text="{Binding Localization[D_From]}" Style="{StaticResource Text.Label}"/><ux:PetraDatePicker Width="130" SelectedDate="{Binding FromDate}" AutomationProperties.Name="{Binding Localization[D_From]}"/></StackPanel>
+    <StackPanel Margin="0,0,8,0"><TextBlock Text="{Binding Localization[D_To]}" Style="{StaticResource Text.Label}"/><ux:PetraDatePicker Width="130" SelectedDate="{Binding ToDate}" AutomationProperties.Name="{Binding Localization[D_To]}"/></StackPanel>
+    <StackPanel Margin="0,0,8,0"><TextBlock Text="{Binding Localization[D_AccountType]}" Style="{StaticResource Text.Label}"/><ComboBox Width="130" ItemsSource="{Binding AccountTypes}" DisplayMemberPath="Label" SelectedItem="{Binding AccountType}" AutomationProperties.Name="{Binding Localization[D_AccountType]}"/></StackPanel>
+    <StackPanel Margin="0,0,8,0"><TextBlock Text="{Binding Localization[D_MaximumLevel]}" Style="{StaticResource Text.Label}"/><ComboBox Width="80" ItemsSource="{Binding Levels}" SelectedItem="{Binding MaximumLevel}" AutomationProperties.Name="{Binding Localization[D_MaximumLevel]}"/></StackPanel>
+    <CheckBox Content="{Binding Localization[D_IncludeZeroRows]}" IsChecked="{Binding IncludeZeroRows}" VerticalAlignment="Bottom" Margin="0,0,10,6"/>
+    <CheckBox Content="{Binding Localization[D_AllBranches]}" IsChecked="{Binding Consolidated}" VerticalAlignment="Bottom" Margin="0,0,10,6" ToolTip="{Binding Localization[D_AllBranchesHelp]}"/>
+    <Button Style="{StaticResource Button.Primary}" ux:Icon.Glyph="&#xE768;" Content="{Binding Localization[D_RunReport]}" Command="{Binding RunCommand}" VerticalAlignment="Bottom"/>
+    <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE734;" Content="{Binding Localization[UI_SaveFilter]}" Command="{Binding SaveFilterCommand}" VerticalAlignment="Bottom" ToolTip="{Binding Localization[UI_SaveFilterHelp]}"/>
+   </WrapPanel>
+  </Border>
+  <Expander DockPanel.Dock="Top" Header="{Binding Localization[D_TB_Parameters]}" Margin="0,4,0,0">
+   <Border Style="{StaticResource Panel.Filter}">
+    <WrapPanel>
+     <StackPanel Margin="0,0,8,6" Width="230" Visibility="{Binding HasLookups, Converter={StaticResource Visible}}"><TextBlock Text="{Binding Localization[D_TB_Account]}" Style="{StaticResource Text.Label}"/>
+      <ux:PetraAccountPicker ItemsSource="{Binding Lookups.Accounts}" SelectedId="{Binding ParameterAccountId}" IsArabic="{Binding Localization.IsRightToLeft}" Placeholder="{Binding Localization[D_LookupHint]}" AutomationProperties.Name="{Binding Localization[D_TB_Account]}"/></StackPanel>
+     <StackPanel Margin="0,0,8,6" Width="190" Visibility="{Binding HasLookups, Converter={StaticResource Visible}}"><TextBlock Text="{Binding Localization[D_TB_CostCenter]}" Style="{StaticResource Text.Label}"/>
+      <ux:LookupPicker ItemsSource="{Binding Lookups.CostCenters}" SelectedId="{Binding ParameterCostCenterId}" IsArabic="{Binding Localization.IsRightToLeft}" Placeholder="{Binding Localization[D_LookupHint]}" AutomationProperties.Name="{Binding Localization[D_TB_CostCenter]}"/></StackPanel>
+     <StackPanel Margin="0,0,8,6"><TextBlock Text="{Binding Localization[D_TB_AccountScope]}" Style="{StaticResource Text.Label}"/>
+      <ComboBox Width="170" ItemsSource="{Binding AccountScopes}" DisplayMemberPath="Label" SelectedItem="{Binding AccountScope}" AutomationProperties.Name="{Binding Localization[D_TB_AccountScope]}"/></StackPanel>
+     <StackPanel Margin="0,0,8,6"><TextBlock Text="{Binding Localization[D_TB_FromJournal]}" Style="{StaticResource Text.Label}"/>
+      <TextBox Width="110" FlowDirection="LeftToRight" MaxLength="12" Text="{Binding FromJournalNumberText, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{Binding Localization[D_TB_FromJournal]}"/></StackPanel>
+     <StackPanel Margin="0,0,8,6"><TextBlock Text="{Binding Localization[D_TB_ToJournal]}" Style="{StaticResource Text.Label}"/>
+      <TextBox Width="110" FlowDirection="LeftToRight" MaxLength="12" Text="{Binding ToJournalNumberText, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{Binding Localization[D_TB_ToJournal]}"/></StackPanel>
+     <StackPanel Margin="0,0,8,6"><TextBlock Text="{Binding Localization[D_TB_DisplayCurrency]}" Style="{StaticResource Text.Label}"/>
+      <TextBox Width="70" FlowDirection="LeftToRight" MaxLength="3" CharacterCasing="Upper" Text="{Binding DisplayCurrencyText, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{Binding Localization[D_TB_DisplayCurrency]}"/></StackPanel>
+     <StackPanel Margin="0,0,8,6"><TextBlock Text="{Binding Localization[D_TB_DisplayRate]}" Style="{StaticResource Text.Label}"/>
+      <ux:PetraNumericTextBox Width="130" Kind="Rate" MaximumScale="8" Text="{Binding DisplayRateText, UpdateSourceTrigger=PropertyChanged}" ToolTip="{Binding DisplayRateHint}" AutomationProperties.Name="{Binding Localization[D_TB_DisplayRate]}"/></StackPanel>
+     <StackPanel Margin="0,0,8,6"><TextBlock Text="{Binding Localization[D_TB_Sources]}" Style="{StaticResource Text.Label}"/>
+      <WrapPanel>
+       <CheckBox Content="{Binding Localization[D_TB_SrcJournal]}" IsChecked="{Binding SourceJournal}" Margin="0,0,10,0"/>
+       <CheckBox Content="{Binding Localization[D_TB_SrcSales]}" IsChecked="{Binding SourceSalesInvoice}" Margin="0,0,10,0"/>
+       <CheckBox Content="{Binding Localization[D_TB_SrcPurchase]}" IsChecked="{Binding SourcePurchaseInvoice}" Margin="0,0,10,0"/>
+       <CheckBox Content="{Binding Localization[D_TB_SrcVoucher]}" IsChecked="{Binding SourceVoucher}"/>
+      </WrapPanel></StackPanel>
+     <CheckBox Content="{Binding Localization[D_TB_LastMovement]}" IsChecked="{Binding ShowLastMovement}" VerticalAlignment="Bottom" Margin="0,0,8,8"/>
+    </WrapPanel>
+   </Border>
+  </Expander>
+  <!-- Footer totals exactly as computed by the server (posting accounts only). -->
+  <Border DockPanel.Dock="Bottom" Style="{StaticResource Panel.Summary}" Margin="0,8,0,0" Visibility="{Binding HasResult, Converter={StaticResource Visible}}">
+   <WrapPanel>
+    <StackPanel Orientation="Horizontal" Margin="0,0,12,0"><TextBlock Text="{Binding Localization[D_Totals]}" FontWeight="SemiBold"/><TextBlock Text="{Binding BaseCurrency}" Style="{StaticResource Text.Caption}" Margin="8,0"/></StackPanel>
+    <StackPanel Margin="0,0,12,4" MinWidth="115"><TextBlock Text="{Binding Localization[D_OpeningDebit]}" Style="{StaticResource Text.Label}"/><TextBlock Text="{Binding TotalOpeningDebit}" Style="{StaticResource Text.NumericTotal}"/></StackPanel>
+    <StackPanel Margin="0,0,12,4" MinWidth="115"><TextBlock Text="{Binding Localization[D_OpeningCredit]}" Style="{StaticResource Text.Label}"/><TextBlock Text="{Binding TotalOpeningCredit}" Style="{StaticResource Text.NumericTotal}"/></StackPanel>
+    <StackPanel Margin="0,0,12,4" MinWidth="115"><TextBlock Text="{Binding Localization[D_PeriodDebit]}" Style="{StaticResource Text.Label}"/><TextBlock Text="{Binding TotalPeriodDebit}" Style="{StaticResource Text.NumericTotal}"/></StackPanel>
+    <StackPanel Margin="0,0,12,4" MinWidth="115"><TextBlock Text="{Binding Localization[D_PeriodCredit]}" Style="{StaticResource Text.Label}"/><TextBlock Text="{Binding TotalPeriodCredit}" Style="{StaticResource Text.NumericTotal}"/></StackPanel>
+    <StackPanel Margin="0,0,12,4" MinWidth="115"><TextBlock Text="{Binding Localization[D_EndingDebit]}" Style="{StaticResource Text.Label}"/><TextBlock Text="{Binding TotalEndingDebit}" Style="{StaticResource Text.NumericTotal}"/></StackPanel>
+    <StackPanel Margin="0,0,12,4" MinWidth="115"><TextBlock Text="{Binding Localization[D_EndingCredit]}" Style="{StaticResource Text.Label}"/><TextBlock Text="{Binding TotalEndingCredit}" Style="{StaticResource Text.NumericTotal}"/></StackPanel>
+   </WrapPanel>
+  </Border>
+  <Border Style="{StaticResource Panel.Flat}">
+   <Grid>
+    <ux:EmptyState Glyph="&#xE9D2;" Title="{Binding Localization[D_RunReportPrompt]}" Visibility="{Binding HasResult, Converter={StaticResource Show}, ConverterParameter=invert}"/>
+    <ux:PetraAccountingDataGrid ItemsSource="{Binding Rows}" SelectedItem="{Binding SelectedRow}" IsReadOnly="True" SelectionUnit="FullRow" CanUserSortColumns="False" BorderThickness="0" MouseDoubleClick="RowOpened"
+              Visibility="{Binding HasResult, Converter={StaticResource Visible}}" ux:GridLayouts.Key="ledger.trial-balance" ux:GridLayouts.Store="{Binding DataContext.Workspace, RelativeSource={RelativeSource AncestorType=Window}}" AutomationProperties.Name="{Binding Localization[D_TrialBalance]}">
+     <DataGrid.InputBindings><KeyBinding Key="Enter" Command="{Binding OpenLedgerCommand}"/></DataGrid.InputBindings>
+     <DataGrid.Columns>
+      <DataGridTemplateColumn SortMemberPath="Account" Width="140"><DataGridTemplateColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Account], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTemplateColumn.Header>
+       <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Text="{Binding Code}" Margin="{Binding Level, Converter={StaticResource Indent}, ConverterParameter=12}"><TextBlock.Style><Style TargetType="TextBlock"><Style.Triggers><DataTrigger Binding="{Binding PostingAllowed}" Value="False"><Setter Property="FontWeight" Value="SemiBold"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+      <DataGridTemplateColumn SortMemberPath="Name" Width="*" MinWidth="120"><DataGridTemplateColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_Name], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTemplateColumn.Header>
+       <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock TextTrimming="CharacterEllipsis"><TextBlock.Text><MultiBinding Converter="{StaticResource NameLabel}"><Binding Path="NameArabic"/><Binding Path="NameEnglish"/><Binding Path="DataContext.Localization.IsRightToLeft" RelativeSource="{RelativeSource AncestorType=UserControl}"/></MultiBinding></TextBlock.Text></TextBlock></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+      <DataGridTextColumn Binding="{Binding OpeningDebit, Converter={StaticResource MoneyBlank}}" SortMemberPath="OpeningDebit" Width="115" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_OpeningDebit], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      <DataGridTextColumn Binding="{Binding OpeningCredit, Converter={StaticResource MoneyBlank}}" SortMemberPath="OpeningCredit" Width="115" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_OpeningCredit], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      <DataGridTextColumn Binding="{Binding PeriodDebit, Converter={StaticResource MoneyBlank}}" SortMemberPath="PeriodDebit" Width="115" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_PeriodDebit], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      <DataGridTextColumn Binding="{Binding PeriodCredit, Converter={StaticResource MoneyBlank}}" SortMemberPath="PeriodCredit" Width="115" ElementStyle="{StaticResource Text.Numeric}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_PeriodCredit], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      <DataGridTextColumn Binding="{Binding EndingDebit, Converter={StaticResource MoneyBlank}}" SortMemberPath="EndingDebit" Width="115" ElementStyle="{StaticResource Text.NumericTotal}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_EndingDebit], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      <DataGridTextColumn Binding="{Binding EndingCredit, Converter={StaticResource MoneyBlank}}" SortMemberPath="EndingCredit" Width="115" ElementStyle="{StaticResource Text.NumericTotal}"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_EndingCredit], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      <DataGridTextColumn Binding="{Binding LastDebitDate, StringFormat=yyyy-MM-dd}" Width="100" Visibility="{Binding Data.LastMovementColumns, Source={StaticResource Proxy}, Converter={StaticResource Visible}}"><DataGridTextColumn.Header><TextBlock Text="{Binding Data.Localization[D_TB_LastDebit], Source={StaticResource Proxy}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+      <DataGridTextColumn Binding="{Binding LastCreditDate, StringFormat=yyyy-MM-dd}" Width="100" Visibility="{Binding Data.LastMovementColumns, Source={StaticResource Proxy}, Converter={StaticResource Visible}}"><DataGridTextColumn.Header><TextBlock Text="{Binding Data.Localization[D_TB_LastCredit], Source={StaticResource Proxy}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+     </DataGrid.Columns>
+    </ux:PetraAccountingDataGrid>
+   </Grid>
+  </Border>
+ </DockPanel>
+</UserControl>

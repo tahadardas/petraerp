@@ -1,0 +1,31 @@
+<UserControl x:Class="PetraERP.Desktop.Shell.DialogHost" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ PreviewKeyDown="DialogKeyDown" Visibility="{Binding Dialogs.Current, Converter={StaticResource Show}}">
+ <!-- Structured confirmation for destructive and financial actions (Cancel is the default). DataContext is the shell, so the
+      same pending request is shown by the main window and by every detached document window; answering in one answers it. -->
+ <Grid Background="{DynamicResource Overlay}">
+  <Border Style="{StaticResource Panel.Card}" Background="{DynamicResource Surface.Raised}" CornerRadius="{DynamicResource Radius.Dialog}" MaxWidth="460" Margin="12" VerticalAlignment="Center" Padding="{StaticResource Pad.Dialog}"
+          DataContext="{Binding Dialogs.Current}" KeyboardNavigation.TabNavigation="Cycle" Effect="{StaticResource Elevation.3}" AutomationProperties.Name="{Binding Title}">
+   <StackPanel>
+    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+     <!-- Glyph and color by consequence: destructive/financial actions get the warning glyph in the error tone; others a neutral question glyph. -->
+     <TextBlock Margin="0,0,10,0" FontSize="18"><TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource Text.Icon}">
+      <Setter Property="Text" Value="&#xE9CE;"/><Setter Property="Foreground" Value="{DynamicResource Accent}"/>
+      <Style.Triggers><DataTrigger Binding="{Binding IsDestructive}" Value="True"><Setter Property="Text" Value="&#xE7BA;"/><Setter Property="Foreground" Value="{DynamicResource Error}"/></DataTrigger></Style.Triggers>
+     </Style></TextBlock.Style></TextBlock>
+     <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Section}" Margin="0"/>
+    </StackPanel>
+    <TextBlock Text="{Binding Message}" TextWrapping="Wrap" Margin="0,0,0,18" AutomationProperties.LiveSetting="Assertive"/>
+    <WrapPanel HorizontalAlignment="Right">
+     <Button x:Name="DialogCancel" Style="{StaticResource Button.Command}" Content="{Binding DataContext.Localization[D_Cancel], RelativeSource={RelativeSource AncestorType=UserControl}}" Command="{Binding CancelCommand}" IsCancel="True" IsDefault="True" MinWidth="90"/>
+     <Button x:Name="DialogAlternate" Style="{StaticResource Button.Primary}" Content="{Binding AlternateLabel}" Command="{Binding AlternateCommand}" MinWidth="110" Margin="8,2,2,2" Visibility="{Binding HasAlternate, Converter={StaticResource Visible}}"/>
+     <Button x:Name="DialogDiscard" Style="{StaticResource Button.Danger}" Content="{Binding ConfirmLabel}" Command="{Binding ConfirmCommand}" MinWidth="110" Margin="8,2,2,2" Visibility="{Binding HasAlternate, Converter={StaticResource Visible}}"/>
+     <Button x:Name="DialogConfirm" Content="{Binding ConfirmLabel}" Command="{Binding ConfirmCommand}" MinWidth="110" Margin="8,2,2,2" Visibility="{Binding HasAlternate, Converter={StaticResource Show}, ConverterParameter=invert}">
+      <Button.Style><Style TargetType="Button" BasedOn="{StaticResource Button.Primary}">
+       <Style.Triggers><DataTrigger Binding="{Binding IsDestructive}" Value="True"><Setter Property="Background" Value="{DynamicResource Error}"/></DataTrigger></Style.Triggers>
+      </Style></Button.Style>
+     </Button>
+    </WrapPanel>
+   </StackPanel>
+  </Border>
+ </Grid>
+</UserControl>

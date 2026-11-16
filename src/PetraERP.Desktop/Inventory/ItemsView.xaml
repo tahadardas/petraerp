@@ -1,0 +1,174 @@
+﻿<UserControl x:Class="PetraERP.Desktop.Inventory.ItemsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ux="clr-namespace:PetraERP.Desktop.Controls">
+ <UserControl.InputBindings>
+  <KeyBinding Key="N" Modifiers="Control" Command="{Binding NewItemCommand}"/>
+  <KeyBinding Key="F5" Command="{Binding RefreshCommand}"/>
+  <KeyBinding Key="Enter" Command="{Binding OpenCardCommand}"/>
+ </UserControl.InputBindings>
+ <DockPanel>
+  <ux:PageHeader DockPanel.Dock="Top" Title="{Binding Localization[D_Items]}">
+   <ux:PageHeader.Commands>
+    <WrapPanel>
+     <Button x:Name="NewItemButton" Style="{StaticResource Button.Primary}" ux:Icon.Glyph="&#xE710;" Content="{Binding Localization[D_NewItem]}" Command="{Binding NewItemCommand}" ToolTip="Ctrl+N" Visibility="{Binding CanManage, Converter={StaticResource Visible}}" Margin="0,0,6,0"/>
+     <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE70F;" Content="{Binding Localization[D_ViewItemCard]}" Command="{Binding OpenCardCommand}" ToolTip="Enter" Margin="0,0,6,0"/>
+     <Button x:Name="NewGroupButton" Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE8B7;" Content="{Binding Localization[D_NewItemGroup]}" Command="{Binding NewGroupCommand}" Visibility="{Binding CanManage, Converter={StaticResource Visible}}" Margin="0,0,6,0"/>
+     <Button x:Name="RefreshButton" Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE72C;" Content="{Binding Localization[D_Refresh]}" Command="{Binding RefreshCommand}" ToolTip="F5"/>
+    </WrapPanel>
+   </ux:PageHeader.Commands>
+  </ux:PageHeader>
+
+  <TextBlock DockPanel.Dock="Top" Text="{Binding Localization[D_DirectoryEntryHelp]}" Style="{StaticResource Text.Caption}" Margin="4,0,4,8"/>
+
+  <Grid Margin="0,0,0,4">
+   <Grid.ColumnDefinitions>
+    <ColumnDefinition Width="280" MinWidth="200" MaxWidth="450"/>
+    <ColumnDefinition Width="5"/>
+    <ColumnDefinition Width="*"/>
+   </Grid.ColumnDefinitions>
+
+   <!-- Left: Material Groups Tree -->
+   <Border Grid.Column="0" Style="{StaticResource Panel.Card}" Padding="8">
+    <DockPanel>
+     <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+      <WrapPanel DockPanel.Dock="Right">
+       <Button Style="{StaticResource Button.Icon}" Content="&#xE710;" Command="{Binding NewGroupCommand}" ToolTip="{Binding Localization[D_NewItemGroup]}" Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+       <Button Style="{StaticResource Button.Icon}" Content="&#xE70F;" Command="{Binding OpenGroupCardCommand}" ToolTip="{Binding Localization[D_ViewGroupCard]}"/>
+      </WrapPanel>
+      <TextBlock Text="{Binding Localization[D_ItemGroups]}" Style="{StaticResource Text.Subheading}" VerticalAlignment="Center"/>
+     </DockPanel>
+
+     <TreeView ItemsSource="{Binding GroupTree}" BorderThickness="0" Background="Transparent"
+               SelectedItemChanged="OnGroupTreeSelectionChanged">
+      <TreeView.ItemContainerStyle>
+       <Style TargetType="TreeViewItem">
+        <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
+        <Setter Property="ContextMenu">
+         <Setter.Value>
+          <ContextMenu>
+           <MenuItem Header="{Binding DataContext.Localization[D_NewSubgroup], RelativeSource={RelativeSource AncestorType=UserControl}}"
+                     Command="{Binding DataContext.NewSubgroupCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                     Visibility="{Binding DataContext.CanManage, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Visible}}"/>
+           <MenuItem Header="{Binding DataContext.Localization[D_ViewGroupCard], RelativeSource={RelativeSource AncestorType=UserControl}}"
+                     Command="{Binding DataContext.OpenGroupCardCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+           <Separator Visibility="{Binding DataContext.CanManage, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Visible}}"/>
+           <MenuItem Header="{Binding DataContext.Localization[D_AddItemToGroup], RelativeSource={RelativeSource AncestorType=UserControl}}"
+                     Command="{Binding DataContext.AddItemToGroupCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                     Visibility="{Binding DataContext.CanManage, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Visible}}"/>
+          </ContextMenu>
+         </Setter.Value>
+        </Setter>
+       </Style>
+      </TreeView.ItemContainerStyle>
+      <TreeView.ItemTemplate>
+       <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+        <StackPanel Orientation="Horizontal" Margin="2,3">
+         <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource AccentBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+         <TextBlock Text="{Binding DisplayText}" VerticalAlignment="Center" FontSize="13"/>
+        </StackPanel>
+       </HierarchicalDataTemplate>
+      </TreeView.ItemTemplate>
+     </TreeView>
+    </DockPanel>
+   </Border>
+
+   <!-- Splitter -->
+   <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="Transparent" Cursor="SizeWE"/>
+
+   <!-- Right: Items DataGrid & Filters -->
+   <DockPanel Grid.Column="2">
+    <Border DockPanel.Dock="Top" Style="{StaticResource Panel.Card}" Margin="0,0,0,8" Padding="8">
+     <WrapPanel VerticalAlignment="Center">
+      <ux:PetraSearchBox Placeholder="{Binding Localization[D_Search]}" x:Name="SearchBox" Text="{Binding Search, UpdateSourceTrigger=PropertyChanged, Delay=150}" Width="240" Margin="0,0,12,0" ToolTip="Ctrl+F" AutomationProperties.Name="{Binding Localization[D_Search]}"/>
+      <CheckBox Content="{Binding Localization[D_ActiveOnly]}" IsChecked="{Binding ActiveOnly}" VerticalAlignment="Center" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding CurrentGroupName, StringFormat='{}{0}'}" Style="{StaticResource Text.Subheading}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+     </WrapPanel>
+    </Border>
+
+    <!-- Bottom Status Bar -->
+    <Border DockPanel.Dock="Bottom" Style="{StaticResource Panel.Card}" Margin="0,8,0,0" Padding="8,4">
+     <WrapPanel VerticalAlignment="Center">
+      <TextBlock Text="{Binding TotalItemsCount, StringFormat='المواد: {0}'}" Style="{StaticResource Text.Caption}" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding TotalGroupsCount, StringFormat='المجموعات: {0}'}" Style="{StaticResource Text.Caption}" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding ActiveItemsCount, StringFormat='نشط: {0}'}" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Success}" Margin="0,0,16,0"/>
+      <TextBlock Text="{Binding InactiveItemsCount, StringFormat='معطل: {0}'}" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource MutedText}"/>
+     </WrapPanel>
+    </Border>
+
+    <Border Style="{StaticResource Panel.Flat}">
+     <DataGrid x:Name="ItemsGrid" ItemsSource="{Binding VisibleItems}" SelectedItem="{Binding SelectedItem}" IsReadOnly="True" SelectionUnit="FullRow" CanUserSortColumns="True" BorderThickness="0"
+               ux:GridRowContext.Enabled="True" MouseDoubleClick="RowOpened" AutomationProperties.Name="{Binding Localization[D_Items]}">
+      <DataGrid.ContextMenu>
+       <ContextMenu x:Name="ItemMenu" DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}" FlowDirection="{Binding PlacementTarget.FlowDirection, RelativeSource={RelativeSource Self}}">
+        <MenuItem Header="{Binding Localization[D_ViewItemCard]}" Command="{Binding OpenCardCommand}" InputGestureText="Enter"/>
+        <MenuItem Header="{Binding Localization[D_NewItem]}" Command="{Binding NewItemCommand}" Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+        <Separator Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+        <MenuItem Header="{Binding Localization[D_ToggleActive]}" Command="{Binding ToggleActiveCommand}" Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+       </ContextMenu>
+      </DataGrid.ContextMenu>
+
+      <DataGrid.Columns>
+       <DataGridTextColumn Header="الرمز" Binding="{Binding Code}" Width="120" SortMemberPath="Code"/>
+
+       <DataGridTemplateColumn Header="الاسم" Width="*" MinWidth="120" SortMemberPath="NameArabic">
+        <DataGridTemplateColumn.CellTemplate>
+         <DataTemplate>
+          <TextBlock TextTrimming="CharacterEllipsis">
+           <TextBlock.Text>
+            <MultiBinding Converter="{StaticResource NameLabel}">
+             <Binding Path="NameArabic"/>
+             <Binding Path="NameEnglish"/>
+             <Binding Path="DataContext.Localization.IsRightToLeft" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+            </MultiBinding>
+           </TextBlock.Text>
+          </TextBlock>
+         </DataTemplate>
+        </DataGridTemplateColumn.CellTemplate>
+       </DataGridTemplateColumn>
+
+       <DataGridTextColumn Header="المجموعة" Binding="{Binding GroupName}" Width="140"/>
+       <DataGridTextColumn Header="الوحدة" Binding="{Binding BaseUnitSymbol}" Width="80"/>
+       <DataGridTextColumn Header="طريقة التكلفة" Binding="{Binding CostMethodDisplay}" Width="130"/>
+       <DataGridTextColumn Header="الرصيد الحالي" Binding="{Binding CurrentStock}" Width="120"/>
+
+       <DataGridTemplateColumn Header="الحالة" Width="80" SortMemberPath="IsActive">
+        <DataGridTemplateColumn.CellTemplate>
+         <DataTemplate>
+          <Border Padding="6,2" CornerRadius="{DynamicResource Radius.Small}" HorizontalAlignment="Center">
+           <Border.Style>
+            <Style TargetType="Border">
+             <Setter Property="Background" Value="{DynamicResource SubtleSuccessBackground}"/>
+             <Style.Triggers>
+              <DataTrigger Binding="{Binding IsActive}" Value="False">
+               <Setter Property="Background" Value="{DynamicResource SubtleMutedBackground}"/>
+              </DataTrigger>
+             </Style.Triggers>
+            </Style>
+           </Border.Style>
+           <TextBlock FontSize="11">
+            <TextBlock.Style>
+             <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
+              <Setter Property="Text" Value="نشط"/>
+              <Setter Property="Foreground" Value="{DynamicResource Success}"/>
+              <Style.Triggers>
+               <DataTrigger Binding="{Binding IsActive}" Value="False">
+                <Setter Property="Text" Value="معطل"/>
+                <Setter Property="Foreground" Value="{DynamicResource MutedText}"/>
+               </DataTrigger>
+              </Style.Triggers>
+             </Style>
+            </TextBlock.Style>
+           </TextBlock>
+          </Border>
+         </DataTemplate>
+        </DataGridTemplateColumn.CellTemplate>
+       </DataGridTemplateColumn>
+      </DataGrid.Columns>
+     </DataGrid>
+    </Border>
+   </DockPanel>
+  </Grid>
+ </DockPanel>
+</UserControl>

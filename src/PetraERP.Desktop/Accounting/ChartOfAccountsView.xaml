@@ -1,0 +1,347 @@
+<UserControl x:Class="PetraERP.Desktop.Accounting.ChartOfAccountsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ux="clr-namespace:PetraERP.Desktop.Controls">
+ <UserControl.Resources>
+  <Style x:Key="Am.TreeToolbarButton" TargetType="Button">
+   <Setter Property="Width" Value="28"/>
+   <Setter Property="Height" Value="26"/>
+   <Setter Property="Margin" Value="1,0"/>
+   <Setter Property="Background" Value="Transparent"/>
+   <Setter Property="BorderBrush" Value="Transparent"/>
+   <Setter Property="BorderThickness" Value="1"/>
+   <Setter Property="Padding" Value="2"/>
+   <Setter Property="Cursor" Value="Hand"/>
+   <Setter Property="Template">
+    <Setter.Value>
+     <ControlTemplate TargetType="Button">
+      <Border x:Name="b" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource Radius.Small}">
+       <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+      </Border>
+      <ControlTemplate.Triggers>
+       <Trigger Property="IsMouseOver" Value="True">
+        <Setter TargetName="b" Property="Background" Value="{DynamicResource Accent.Subtle}"/>
+        <Setter TargetName="b" Property="BorderBrush" Value="{DynamicResource Accent}"/>
+       </Trigger>
+       <Trigger Property="IsPressed" Value="True">
+        <Setter TargetName="b" Property="Background" Value="{DynamicResource Grid.Selection}"/>
+       </Trigger>
+      </ControlTemplate.Triggers>
+     </ControlTemplate>
+    </Setter.Value>
+   </Setter>
+  </Style>
+
+  <!-- Level Badge Button Style (e.g. [1] [2] [3] [4] [5] [*]) -->
+  <Style x:Key="Am.LevelButton" TargetType="Button">
+   <Setter Property="Width" Value="22"/>
+   <Setter Property="Height" Value="22"/>
+   <Setter Property="Margin" Value="1,0"/>
+   <Setter Property="FontWeight" Value="Bold"/>
+   <Setter Property="FontSize" Value="11"/>
+   <Setter Property="Cursor" Value="Hand"/>
+   <Setter Property="Background" Value="{DynamicResource Surface.Primary}"/>
+   <Setter Property="Foreground" Value="{DynamicResource Accent}"/>
+   <Setter Property="BorderBrush" Value="{DynamicResource Border.Normal}"/>
+   <Setter Property="BorderThickness" Value="1"/>
+   <Setter Property="Template">
+    <Setter.Value>
+     <ControlTemplate TargetType="Button">
+      <Border x:Name="bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource Radius.Small}">
+       <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+      </Border>
+      <ControlTemplate.Triggers>
+       <Trigger Property="IsMouseOver" Value="True">
+        <Setter TargetName="bd" Property="Background" Value="{DynamicResource Accent.Subtle}"/>
+        <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource Accent}"/>
+       </Trigger>
+      </ControlTemplate.Triggers>
+     </ControlTemplate>
+    </Setter.Value>
+   </Setter>
+  </Style>
+ </UserControl.Resources>
+
+ <UserControl.InputBindings>
+  <KeyBinding Key="N" Modifiers="Control" Command="{Binding NewCommand}"/>
+  <KeyBinding Key="E" Modifiers="Control" Command="{Binding EditCommand}"/>
+  <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCommand}"/>
+ </UserControl.InputBindings>
+
+ <DockPanel Background="{DynamicResource Surface.Secondary}">
+  <ux:AdaptivePaneGrid>
+   <ux:AdaptivePaneGrid.ColumnDefinitions>
+    <ColumnDefinition Width="*" MinWidth="360"/>
+    <ColumnDefinition Width="8"/>
+    <ColumnDefinition Width="420" MinWidth="320"/>
+   </ux:AdaptivePaneGrid.ColumnDefinitions>
+
+   <!-- Column 0: Authentic Al-Ameen Toolbar + Search + Two-Pane Split -->
+   <Border ux:AdaptivePaneGrid.Label="{Binding Localization[D_ChartOfAccounts]}" Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Strong}" BorderThickness="1" Margin="8,8,0,8">
+    <DockPanel LastChildFill="True">
+     <!-- ========================================================================= -->
+  <!-- 1. TOP TOOLBAR: Authentic Al-Ameen Chart Icons & Level Buttons (Image 1&3)-->
+  <!-- ========================================================================= -->
+  <Border DockPanel.Dock="Top" Background="{DynamicResource App.Background}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="0,0,0,1" Padding="4,3">
+   <DockPanel LastChildFill="True">
+    <!-- Left (in RTL): Level Buttons [*] [5] [4] [3] [2] [1] -->
+    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+     <Button Style="{StaticResource Am.LevelButton}" Content="*" Command="{Binding ExpandAllCommand}" ToolTip="توسيع كافة المستويات" Foreground="{DynamicResource Error}"/>
+     <Button Style="{StaticResource Am.LevelButton}" Content="5" Command="{Binding ExpandLevelCommand}" CommandParameter="5" ToolTip="المستوى 5" Foreground="{DynamicResource Success}"/>
+     <Button Style="{StaticResource Am.LevelButton}" Content="4" Command="{Binding ExpandLevelCommand}" CommandParameter="4" ToolTip="المستوى 4" Foreground="{DynamicResource Success}"/>
+     <Button Style="{StaticResource Am.LevelButton}" Content="3" Command="{Binding ExpandLevelCommand}" CommandParameter="3" ToolTip="المستوى 3" Foreground="{DynamicResource Success}"/>
+     <Button Style="{StaticResource Am.LevelButton}" Content="2" Command="{Binding ExpandLevelCommand}" CommandParameter="2" ToolTip="المستوى 2" Foreground="{DynamicResource Success}"/>
+     <Button Style="{StaticResource Am.LevelButton}" Content="1" Command="{Binding ExpandLevelCommand}" CommandParameter="1" ToolTip="المستوى 1" Foreground="{DynamicResource Accent}"/>
+    </StackPanel>
+
+    <!-- Right (in RTL): Action Tool Icons matching Image 1 -->
+    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+     <!-- بطاقة الحساب -->
+     <Button Style="{StaticResource Am.TreeToolbarButton}" Command="{Binding OpenCardCommand}" ToolTip="بطاقة الحساب (Enter)">
+      <TextBlock Text="&#xE82D;" FontFamily="Segoe MDL2 Assets" FontSize="13" Foreground="{DynamicResource Accent}"/>
+     </Button>
+     <!-- دفتر الأستاذ -->
+     <Button Style="{StaticResource Am.TreeToolbarButton}" Command="{Binding OpenLedgerCommand}" ToolTip="دفتر الأستاذ (Ctrl+L)">
+      <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" FontSize="13" Foreground="{DynamicResource Success}"/>
+     </Button>
+     <!-- إضافة حساب فرعي -->
+     <Button Style="{StaticResource Am.TreeToolbarButton}" Command="{Binding NewChildCommand}" ToolTip="إضافة حساب فرعي جديد">
+      <TextBlock Text="&#xE8F4;" FontFamily="Segoe MDL2 Assets" FontSize="13" Foreground="{DynamicResource Info}"/>
+     </Button>
+     <!-- فرز -->
+     <Button Style="{StaticResource Am.TreeToolbarButton}" ToolTip="فرز تصاعدي">
+      <TextBlock Text="&#xE8CB;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="{DynamicResource Text.Secondary}"/>
+     </Button>
+     <Button Style="{StaticResource Am.TreeToolbarButton}" ToolTip="فرز تنازلي">
+      <TextBlock Text="&#xE8CC;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="{DynamicResource Text.Secondary}"/>
+     </Button>
+     <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="4,2"/>
+     <!-- طباعة -->
+     <Button Style="{StaticResource Am.TreeToolbarButton}" ToolTip="طباعة">
+      <TextBlock Text="&#xE749;" FontFamily="Segoe MDL2 Assets" FontSize="13" Foreground="{DynamicResource Text.Primary}"/>
+     </Button>
+     <!-- معاينة -->
+     <Button Style="{StaticResource Am.TreeToolbarButton}" ToolTip="معاينة قبل الطباعة">
+      <TextBlock Text="&#xE7B3;" FontFamily="Segoe MDL2 Assets" FontSize="13" Foreground="{DynamicResource Text.Primary}"/>
+     </Button>
+     <!-- تحديث -->
+     <Button Style="{StaticResource Am.TreeToolbarButton}" Command="{Binding RefreshCommand}" ToolTip="تحديث (F5)">
+      <TextBlock Text="&#xE72C;" FontFamily="Segoe MDL2 Assets" FontSize="13" Foreground="{DynamicResource Accent}"/>
+     </Button>
+    </StackPanel>
+   </DockPanel>
+  </Border>
+
+  <!-- ========================================================================= -->
+  <!-- 2. SEARCH BOX: "أدخل هنا ما تريد البحث عنه." (Image 1)                   -->
+  <!-- ========================================================================= -->
+  <Border DockPanel.Dock="Top" Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Strong}" BorderThickness="1" Margin="8,6,8,6" CornerRadius="{DynamicResource Radius.Small}">
+   <DockPanel LastChildFill="True" Margin="6,3">
+    <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="{DynamicResource Text.Secondary}" DockPanel.Dock="Left" VerticalAlignment="Center" Margin="4,0"/>
+    <TextBox Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged, Delay=150}"
+             BorderThickness="0" Background="Transparent" FontSize="12" VerticalContentAlignment="Center"
+             ux:SearchTarget.IsTarget="True" ToolTip="Ctrl+F" AutomationProperties.Name="{Binding Localization[D_FilterAccounts]}"/>
+   </DockPanel>
+  </Border>
+
+  <!-- ========================================================================= -->
+  <!-- 3. TWO-PANE CHART SPLIT VIEW: Tree on Right + Children on Left (Image 3) -->
+  <!-- ========================================================================= -->
+
+     <Grid>
+     <Grid.ColumnDefinitions>
+      <!-- Left pane: Direct children of selected folder (Image 3) -->
+      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="4"/>
+      <!-- Right pane: Hierarchical tree view (Image 1 & 3) -->
+      <ColumnDefinition Width="1.4*"/>
+     </Grid.ColumnDefinitions>
+
+     <!-- LEFT PANE: Direct Children of selected account (Image 3) -->
+     <Border Grid.Column="0" Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="0,0,1,0">
+      <DockPanel LastChildFill="True">
+       <Border DockPanel.Dock="Top" Background="{DynamicResource App.Background}" Padding="6,4" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="0,0,0,1">
+        <TextBlock Text="الحسابات التابعة" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource Text.Primary}"/>
+       </Border>
+       <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+        <ItemsControl ItemsSource="{Binding SelectedNodeChildren}">
+         <ItemsControl.ItemTemplate>
+          <DataTemplate>
+           <Border Padding="6,3" Margin="2,1" Background="Transparent" Cursor="Hand">
+            <StackPanel Orientation="Horizontal">
+             <TextBlock Text="{Binding AccountIconGlyph}" FontFamily="Segoe MDL2 Assets" Foreground="{Binding AccountIconColor}" FontSize="13" Margin="0,0,6,0" VerticalAlignment="Center"/>
+             <TextBlock Text="{Binding Account.Code}" FontWeight="SemiBold" Foreground="{DynamicResource Accent}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+             <TextBlock Text=" - " Foreground="{DynamicResource Text.Secondary}" VerticalAlignment="Center"/>
+             <TextBlock Text="{Binding Account.NameArabic}" VerticalAlignment="Center" Foreground="{DynamicResource Text.Primary}"/>
+            </StackPanel>
+           </Border>
+          </DataTemplate>
+         </ItemsControl.ItemTemplate>
+        </ItemsControl>
+       </ScrollViewer>
+      </DockPanel>
+     </Border>
+
+     <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Stretch" Background="{DynamicResource Surface.Recessed}"/>
+
+     <!-- RIGHT PANE: The Hierarchical Account Tree (AccountsGrid) -->
+     <Border Grid.Column="2" Background="{DynamicResource Surface.Primary}">
+      <DataGrid x:Name="AccountsGrid"
+                ItemsSource="{Binding Nodes}"
+                SelectedItem="{Binding SelectedNode}"
+                IsReadOnly="True"
+                SelectionUnit="FullRow"
+                CanUserSortColumns="False"
+                BorderThickness="0"
+                HeadersVisibility="None"
+                GridLinesVisibility="None"
+                RowHeight="24"
+                FontSize="12"
+                PreviewMouseRightButtonDown="RowRightClicked"
+                MouseDoubleClick="RowOpened"
+                ux:GridLayouts.Key="ledger.accounts"
+                ux:GridLayouts.Store="{Binding DataContext.Workspace, RelativeSource={RelativeSource AncestorType=Window}}"
+                AutomationProperties.Name="{Binding Localization[D_ChartOfAccounts]}">
+       <DataGrid.InputBindings>
+        <KeyBinding Key="Space" Command="{Binding ToggleNodeCommand}" CommandParameter="{Binding SelectedNode}"/>
+        <KeyBinding Key="Enter" Command="{Binding OpenCardCommand}"/>
+        <KeyBinding Key="E" Modifiers="Control" Command="{Binding EditCommand}"/>
+        <KeyBinding Key="Delete" Command="{Binding RequestDeleteCommand}"/>
+        <KeyBinding Key="L" Modifiers="Control" Command="{Binding OpenLedgerCommand}"/>
+       </DataGrid.InputBindings>
+
+       <!-- Right-Click Context Menu -->
+       <DataGrid.ContextMenu>
+        <ContextMenu x:Name="AccountMenu">
+         <MenuItem Header="{Binding Localization[D_ViewAccountCard]}" Command="{Binding OpenCardCommand}" InputGestureText="Enter"/>
+         <MenuItem Header="{Binding Localization[D_Edit]}" Command="{Binding EditCommand}" InputGestureText="Ctrl+E" Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+         <MenuItem Header="{Binding Localization[D_NewChildAccount]}" Command="{Binding NewChildCommand}" Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+         <MenuItem Header="{Binding ToggleActiveLabel}" Command="{Binding ToggleActiveCommand}" Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+         <MenuItem x:Name="DeleteMenuItem" Header="{Binding Localization[D_DeleteAccount]}" Command="{Binding RequestDeleteCommand}" InputGestureText="Del" Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+         <Separator/>
+         <MenuItem Header="{Binding Localization[D_OpenAccountLedger]}" Command="{Binding OpenLedgerCommand}" InputGestureText="Ctrl+L" Visibility="{Binding CanViewLedger, Converter={StaticResource Visible}}"/>
+        </ContextMenu>
+       </DataGrid.ContextMenu>
+
+       <DataGrid.Columns>
+        <DataGridTemplateColumn Width="*">
+         <DataGridTemplateColumn.CellTemplate>
+          <DataTemplate>
+           <StackPanel Orientation="Horizontal" Margin="{Binding Level, Converter={StaticResource Indent}}">
+            <!-- Expander [+] / [-] -->
+            <Button Style="{StaticResource Button.Icon}" Content="{Binding ExpanderGlyph}" FontSize="{DynamicResource Font.Caption}" MinWidth="18" MinHeight="18" Padding="0" Focusable="False"
+                    Command="{Binding DataContext.ToggleNodeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+            <!-- Folder / Document Icon matching Image 1 & 3 -->
+            <TextBlock Text="{Binding AccountIconGlyph}" FontFamily="Segoe MDL2 Assets" Foreground="{Binding AccountIconColor}" FontSize="13" Margin="2,0,5,0" VerticalAlignment="Center"/>
+            <!-- Account Code and Name -->
+            <TextBlock Text="{Binding Account.Code}" FlowDirection="LeftToRight" FontWeight="SemiBold" Foreground="{DynamicResource Accent}" VerticalAlignment="Center"/>
+            <TextBlock Text=" - " Foreground="{DynamicResource Text.Secondary}" VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding Account.NameArabic}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource Text.Primary}"/>
+           </StackPanel>
+          </DataTemplate>
+         </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+       </DataGrid.Columns>
+      </DataGrid>
+     </Border>
+    </Grid>
+    </DockPanel>
+   </Border>
+
+   <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="Transparent"/>
+
+   <!-- Column 2: Account Details & Editing Panel -->
+   <Border ux:AdaptivePaneGrid.Label="{Binding Localization[D_Details]}" ux:AdaptivePaneGrid.ActivateWhen="{Binding IsEditorOpen}" Grid.Column="2" Style="{StaticResource Panel.Card}" Margin="0,0,8,8">
+    <Grid>
+     <ux:EmptyState Glyph="&#xE8FD;" Title="{Binding Localization[D_SelectAccount]}" Message="{Binding Localization[D_SelectAccountHelp]}" Visibility="{Binding IsEditorOpen, Converter={StaticResource Show}, ConverterParameter=invert}"/>
+     <ScrollViewer VerticalScrollBarVisibility="Auto" Visibility="{Binding IsEditorOpen, Converter={StaticResource Visible}}">
+      <StackPanel Margin="8">
+       <DockPanel Margin="0,0,0,12">
+        <ux:StatusBadge DockPanel.Dock="Right" Text="{Binding StatusText}" Kind="{Binding StatusKind}"/>
+        <TextBlock Text="{Binding EditorTitle}" Style="{StaticResource Text.Section}" Margin="0" TextTrimming="CharacterEllipsis"/>
+       </DockPanel>
+
+       <Border Style="{StaticResource Panel.Summary}" Margin="0,0,0,10" Visibility="{Binding HasJournalLines, Converter={StaticResource Visible}}">
+        <StackPanel Orientation="Horizontal">
+         <TextBlock Style="{StaticResource Text.Icon}" Text="&#xE72E;" Margin="0,0,8,0"/>
+         <TextBlock Text="{Binding Localization[D_AccountLockedHelp]}" Style="{StaticResource Text.Caption}" MaxWidth="340"/>
+        </StackPanel>
+       </Border>
+
+       <Grid Margin="0,0,0,6">
+        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+        <StackPanel Style="{StaticResource Field}">
+         <TextBlock Text="{Binding Localization[D_Code], StringFormat='{}{0} *'}" Style="{StaticResource Text.Label}"/>
+         <TextBox Text="{Binding Code, UpdateSourceTrigger=PropertyChanged}" MaxLength="64" IsEnabled="{Binding CanEditStructure}" FlowDirection="LeftToRight" AutomationProperties.Name="{Binding Localization[D_Code]}"/>
+         <TextBlock Text="{Binding CodeError}" Style="{StaticResource Text.Error}" Visibility="{Binding CodeError, Converter={StaticResource Show}}"/>
+        </StackPanel>
+        <StackPanel Grid.Column="2" Style="{StaticResource Field}">
+         <TextBlock Text="{Binding Localization[D_AccountType], StringFormat='{}{0} *'}" Style="{StaticResource Text.Label}"/>
+         <ComboBox ItemsSource="{Binding AccountTypes}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding AccountType}" IsEnabled="{Binding CanEditStructure}" AutomationProperties.Name="{Binding Localization[D_AccountType]}"/>
+        </StackPanel>
+       </Grid>
+
+       <StackPanel Style="{StaticResource Field}" Margin="0,0,0,6">
+        <TextBlock Text="{Binding Localization[D_ArabicName], StringFormat='{}{0} *'}" Style="{StaticResource Text.Label}"/>
+        <TextBox x:Name="NameArabicBox" Text="{Binding NameArabic, UpdateSourceTrigger=PropertyChanged}" MaxLength="200" IsEnabled="{Binding CanEditDetails}" FlowDirection="RightToLeft" AutomationProperties.Name="{Binding Localization[D_ArabicName]}"/>
+        <TextBlock Text="{Binding NameError}" Style="{StaticResource Text.Error}" Visibility="{Binding NameError, Converter={StaticResource Show}}"/>
+       </StackPanel>
+
+       <StackPanel Style="{StaticResource Field}" Margin="0,0,0,6">
+        <TextBlock Text="{Binding Localization[D_EnglishName]}" Style="{StaticResource Text.Label}"/>
+        <TextBox Text="{Binding NameEnglish, UpdateSourceTrigger=PropertyChanged}" MaxLength="200" IsEnabled="{Binding CanEditDetails}" FlowDirection="LeftToRight" AutomationProperties.Name="{Binding Localization[D_EnglishName]}"/>
+       </StackPanel>
+
+       <StackPanel Style="{StaticResource Field}" Margin="0,0,0,6">
+        <TextBlock Text="{Binding Localization[D_ParentAccount]}" Style="{StaticResource Text.Label}"/>
+        <ux:LookupPicker ItemsSource="{Binding ParentOptions}" SelectedId="{Binding ParentId}" IsArabic="{Binding Localization.IsRightToLeft}" IsEnabled="{Binding CanEditDetails}" Placeholder="{Binding Localization[D_LookupHint]}" AutomationProperties.Name="{Binding Localization[D_ParentAccount]}"/>
+       </StackPanel>
+
+       <CheckBox Content="{Binding Localization[D_PostingAllowed]}" IsChecked="{Binding PostingAllowed}" IsEnabled="{Binding CanEditPosting}" Margin="0,4,0,10"/>
+
+       <Grid Margin="0,0,0,6">
+        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+        <StackPanel Style="{StaticResource Field}">
+         <TextBlock Text="{Binding Localization[D_CurrencyPolicy], StringFormat='{}{0} *'}" Style="{StaticResource Text.Label}"/>
+         <ComboBox ItemsSource="{Binding CurrencyModes}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding CurrencyMode}" IsEnabled="{Binding CanEditStructure}" AutomationProperties.Name="{Binding Localization[D_CurrencyPolicy]}"/>
+        </StackPanel>
+        <StackPanel Grid.Column="2" Style="{StaticResource Field}" Visibility="{Binding IsFixedCurrency, Converter={StaticResource Visible}}">
+         <TextBlock Text="{Binding Localization[D_FixedCurrency], StringFormat='{}{0} *'}" Style="{StaticResource Text.Label}"/>
+         <ComboBox ItemsSource="{Binding Currencies}" SelectedItem="{Binding FixedCurrencyCode}" IsEnabled="{Binding CanEditStructure}" AutomationProperties.Name="{Binding Localization[D_FixedCurrency]}"/>
+        </StackPanel>
+       </Grid>
+
+       <StackPanel Style="{StaticResource Field}" Margin="0,0,0,10">
+        <TextBlock Text="{Binding Localization[D_CostCenterPolicy], StringFormat='{}{0} *'}" Style="{StaticResource Text.Label}"/>
+        <ComboBox ItemsSource="{Binding CostCenterPolicies}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding CostCenterPolicy}" IsEnabled="{Binding CanEditDetails}" AutomationProperties.Name="{Binding Localization[D_CostCenterPolicy]}"/>
+       </StackPanel>
+
+       <Border Height="1" Background="{DynamicResource Divider}" Margin="0,6,0,10"/>
+
+       <StackPanel Orientation="Horizontal" Visibility="{Binding CanManage, Converter={StaticResource Visible}}">
+        <Button Style="{StaticResource Button.Primary}" ux:Icon.Glyph="&#xE74E;" Content="{Binding Localization[D_Save]}" Command="{Binding SaveCommand}" ToolTip="Ctrl+S" Margin="0,0,6,0"/>
+        <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE82D;" Content="{Binding Localization[D_ViewAccountCard]}" Command="{Binding OpenCardCommand}" ToolTip="Enter" Margin="0,0,6,0"/>
+        <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE8A5;" Content="{Binding Localization[D_OpenAccountLedger]}" Command="{Binding OpenLedgerCommand}" ToolTip="Ctrl+L" Visibility="{Binding CanViewLedger, Converter={StaticResource Visible}}" Margin="0,0,6,0"/>
+        <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE8FB;" Content="{Binding ToggleActiveLabel}" Command="{Binding ToggleActiveCommand}" Margin="0,0,6,0"/>
+        <Button Style="{StaticResource Button.Danger}" ux:Icon.Glyph="&#xE74D;" Content="{Binding Localization[D_DeleteAccount]}" Command="{Binding RequestDeleteCommand}"
+                Visibility="{Binding CanDelete, Converter={StaticResource Visible}}"/>
+       </StackPanel>
+
+       <Border Style="{StaticResource Panel.Flat}" Padding="10" Margin="0,10,0,0" Visibility="{Binding IsDeletePending, Converter={StaticResource Visible}}">
+        <StackPanel>
+         <TextBlock Text="{Binding Localization[D_DeleteAccountHelp]}" TextWrapping="Wrap" Style="{StaticResource Text.Caption}" Margin="0,0,0,6"/>
+         <TextBlock Text="{Binding Localization[D_DeleteReason]}" Style="{StaticResource Text.Label}"/>
+         <TextBox x:Name="DeleteReasonBox" Text="{Binding DeleteReason, UpdateSourceTrigger=PropertyChanged}" MaxLength="500" AutomationProperties.Name="{Binding Localization[D_DeleteReason]}"/>
+         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+          <Button Style="{StaticResource Button.Danger}" ux:Icon.Glyph="&#xE74D;" Content="{Binding Localization[D_DeletePermanently]}" Command="{Binding DeleteCommand}"/>
+          <Button Style="{StaticResource Button.Command}" Content="{Binding Localization[D_Cancel]}" Command="{Binding CancelDeleteCommand}"/>
+         </StackPanel>
+        </StackPanel>
+       </Border>
+      </StackPanel>
+     </ScrollViewer>
+    </Grid>
+   </Border>
+  </ux:AdaptivePaneGrid>
+ </DockPanel>
+</UserControl>

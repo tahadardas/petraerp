@@ -1,0 +1,78 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:shell="clr-namespace:PetraERP.Desktop.Shell" xmlns:views="clr-namespace:PetraERP.Desktop.Administration"
+ xmlns:ledger="clr-namespace:PetraERP.Desktop.GeneralLedger" xmlns:acc="clr-namespace:PetraERP.Desktop.Accounting" xmlns:mig="clr-namespace:PetraERP.Desktop.Migration"
+ xmlns:pat="clr-namespace:PetraERP.Desktop.Patterns" xmlns:parties="clr-namespace:PetraERP.Desktop.Parties"
+ xmlns:inv="clr-namespace:PetraERP.Desktop.Inventory"
+ xmlns:sales="clr-namespace:PetraERP.Desktop.Sales"
+ xmlns:treasury="clr-namespace:PetraERP.Desktop.Treasury"
+ xmlns:purchases="clr-namespace:PetraERP.Desktop.Purchases"
+ xmlns:reports="clr-namespace:PetraERP.Desktop.Reports"
+ xmlns:cur="clr-namespace:PetraERP.Desktop.Currencies"
+ xmlns:reporting="clr-namespace:PetraERP.Desktop.Reporting"
+ xmlns:mgmt="clr-namespace:PetraERP.Desktop.Management"
+ xmlns:doc="clr-namespace:PetraERP.Desktop.DocumentProcessing">
+ <!-- Document views by view-model type. Shared by the main tab host and detached document windows, so a document renders
+      the same view wherever it is hosted (and only in one host at a time). -->
+ <DataTemplate DataType="{x:Type ledger:GeneralLedgerViewModel}">
+  <!-- The "journals" route page shows the list; a journal document shows one journal without the list. -->
+  <ContentControl Content="{Binding}" Focusable="False">
+   <ContentControl.Style><Style TargetType="ContentControl">
+    <Setter Property="ContentTemplate"><Setter.Value><DataTemplate><ledger:JournalsView/></DataTemplate></Setter.Value></Setter>
+    <Style.Triggers><DataTrigger Binding="{Binding IsDocument}" Value="True">
+     <Setter Property="ContentTemplate"><Setter.Value><DataTemplate><ledger:JournalDocumentView/></DataTemplate></Setter.Value></Setter>
+    </DataTrigger></Style.Triggers>
+   </Style></ContentControl.Style>
+  </ContentControl>
+ </DataTemplate>
+ <DataTemplate DataType="{x:Type acc:ChartOfAccountsViewModel}"><acc:ChartOfAccountsView/></DataTemplate>
+ <DataTemplate DataType="{x:Type acc:OpeningBalancesViewModel}"><acc:OpeningBalancesView/></DataTemplate>
+ <DataTemplate DataType="{x:Type acc:ReconciliationViewModel}"><acc:ReconciliationView/></DataTemplate>
+ <DataTemplate DataType="{x:Type acc:FiscalYearRolloverViewModel}"><acc:FiscalYearRolloverView/></DataTemplate>
+ <DataTemplate DataType="{x:Type acc:BackupViewModel}"><acc:BackupView/></DataTemplate>
+    <DataTemplate DataType="{x:Type mig:AlAmeenMigrationViewModel}"><mig:AlAmeenMigrationView/></DataTemplate>
+ <DataTemplate DataType="{x:Type doc:PostingManagementViewModel}"><doc:PostingManagementView/></DataTemplate>
+ <DataTemplate DataType="{x:Type acc:CostCentersViewModel}"><acc:CostCentersView/></DataTemplate>
+ <DataTemplate DataType="{x:Type acc:FiscalPeriodsViewModel}"><acc:FiscalPeriodsView/></DataTemplate>
+ <DataTemplate DataType="{x:Type acc:GeneralJournalViewModel}"><acc:GeneralJournalView/></DataTemplate>
+ <DataTemplate DataType="{x:Type acc:AccountLedgerViewModel}"><acc:AccountLedgerView/></DataTemplate>
+ <DataTemplate DataType="{x:Type acc:TrialBalanceViewModel}"><acc:TrialBalanceView/></DataTemplate>
+  <DataTemplate DataType="{x:Type shell:DailyVoucherViewModel}"><shell:DailyVoucherView/></DataTemplate>
+  <DataTemplate DataType="{x:Type shell:AccountDirectoryViewModel}"><shell:DirectoryView/></DataTemplate>
+  <DataTemplate DataType="{x:Type shell:ItemDirectoryViewModel}"><shell:DirectoryView/></DataTemplate>
+  <DataTemplate DataType="{x:Type pat:PatternManagerViewModel}"><pat:PatternManagerView/></DataTemplate>
+  <DataTemplate DataType="{x:Type shell:ItemLimitsViewModel}"><shell:ItemLimitsView/></DataTemplate>
+  <DataTemplate DataType="{x:Type shell:ItemPriceToolViewModel}"><shell:ItemPriceToolView/></DataTemplate>
+ <DataTemplate DataType="{x:Type reporting:ProfessionalReportPageViewModel}"><reporting:ProfessionalReportParametersView/></DataTemplate>
+ <DataTemplate DataType="{x:Type acc:AccountCardViewModel}"><acc:AccountCardView/></DataTemplate>
+ <DataTemplate DataType="{x:Type pat:DocumentPatternsViewModel}"><pat:DocumentPatternsView/></DataTemplate>
+ <DataTemplate DataType="{x:Type pat:PatternCardViewModel}"><pat:PatternCardView/></DataTemplate>
+ <DataTemplate DataType="{x:Type parties:PartiesViewModel}"><parties:PartiesView/></DataTemplate>
+ <DataTemplate DataType="{x:Type parties:PartyCardViewModel}"><parties:PartyCardView/></DataTemplate>
+ <DataTemplate DataType="{x:Type inv:ItemsViewModel}"><inv:ItemsView/></DataTemplate>
+ <DataTemplate DataType="{x:Type inv:InventoryOperationsViewModel}"><inv:InventoryOperationsView/></DataTemplate>
+ <DataTemplate DataType="{x:Type inv:StocktakingWizardViewModel}"><inv:StocktakingWizardView/></DataTemplate>
+ <DataTemplate DataType="{x:Type inv:UnitsViewModel}"><inv:UnitsView/></DataTemplate>
+ <DataTemplate DataType="{x:Type inv:ItemCardViewModel}"><inv:ItemCardView/></DataTemplate>
+ <DataTemplate DataType="{x:Type inv:ItemGroupCardViewModel}"><inv:ItemGroupCardView/></DataTemplate>
+ <DataTemplate DataType="{x:Type sales:SalesInvoicesViewModel}"><sales:SalesInvoicesView/></DataTemplate>
+ <DataTemplate DataType="{x:Type treasury:VouchersViewModel}"><treasury:VouchersView/></DataTemplate>
+ <DataTemplate DataType="{x:Type treasury:ChequesViewModel}"><treasury:ChequesView/></DataTemplate>
+ <DataTemplate DataType="{x:Type purchases:PurchasesViewModel}"><purchases:PurchasesView/></DataTemplate>
+ <DataTemplate DataType="{x:Type reports:CommercialReportsViewModel}"><reports:CommercialReportsView/></DataTemplate>
+ <DataTemplate DataType="{x:Type cur:CurrencySettingsViewModel}"><cur:CurrencySettingsView/></DataTemplate>
+ <DataTemplate DataType="{x:Type cur:FxRevaluationViewModel}"><cur:FxRevaluationView/></DataTemplate>
+ <DataTemplate DataType="{x:Type sales:SalesInvoiceCardViewModel}"><sales:SalesInvoiceCardView/></DataTemplate>
+ <DataTemplate DataType="{x:Type mgmt:BranchesViewModel}"><mgmt:BranchesView/></DataTemplate>
+ <DataTemplate DataType="{x:Type mgmt:WarehousesViewModel}"><mgmt:WarehousesView/></DataTemplate>
+ <DataTemplate DataType="{x:Type mgmt:RateBulletinViewModel}"><mgmt:RateBulletinView/></DataTemplate>
+ <DataTemplate DataType="{x:Type mgmt:DocumentNumbersViewModel}"><mgmt:DocumentNumbersView/></DataTemplate>
+ <DataTemplate DataType="{x:Type mgmt:BankReconciliationViewModel}"><mgmt:BankReconciliationView/></DataTemplate>
+ <DataTemplate DataType="{x:Type mgmt:InterCompanyViewModel}"><mgmt:InterCompanyView/></DataTemplate>
+ <DataTemplate DataType="{x:Type mgmt:BranchComparisonViewModel}"><mgmt:BranchComparisonView/></DataTemplate>
+ <DataTemplate DataType="{x:Type mgmt:ReportsCenterViewModel}"><mgmt:ReportsCenterView/></DataTemplate>
+ <DataTemplate DataType="{x:Type mgmt:AnalyticalReportViewModel}"><mgmt:AnalyticalReportView/></DataTemplate>
+ <DataTemplate DataType="{x:Type shell:PreferencesViewModel}"><shell:PreferencesView/></DataTemplate>
+ <DataTemplate DataType="{x:Type shell:UsersPage}"><views:UsersView DataContext="{Binding Model}"/></DataTemplate>
+ <DataTemplate DataType="{x:Type shell:RolesPage}"><views:RolesView DataContext="{Binding Model}"/></DataTemplate>
+ <DataTemplate DataType="{x:Type shell:AuditPage}"><views:AuditView DataContext="{Binding Model}"/></DataTemplate>
+</ResourceDictionary>

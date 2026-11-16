@@ -1,0 +1,86 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Petra design system v2 dark palette: graphite/navy surfaces, the same blue accent as the light theme (lightened for contrast). -->
+  <ResourceDictionary.MergedDictionaries><ResourceDictionary Source="pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.Dark.xaml"/></ResourceDictionary.MergedDictionaries>
+
+  <!-- Canonical semantic palette. -->
+  <SolidColorBrush x:Key="App.Background" Color="#0E171C"/>
+  <SolidColorBrush x:Key="Surface.Primary" Color="#152229"/>
+  <SolidColorBrush x:Key="Surface.Secondary" Color="#19282F"/>
+  <SolidColorBrush x:Key="Surface.Recessed" Color="#0A1216"/>
+  <SolidColorBrush x:Key="Brand.Navy" Color="#1E3A57"/>
+  <SolidColorBrush x:Key="Brand.NavyHover" Color="#284B6E"/>
+  <SolidColorBrush x:Key="Brand.Teal" Color="#7DBCE6"/>
+  <SolidColorBrush x:Key="Brand.TealHover" Color="#9ACDEE"/>
+  <SolidColorBrush x:Key="Brand.TealSubtle" Color="#16314A"/>
+  <SolidColorBrush x:Key="Text.Primary" Color="#F0F4F5"/>
+  <SolidColorBrush x:Key="Text.Secondary" Color="#B3C0C5"/>
+  <SolidColorBrush x:Key="Text.Muted" Color="#8FA0A7"/>
+  <SolidColorBrush x:Key="Border.Normal" Color="#31434B"/>
+  <SolidColorBrush x:Key="Border.Strong" Color="#5E747E"/>
+  <SolidColorBrush x:Key="Grid.Header" Color="#1C2B32"/>
+  <SolidColorBrush x:Key="Grid.Alternate" Color="#121D23"/>
+  <SolidColorBrush x:Key="Grid.Selection" Color="#1F3F57"/>
+  <SolidColorBrush x:Key="Grid.ActiveCell" Color="#7DBCE6"/>
+  <SolidColorBrush x:Key="Danger" Color="#F18488"/>
+
+  <!-- Stable compatibility aliases consumed throughout the existing views. -->
+  <SolidColorBrush x:Key="Surface" Color="#0E171C"/>
+  <SolidColorBrush x:Key="Input" Color="#152229"/>
+  <SolidColorBrush x:Key="Text" Color="#F0F4F5"/>
+  <SolidColorBrush x:Key="Border" Color="#31434B"/>
+  <SolidColorBrush x:Key="Divider" Color="#24353D"/>
+  <SolidColorBrush x:Key="Accent" Color="#7DBCE6"/>
+  <SolidColorBrush x:Key="Accent.Hover" Color="#9ACDEE"/>
+  <SolidColorBrush x:Key="Accent.Subtle" Color="#16314A"/>
+  <SolidColorBrush x:Key="Text.OnAccent" Color="#08131B"/>
+  <SolidColorBrush x:Key="Text.OnBrand" Color="#F0F4F5"/>
+  <SolidColorBrush x:Key="Alternate" Color="#121D23"/>
+  <SolidColorBrush x:Key="Selection" Color="#1F3F57"/>
+  <SolidColorBrush x:Key="Focus" Color="#7DBCE6"/>
+  <SolidColorBrush x:Key="TopBar" Color="#0C1A22"/>
+  <SolidColorBrush x:Key="TopBar.Text" Color="#F0F4F5"/>
+  <SolidColorBrush x:Key="TopBar.Input" Color="#17313D"/>
+  <SolidColorBrush x:Key="Sidebar" Color="#111E24"/>
+
+  <!-- Status roles retain text/icon cues in addition to color. -->
+  <SolidColorBrush x:Key="Success" Color="#63C28E"/>
+  <SolidColorBrush x:Key="Success.Subtle" Color="#143424"/>
+  <SolidColorBrush x:Key="Warning" Color="#E3B15B"/>
+  <SolidColorBrush x:Key="Warning.Subtle" Color="#362B16"/>
+  <SolidColorBrush x:Key="Error" Color="#F18488"/>
+  <SolidColorBrush x:Key="Error.Subtle" Color="#3A1B20"/>
+  <SolidColorBrush x:Key="Info" Color="#7FB8CA"/>
+  <SolidColorBrush x:Key="Info.Subtle" Color="#17303A"/>
+  <SolidColorBrush x:Key="Neutral" Color="#B3C0C5"/>
+  <SolidColorBrush x:Key="Neutral.Subtle" Color="#223139"/>
+  <SolidColorBrush x:Key="Overlay" Color="#A6000000"/>
+
+  <!-- Extended component roles. -->
+  <SolidColorBrush x:Key="Brand.Graphite" Color="#1B292F"/>
+  <SolidColorBrush x:Key="Teal" Color="#7DBCE6"/>
+  <SolidColorBrush x:Key="Teal.Subtle" Color="#16314A"/>
+  <SolidColorBrush x:Key="Surface.Raised" Color="#19282F"/>
+  <SolidColorBrush x:Key="Surface.Sunken" Color="#0A1216"/>
+  <SolidColorBrush x:Key="Text.Disabled" Color="#65757C"/>
+  <SolidColorBrush x:Key="Skeleton" Color="#223139"/>
+  <SolidColorBrush x:Key="Skeleton.Highlight" Color="#2D4048"/>
+  <SolidColorBrush x:Key="Numeric.Negative" Color="#F18488"/>
+  <SolidColorBrush x:Key="Numeric.Positive" Color="#63C28E"/>
+  <SolidColorBrush x:Key="Dirty" Color="#E3B15B"/>
+  <SolidColorBrush x:Key="Tab.Active" Color="#152229"/>
+  <SolidColorBrush x:Key="Tab.Inactive" Color="#111E24"/>
+  <Color x:Key="Shadow.Color">#000000</Color>
+
+  <!-- Historical semantic aliases retained for shared controls. -->
+  <SolidColorBrush x:Key="MutedText" Color="#8FA0A7"/>
+  <SolidColorBrush x:Key="Canvas" Color="#0E171C"/>
+  <SolidColorBrush x:Key="SubtleSuccessBackground" Color="#143424"/>
+  <SolidColorBrush x:Key="SubtleMutedBackground" Color="#223139"/>
+  <SolidColorBrush x:Key="SubtleInfoBackground" Color="#17303A"/>
+  <SolidColorBrush x:Key="SubtleWarningBackground" Color="#362B16"/>
+  <SolidColorBrush x:Key="SubtleErrorBackground" Color="#3A1B20"/>
+  <SolidColorBrush x:Key="SuccessSurface" Color="#63C28E"/>
+  <SolidColorBrush x:Key="ErrorSurface" Color="#F18488"/>
+  <SolidColorBrush x:Key="WarningSurface" Color="#E3B15B"/>
+  <SolidColorBrush x:Key="InfoSurface" Color="#7FB8CA"/>
+</ResourceDictionary>

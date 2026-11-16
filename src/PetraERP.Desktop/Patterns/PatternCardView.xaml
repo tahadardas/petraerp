@@ -1,0 +1,369 @@
+﻿<UserControl x:Class="PetraERP.Desktop.Patterns.PatternCardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ux="clr-namespace:PetraERP.Desktop.Controls"
+             ux:ValidationFocus.Target="{Binding ValidationFocusTarget}" ux:ValidationFocus.Request="{Binding ValidationFocusRequest}">
+    <UserControl.InputBindings>
+        <KeyBinding Key="F5" Command="{Binding RefreshCommand}"/>
+        <!-- Esc leaves the edit (asks before discarding changes); a lookup popup or grid that uses Esc handles it first. -->
+        <KeyBinding Key="Escape" Command="{Binding CancelCardCommand}"/>
+        <KeyBinding Key="E" Modifiers="Control" Command="{Binding BeginEditCommand}"/>
+        <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCardCommand}"/>
+    </UserControl.InputBindings>
+    <DockPanel>
+        <TextBlock DockPanel.Dock="Top" Text="{Binding Localization[D_RequiredEntryHelp]}" Style="{StaticResource Text.Caption}" Margin="4,0,4,6"/>
+
+        <!-- Al-Ameen top card header: Title, Badges, and Mode -->
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6" LastChildFill="False">
+            <TextBlock DockPanel.Dock="Left" Text="{Binding Title}" Style="{StaticResource Text.PageTitle}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+            <ux:StatusBadge DockPanel.Dock="Left" Text="{Binding StatusText}" Kind="{Binding StatusKind}" Margin="0,0,8,0"/>
+            <ux:StatusBadge DockPanel.Dock="Left" Text="{Binding ModeLabel}" Kind="Info" Margin="0,0,8,0"/>
+        </DockPanel>
+
+        <!-- Docked Bottom Command Bar: Save (Ctrl+S), Cancel (Esc), Edit (Ctrl+E), New Revision, Publish, Retire, Refresh (F5) -->
+        <Border DockPanel.Dock="Bottom" Style="{StaticResource Panel.CommandBar}" Margin="0,8,0,0">
+            <WrapPanel VerticalAlignment="Center">
+                <Button Style="{StaticResource Button.Primary}" ux:Icon.Glyph="&#xE74E;"
+                        Content="{Binding Localization[D_Save]}" Command="{Binding SaveCardCommand}" ToolTip="Ctrl+S"
+                        Visibility="{Binding IsEditing, Converter={StaticResource Visible}}"/>
+                <Button Style="{StaticResource Button.Command}"
+                        Content="{Binding Localization[D_Cancel]}" Command="{Binding CancelCardCommand}" ToolTip="Esc"
+                        Visibility="{Binding IsEditing, Converter={StaticResource Visible}}"/>
+                <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE70F;"
+                        Content="{Binding Localization[D_Edit]}"
+                        Command="{Binding BeginEditCommand}" ToolTip="Ctrl+E"
+                        Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+                <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE710;"
+                        Content="{Binding Localization[D_NewRevision]}"
+                        Command="{Binding CreateDraftRevisionCommand}"
+                        Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+                <Button Style="{StaticResource Button.Primary}" ux:Icon.Glyph="&#xE73E;"
+                        Content="{Binding Localization[D_PublishRevision]}"
+                        Command="{Binding PublishRevisionCommand}"
+                        Visibility="{Binding CanPublish, Converter={StaticResource Visible}}"/>
+                <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE747;"
+                        Content="{Binding Localization[D_RetirePattern]}"
+                        Command="{Binding RetireCommand}"
+                        Visibility="{Binding CanPublish, Converter={StaticResource Visible}}"/>
+                <Border Style="{StaticResource Separator.Command}" Height="20" Margin="4,0"/>
+                <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE72C;"
+                        Content="{Binding Localization[D_Refresh]}"
+                        Command="{Binding RefreshCommand}" ToolTip="F5"/>
+            </WrapPanel>
+        </Border>
+
+        <!-- Validation Summary Banner -->
+        <Border DockPanel.Dock="Top" Background="{DynamicResource SubtleErrorBackground}"
+                BorderBrush="{DynamicResource ErrorSurface}"
+                BorderThickness="1" CornerRadius="{DynamicResource Radius.Control}" Padding="8,4" Margin="0,0,0,6"
+                Visibility="{Binding HasValidationErrors, Converter={StaticResource Visible}}">
+            <DockPanel>
+                <TextBlock Text="&#xE783;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource ErrorSurface}"
+                           VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBlock Text="{Binding ValidationMessage}" Foreground="{DynamicResource ErrorSurface}"
+                           FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Main Tab Control -->
+        <TabControl x:Name="CardTabs" AutomationProperties.Name="{Binding Title}">
+            <!-- 1. General -->
+            <TabItem Header="{Binding Localization[D_General]}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="16" MaxWidth="800" HorizontalAlignment="Left">
+                        <WrapPanel Margin="0,0,0,12">
+                            <StackPanel Style="{StaticResource Field}" Width="160" Margin="0,0,10,0">
+                                <TextBlock Text="{Binding Localization[D_Code], StringFormat='{}{0} *'}" Style="{StaticResource Text.Label}"/>
+                                <TextBox ux:ValidationFocus.Key="code" Text="{Binding DraftCode, UpdateSourceTrigger=PropertyChanged}" MaxLength="64"
+                                         FlowDirection="LeftToRight" IsReadOnly="{Binding IsCodeReadOnly}"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource Field}" Width="120" Margin="0,0,10,0">
+                                <TextBlock Text="{Binding Localization[D_ShortCode], StringFormat='{}{0} *'}" Style="{StaticResource Text.Label}"/>
+                                <TextBox ux:ValidationFocus.Key="short-code" Text="{Binding DraftShortCode, UpdateSourceTrigger=PropertyChanged}" MaxLength="10"
+                                         FlowDirection="LeftToRight" IsReadOnly="{Binding IsViewMode}"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource Field}" Width="230" Margin="0,0,10,0">
+                                <TextBlock Text="{Binding Localization[D_ArabicName], StringFormat='{}{0} *'}" Style="{StaticResource Text.Label}"/>
+                                <TextBox ux:ValidationFocus.Key="name-ar" Text="{Binding DraftNameArabic, UpdateSourceTrigger=PropertyChanged}" MaxLength="200"
+                                         IsReadOnly="{Binding IsViewMode}"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource Field}" Width="230">
+                                <TextBlock Text="{Binding Localization[D_EnglishName]}" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding DraftNameEnglish, UpdateSourceTrigger=PropertyChanged}" MaxLength="200"
+                                         FlowDirection="LeftToRight" IsReadOnly="{Binding IsViewMode}"/>
+                            </StackPanel>
+                        </WrapPanel>
+
+                        <WrapPanel Margin="0,0,0,12">
+                            <StackPanel Style="{StaticResource Field}" Width="230" Margin="0,0,10,0">
+                                <TextBlock Text="{Binding Localization[D_OperationKind], StringFormat='{}{0} *'}" Style="{StaticResource Text.Label}"/>
+                                <ComboBox ItemsSource="{Binding OperationKinds}" DisplayMemberPath="Label" SelectedValuePath="Value"
+                                          SelectedValue="{Binding DraftOperationKind}" IsEnabled="{Binding IsNewMode}"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource Field}" Width="180" Margin="0,0,10,0">
+                                <TextBlock Text="{Binding Localization[D_Group]}" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding DraftGroup, UpdateSourceTrigger=PropertyChanged}" MaxLength="50"
+                                         IsReadOnly="{Binding IsViewMode}"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource Field}" Width="120" Margin="0,0,10,0">
+                                <TextBlock Text="{Binding Localization[D_Icon]}" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding DraftIcon, UpdateSourceTrigger=PropertyChanged}" MaxLength="50"
+                                         FlowDirection="LeftToRight" IsReadOnly="{Binding IsViewMode}"/>
+                            </StackPanel>
+                        </WrapPanel>
+
+                        <Border Style="{StaticResource Panel.Card}" Padding="12" Margin="0,8,0,0">
+                            <WrapPanel>
+                                <CheckBox Content="{Binding Localization[D_Active]}" IsChecked="{Binding DraftIsActive}"
+                                          IsEnabled="{Binding IsEditing}" Margin="0,0,28,0" VerticalAlignment="Center"/>
+                                <CheckBox Content="{Binding Localization[D_IsDefault]}" IsChecked="{Binding DraftIsDefault}"
+                                          IsEnabled="{Binding IsEditing}" Margin="0,0,28,0" VerticalAlignment="Center"/>
+                                <CheckBox Content="{Binding Localization[PAT_LockDocumentDate]}" ToolTip="{Binding Localization[PAT_LockDocumentDateHelp]}"
+                                          IsChecked="{Binding DraftLockDocumentDate}" IsEnabled="{Binding IsEditing}" VerticalAlignment="Center"/>
+                            </WrapPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- 2. Accounting Roles -->
+            <TabItem Header="{Binding Localization[D_AccountingRoles]}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid Margin="16" MaxWidth="840" HorizontalAlignment="Left">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="220"/>
+                            <ColumnDefinition Width="420"/>
+                            <ColumnDefinition Width="140"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Sales Account -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource Text.Label}" VerticalAlignment="Center"><TextBlock.Text><MultiBinding Converter="{StaticResource RequiredCaption}"><Binding Path="Localization[D_Role_Sales]"/><Binding Path="DraftSalesEnforced"/></MultiBinding></TextBlock.Text></TextBlock>
+                        <ux:LookupPicker ux:ValidationFocus.Key="account-mappings" Grid.Row="0" Grid.Column="1" Margin="4,3" ItemsSource="{Binding AccountLookups}" SelectedId="{Binding DraftSalesAccountId, Mode=TwoWay}" IsReadOnly="{Binding IsViewMode}" IsArabic="{Binding Localization.IsRightToLeft}"/>
+                        <CheckBox Grid.Row="0" Grid.Column="2" Margin="8,3" Content="{Binding Localization[D_Enforced]}" IsChecked="{Binding DraftSalesEnforced}" IsEnabled="{Binding IsEditing}" VerticalAlignment="Center"/>
+
+                        <!-- Inventory Account -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource Text.Label}" VerticalAlignment="Center"><TextBlock.Text><MultiBinding Converter="{StaticResource RequiredCaption}"><Binding Path="Localization[D_Role_Inventory]"/><Binding Path="DraftInventoryEnforced"/></MultiBinding></TextBlock.Text></TextBlock>
+                        <ux:LookupPicker Grid.Row="1" Grid.Column="1" Margin="4,3" ItemsSource="{Binding AccountLookups}" SelectedId="{Binding DraftInventoryAccountId, Mode=TwoWay}" IsReadOnly="{Binding IsViewMode}" IsArabic="{Binding Localization.IsRightToLeft}"/>
+                        <CheckBox Grid.Row="1" Grid.Column="2" Margin="8,3" Content="{Binding Localization[D_Enforced]}" IsChecked="{Binding DraftInventoryEnforced}" IsEnabled="{Binding IsEditing}" VerticalAlignment="Center"/>
+
+                        <!-- COGS Account -->
+                        <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource Text.Label}" VerticalAlignment="Center"><TextBlock.Text><MultiBinding Converter="{StaticResource RequiredCaption}"><Binding Path="Localization[D_Role_Cogs]"/><Binding Path="DraftCogsEnforced"/></MultiBinding></TextBlock.Text></TextBlock>
+                        <ux:LookupPicker Grid.Row="2" Grid.Column="1" Margin="4,3" ItemsSource="{Binding AccountLookups}" SelectedId="{Binding DraftCogsAccountId, Mode=TwoWay}" IsReadOnly="{Binding IsViewMode}" IsArabic="{Binding Localization.IsRightToLeft}"/>
+                        <CheckBox Grid.Row="2" Grid.Column="2" Margin="8,3" Content="{Binding Localization[D_Enforced]}" IsChecked="{Binding DraftCogsEnforced}" IsEnabled="{Binding IsEditing}" VerticalAlignment="Center"/>
+
+                        <!-- Customer Account -->
+                        <TextBlock Grid.Row="3" Grid.Column="0" Style="{StaticResource Text.Label}" VerticalAlignment="Center"><TextBlock.Text><MultiBinding Converter="{StaticResource RequiredCaption}"><Binding Path="Localization[D_Role_Customer]"/><Binding Path="DraftCustomerEnforced"/></MultiBinding></TextBlock.Text></TextBlock>
+                        <ux:LookupPicker Grid.Row="3" Grid.Column="1" Margin="4,3" ItemsSource="{Binding AccountLookups}" SelectedId="{Binding DraftCustomerAccountId, Mode=TwoWay}" IsReadOnly="{Binding IsViewMode}" IsArabic="{Binding Localization.IsRightToLeft}"/>
+                        <CheckBox Grid.Row="3" Grid.Column="2" Margin="8,3" Content="{Binding Localization[D_Enforced]}" IsChecked="{Binding DraftCustomerEnforced}" IsEnabled="{Binding IsEditing}" VerticalAlignment="Center"/>
+
+                        <!-- Supplier Account -->
+                        <TextBlock Grid.Row="4" Grid.Column="0" Style="{StaticResource Text.Label}" VerticalAlignment="Center"><TextBlock.Text><MultiBinding Converter="{StaticResource RequiredCaption}"><Binding Path="Localization[D_Role_Supplier]"/><Binding Path="DraftSupplierEnforced"/></MultiBinding></TextBlock.Text></TextBlock>
+                        <ux:LookupPicker Grid.Row="4" Grid.Column="1" Margin="4,3" ItemsSource="{Binding AccountLookups}" SelectedId="{Binding DraftSupplierAccountId, Mode=TwoWay}" IsReadOnly="{Binding IsViewMode}" IsArabic="{Binding Localization.IsRightToLeft}"/>
+                        <CheckBox Grid.Row="4" Grid.Column="2" Margin="8,3" Content="{Binding Localization[D_Enforced]}" IsChecked="{Binding DraftSupplierEnforced}" IsEnabled="{Binding IsEditing}" VerticalAlignment="Center"/>
+
+                        <!-- Cash Account -->
+                        <TextBlock Grid.Row="5" Grid.Column="0" Style="{StaticResource Text.Label}" VerticalAlignment="Center"><TextBlock.Text><MultiBinding Converter="{StaticResource RequiredCaption}"><Binding Path="Localization[D_Role_Cash]"/><Binding Path="DraftCashEnforced"/></MultiBinding></TextBlock.Text></TextBlock>
+                        <ux:LookupPicker Grid.Row="5" Grid.Column="1" Margin="4,3" ItemsSource="{Binding AccountLookups}" SelectedId="{Binding DraftCashAccountId, Mode=TwoWay}" IsReadOnly="{Binding IsViewMode}" IsArabic="{Binding Localization.IsRightToLeft}"/>
+                        <CheckBox Grid.Row="5" Grid.Column="2" Margin="8,3" Content="{Binding Localization[D_Enforced]}" IsChecked="{Binding DraftCashEnforced}" IsEnabled="{Binding IsEditing}" VerticalAlignment="Center"/>
+
+                        <!-- Discount Account -->
+                        <TextBlock Grid.Row="6" Grid.Column="0" Style="{StaticResource Text.Label}" VerticalAlignment="Center"><TextBlock.Text><MultiBinding Converter="{StaticResource RequiredCaption}"><Binding Path="Localization[D_Role_Discount]"/><Binding Path="DraftDiscountEnforced"/></MultiBinding></TextBlock.Text></TextBlock>
+                        <ux:LookupPicker Grid.Row="6" Grid.Column="1" Margin="4,3" ItemsSource="{Binding AccountLookups}" SelectedId="{Binding DraftDiscountAccountId, Mode=TwoWay}" IsReadOnly="{Binding IsViewMode}" IsArabic="{Binding Localization.IsRightToLeft}"/>
+                        <CheckBox Grid.Row="6" Grid.Column="2" Margin="8,3" Content="{Binding Localization[D_Enforced]}" IsChecked="{Binding DraftDiscountEnforced}" IsEnabled="{Binding IsEditing}" VerticalAlignment="Center"/>
+
+                        <!-- Tax Account -->
+                        <TextBlock Grid.Row="7" Grid.Column="0" Style="{StaticResource Text.Label}" VerticalAlignment="Center"><TextBlock.Text><MultiBinding Converter="{StaticResource RequiredCaption}"><Binding Path="Localization[D_Role_Tax]"/><Binding Path="DraftTaxEnforced"/></MultiBinding></TextBlock.Text></TextBlock>
+                        <ux:LookupPicker Grid.Row="7" Grid.Column="1" Margin="4,3" ItemsSource="{Binding AccountLookups}" SelectedId="{Binding DraftTaxAccountId, Mode=TwoWay}" IsReadOnly="{Binding IsViewMode}" IsArabic="{Binding Localization.IsRightToLeft}"/>
+                        <CheckBox Grid.Row="7" Grid.Column="2" Margin="8,3" Content="{Binding Localization[D_Enforced]}" IsChecked="{Binding DraftTaxEnforced}" IsEnabled="{Binding IsEditing}" VerticalAlignment="Center"/>
+
+                        <!-- Bank Account -->
+                        <TextBlock Grid.Row="8" Grid.Column="0" Style="{StaticResource Text.Label}" VerticalAlignment="Center"><TextBlock.Text><MultiBinding Converter="{StaticResource RequiredCaption}"><Binding Path="Localization[D_Role_Bank]"/><Binding Path="DraftBankEnforced"/></MultiBinding></TextBlock.Text></TextBlock>
+                        <ux:LookupPicker Grid.Row="8" Grid.Column="1" Margin="4,3" ItemsSource="{Binding AccountLookups}" SelectedId="{Binding DraftBankAccountId, Mode=TwoWay}" IsReadOnly="{Binding IsViewMode}" IsArabic="{Binding Localization.IsRightToLeft}"/>
+                        <CheckBox Grid.Row="8" Grid.Column="2" Margin="8,3" Content="{Binding Localization[D_Enforced]}" IsChecked="{Binding DraftBankEnforced}" IsEnabled="{Binding IsEditing}" VerticalAlignment="Center"/>
+
+                        <!-- Transport Revenue Account -->
+                        <TextBlock Grid.Row="9" Grid.Column="0" Style="{StaticResource Text.Label}" VerticalAlignment="Center"><TextBlock.Text><MultiBinding Converter="{StaticResource RequiredCaption}"><Binding Path="Localization[D_Role_TransportRevenue]"/><Binding Path="DraftTransportRevenueEnforced"/></MultiBinding></TextBlock.Text></TextBlock>
+                        <ux:LookupPicker Grid.Row="9" Grid.Column="1" Margin="4,3" ItemsSource="{Binding AccountLookups}" SelectedId="{Binding DraftTransportRevenueAccountId, Mode=TwoWay}" IsReadOnly="{Binding IsViewMode}" IsArabic="{Binding Localization.IsRightToLeft}"/>
+                        <CheckBox Grid.Row="9" Grid.Column="2" Margin="8,3" Content="{Binding Localization[D_Enforced]}" IsChecked="{Binding DraftTransportRevenueEnforced}" IsEnabled="{Binding IsEditing}" VerticalAlignment="Center"/>
+
+                        <!-- FX Gain Account -->
+                        <TextBlock Grid.Row="10" Grid.Column="0" Style="{StaticResource Text.Label}" VerticalAlignment="Center"><TextBlock.Text><MultiBinding Converter="{StaticResource RequiredCaption}"><Binding Path="Localization[CUR_FxGain]"/><Binding Path="DraftFxGainEnforced"/></MultiBinding></TextBlock.Text></TextBlock>
+                        <ux:LookupPicker Grid.Row="10" Grid.Column="1" Margin="4,3" ItemsSource="{Binding AccountLookups}" SelectedId="{Binding DraftFxGainAccountId, Mode=TwoWay}" IsReadOnly="{Binding IsViewMode}" IsArabic="{Binding Localization.IsRightToLeft}"/>
+                        <CheckBox Grid.Row="10" Grid.Column="2" Margin="8,3" Content="{Binding Localization[D_Enforced]}" IsChecked="{Binding DraftFxGainEnforced}" IsEnabled="{Binding IsEditing}" VerticalAlignment="Center"/>
+
+                        <!-- FX Loss Account -->
+                        <TextBlock Grid.Row="11" Grid.Column="0" Style="{StaticResource Text.Label}" VerticalAlignment="Center"><TextBlock.Text><MultiBinding Converter="{StaticResource RequiredCaption}"><Binding Path="Localization[CUR_FxLoss]"/><Binding Path="DraftFxLossEnforced"/></MultiBinding></TextBlock.Text></TextBlock>
+                        <ux:LookupPicker Grid.Row="11" Grid.Column="1" Margin="4,3" ItemsSource="{Binding AccountLookups}" SelectedId="{Binding DraftFxLossAccountId, Mode=TwoWay}" IsReadOnly="{Binding IsViewMode}" IsArabic="{Binding Localization.IsRightToLeft}"/>
+                        <CheckBox Grid.Row="11" Grid.Column="2" Margin="8,3" Content="{Binding Localization[D_Enforced]}" IsChecked="{Binding DraftFxLossEnforced}" IsEnabled="{Binding IsEditing}" VerticalAlignment="Center"/>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- 3. Defaults -->
+            <TabItem Header="{Binding Localization[D_Defaults]}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="16" MaxWidth="680" HorizontalAlignment="Left">
+                        <WrapPanel Margin="0,0,0,12">
+                            <StackPanel Style="{StaticResource Field}" Width="320" Margin="0,0,16,8">
+                                <TextBlock Text="{Binding Localization[D_DefaultCostCenter]}" Style="{StaticResource Text.Label}"/>
+                                <ux:LookupPicker ItemsSource="{Binding CostCenterLookups}" SelectedId="{Binding DraftDefaultCostCenterId, Mode=TwoWay}" IsReadOnly="{Binding IsViewMode}" IsArabic="{Binding Localization.IsRightToLeft}"/>
+                            </StackPanel>
+
+                            <StackPanel Style="{StaticResource Field}" Width="320" Margin="0,0,0,8">
+                                <TextBlock Text="{Binding Localization[D_DefaultWarehouse]}" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding DraftDefaultWarehouse, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}"/>
+                            </StackPanel>
+                        </WrapPanel>
+
+                        <WrapPanel Margin="0,0,0,12">
+                            <StackPanel Style="{StaticResource Field}" Width="200" Margin="0,0,16,8">
+                                <TextBlock Text="{Binding Localization[D_DefaultCurrency]}" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding DraftDefaultCurrencyCode, UpdateSourceTrigger=PropertyChanged}" MaxLength="3" FlowDirection="LeftToRight" IsReadOnly="{Binding IsViewMode}"/>
+                            </StackPanel>
+
+                            <StackPanel Style="{StaticResource Field}" Width="240" Margin="0,0,0,8">
+                                <TextBlock Text="{Binding Localization[D_DefaultPaymentMethod]}" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding DraftDefaultPaymentMethod, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}"/>
+                            </StackPanel>
+                        </WrapPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- 4. Line Fields -->
+            <TabItem Header="{Binding Localization[D_LineFields]}">
+                <DockPanel Margin="16">
+                    <TextBlock DockPanel.Dock="Top" Text="{Binding Localization[D_LineFieldsHelp]}" Style="{StaticResource Text.Caption}" Margin="0,0,0,8"/>
+                    <DataGrid ux:GridRowNumbers.Enabled="True" ItemsSource="{Binding DraftFieldRules}" AutoGenerateColumns="False" IsReadOnly="{Binding IsViewMode}" BorderThickness="0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#" Binding="{Binding DisplayOrder}" Width="50"/>
+                            <DataGridTextColumn Header="رمز الحقل" Binding="{Binding FieldName}" Width="150" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="التسمية بالعربية" Binding="{Binding CaptionArabic, UpdateSourceTrigger=LostFocus}" Width="*"/>
+                            <DataGridCheckBoxColumn Header="مرئي" Binding="{Binding IsVisible}" Width="80"/>
+                            <DataGridCheckBoxColumn Header="إجباري" Binding="{Binding IsRequired}" Width="80"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+
+            <!-- 5. Approvals & Numbering -->
+            <TabItem Header="{Binding Localization[D_ApprovalsAndNumbering]}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="16" MaxWidth="760" HorizontalAlignment="Left">
+                        <!-- القسم الأول: إعدادات الترقيم -->
+                        <Border Style="{StaticResource Panel.Card}" Padding="12" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Localization[D_Numbering]}" Style="{StaticResource Text.Section}" Margin="0,0,0,12"/>
+                                <WrapPanel Margin="0,0,0,8">
+                                    <StackPanel Style="{StaticResource Field}" Width="200" Margin="0,0,12,8">
+                                        <TextBlock Text="{Binding Localization[D_NumberingScope]}" Style="{StaticResource Text.Label}"/>
+                                        <ComboBox ItemsSource="{Binding NumberingScopes}" DisplayMemberPath="Label" SelectedValuePath="Value"
+                                                  SelectedValue="{Binding DraftNumberingScope}" IsEnabled="{Binding IsEditing}"/>
+                                    </StackPanel>
+                                    <StackPanel Style="{StaticResource Field}" Width="120" Margin="0,0,12,8">
+                                        <TextBlock Text="{Binding Localization[D_Prefix]}" Style="{StaticResource Text.Label}"/>
+                                        <TextBox Text="{Binding DraftPrefix, UpdateSourceTrigger=PropertyChanged}" MaxLength="10" FlowDirection="LeftToRight" IsReadOnly="{Binding IsViewMode}"/>
+                                    </StackPanel>
+                                    <StackPanel Style="{StaticResource Field}" Width="120" Margin="0,0,12,8">
+                                        <TextBlock Text="{Binding Localization[D_Suffix]}" Style="{StaticResource Text.Label}"/>
+                                        <TextBox Text="{Binding DraftSuffix, UpdateSourceTrigger=PropertyChanged}" MaxLength="10" FlowDirection="LeftToRight" IsReadOnly="{Binding IsViewMode}"/>
+                                    </StackPanel>
+                                    <StackPanel Style="{StaticResource Field}" Width="110" Margin="0,0,12,8">
+                                        <TextBlock Text="{Binding Localization[D_MinDigits]}" Style="{StaticResource Text.Label}"/>
+                                        <TextBox Text="{Binding DraftMinimumDigits, UpdateSourceTrigger=PropertyChanged}" MaxLength="2" FlowDirection="LeftToRight" IsReadOnly="{Binding IsViewMode}"/>
+                                    </StackPanel>
+                                    <StackPanel Style="{StaticResource Field}" Width="130" Margin="0,0,0,8">
+                                        <TextBlock Text="بداية التسلسل" Style="{StaticResource Text.Label}"/>
+                                        <TextBox Text="{Binding DraftInitialSequence, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight" IsReadOnly="{Binding IsViewMode}"/>
+                                    </StackPanel>
+                                </WrapPanel>
+                                <WrapPanel Margin="0,0,0,12">
+                                    <StackPanel Style="{StaticResource Field}" Width="280" Margin="0,0,16,8">
+                                        <TextBlock Text="دورية إعادة الضبط" Style="{StaticResource Text.Label}"/>
+                                        <ComboBox ItemsSource="{Binding NumberResetPolicies}" SelectedItem="{Binding DraftResetPeriodically}" IsEnabled="{Binding IsEditing}"/>
+                                        <TextBlock Text="الشهرية تتطلب وجود {yyyyMM} في البادئة أو اللاحقة" Style="{StaticResource Text.Caption}" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </WrapPanel>
+                                <StackPanel Orientation="Vertical" Margin="0,4,0,0">
+                                    <CheckBox Content="السماح بالترقيم اليدوي مع الصلاحية" IsChecked="{Binding DraftAllowManualNumbering}" IsEnabled="{Binding IsEditing}" Margin="0,0,0,8"/>
+                                    <CheckBox Content="{Binding Localization[PAT_LockDocumentDate]}" ToolTip="{Binding Localization[PAT_LockDocumentDateHelp]}" IsChecked="{Binding DraftLockDocumentDate}" IsEnabled="{Binding IsEditing}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- القسم الثاني: المصادقات والاعتمادات -->
+                        <Border Style="{StaticResource Panel.Card}" Padding="12">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Localization[D_Approvals]}" Style="{StaticResource Text.Section}" Margin="0,0,0,12"/>
+                                <CheckBox Content="{Binding Localization[D_RequiresApproval]}" IsChecked="{Binding DraftRequiresApproval}" IsEnabled="{Binding IsEditing}" Margin="0,0,0,12"/>
+                                <WrapPanel Margin="0,0,0,8" Visibility="{Binding DraftRequiresApproval, Converter={StaticResource Visible}}">
+                                    <StackPanel Style="{StaticResource Field}" Width="220" Margin="0,0,16,8">
+                                        <TextBlock Text="{Binding Localization[D_ApprovalThreshold]}" Style="{StaticResource Text.Label}"/>
+                                        <ux:PetraMoneyBox Text="{Binding DraftThresholdAmount, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}"/>
+                                    </StackPanel>
+                                    <StackPanel Style="{StaticResource Field}" Width="280" Margin="0,0,0,8">
+                                        <TextBlock Text="{Binding Localization[D_ApprovalRole]}" Style="{StaticResource Text.Label}"/>
+                                        <TextBlock Text="تُطبق صلاحية الاعتماد المركزية للمستخدمين؛ تعيين دور خاص بالنمط غير متاح." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                                    </StackPanel>
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- 6. Revisions & Audit -->
+            <TabItem Header="{Binding Localization[D_RevisionsAndAudit]}">
+                <DockPanel Margin="16">
+                    <TextBlock DockPanel.Dock="Top" Text="{Binding Localization[D_RevisionsHelp]}" Style="{StaticResource Text.Caption}" Margin="0,0,0,8"/>
+                    <Border DockPanel.Dock="Bottom" Style="{StaticResource Panel.Card}" Padding="12" Margin="0,8,0,0"
+                            Visibility="{Binding SelectedRevision, Converter={StaticResource Visible}}">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Localization[D_PatternRevisionDiff]}" FontWeight="SemiBold" Style="{StaticResource Text.Label}" Margin="0,0,0,6"/>
+                            <TextBlock Text="{Binding RevisionDiffText}" TextWrapping="Wrap" Style="{StaticResource Text.Caption}"/>
+                        </StackPanel>
+                    </Border>
+                    <DataGrid ux:GridRowNumbers.Enabled="True" ItemsSource="{Binding Revisions}" SelectedItem="{Binding SelectedRevision}" AutoGenerateColumns="False" IsReadOnly="True" BorderThickness="0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#" Binding="{Binding RevisionNumber}" Width="50"/>
+                            <DataGridTextColumn Header="الحالة" Binding="{Binding State}" Width="100"/>
+                            <DataGridTextColumn Header="تاريخ السريان" Binding="{Binding EffectiveFromUtc, Converter={StaticResource DateText}, ConverterParameter=time}" Width="150"/>
+                            <DataGridTextColumn Header="تاريخ الإنشاء" Binding="{Binding CreatedAtUtc, Converter={StaticResource DateText}, ConverterParameter=time}" Width="150"/>
+                            <DataGridTextColumn Header="السبب / البيان" Binding="{Binding Reason}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+
+            <!-- 7. Print Template -->
+            <TabItem Header="{Binding Localization[D_PrintTemplate]}">
+                <StackPanel Margin="16" MaxWidth="600" HorizontalAlignment="Left">
+                    <StackPanel Style="{StaticResource Field}" Margin="0,0,0,16">
+                        <TextBlock Text="{Binding Localization[D_TemplateId]}" Style="{StaticResource Text.Label}"/>
+                        <TextBlock Text="غير متاح: لم يُسجّل كتالوج قوالب طباعة بعد." TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <Border Style="{StaticResource Panel.Summary}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Text.Icon}" Text="&#xE7BA;" Margin="0,0,8,0"/>
+                            <TextBlock Text="{Binding Localization[D_PrintTemplateNotice]}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" MaxWidth="520"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</UserControl>

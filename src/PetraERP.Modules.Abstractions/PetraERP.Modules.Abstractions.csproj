@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>PetraERP.Modules.Abstractions</RootNamespace>
+    <AssemblyName>PetraERP.Modules.Abstractions</AssemblyName>
+  </PropertyGroup>
+</Project>

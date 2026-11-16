@@ -1,0 +1,75 @@
+<UserControl x:Class="PetraERP.Desktop.Accounting.FiscalYearRolloverView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ux="clr-namespace:PetraERP.Desktop.Controls">
+  <DockPanel>
+    <ux:PageHeader DockPanel.Dock="Top" Title="{Binding Localization[ACC_FiscalYearRollover]}">
+      <ux:PageHeader.Commands>
+        <WrapPanel>
+          <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE72C;" Content="{Binding Localization[D_Refresh]}" Command="{Binding RefreshCommand}"/>
+          <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE73E;" Content="{Binding Localization[ACC_PreviewRollover]}" Command="{Binding PreviewCommand}" Visibility="{Binding CanPreview, Converter={StaticResource Visible}}"/>
+          <Button Style="{StaticResource Button.Financial}" ux:Icon.Glyph="&#xE74E;" Content="{Binding Localization[ACC_ExecuteRollover]}" Command="{Binding ExecuteCommand}" Visibility="{Binding CanExecute, Converter={StaticResource Visible}}"/>
+        </WrapPanel>
+      </ux:PageHeader.Commands>
+    </ux:PageHeader>
+
+    <Border DockPanel.Dock="Top" Style="{StaticResource Panel.Filter}">
+      <WrapPanel>
+        <StackPanel Margin="0,0,12,0">
+          <TextBlock Text="{Binding Localization[ACC_SourceFiscalYear]}" Style="{StaticResource Text.Label}"/>
+          <ComboBox Width="180" ItemsSource="{Binding FiscalYears}" SelectedItem="{Binding SelectedSourceYear}" DisplayMemberPath="Code"/>
+        </StackPanel>
+        <StackPanel Margin="0,0,12,0">
+          <TextBlock Text="{Binding Localization[ACC_TargetFiscalYear]}" Style="{StaticResource Text.Label}"/>
+          <ComboBox Width="180" ItemsSource="{Binding FiscalYears}" SelectedItem="{Binding SelectedTargetYear}" DisplayMemberPath="Code"/>
+        </StackPanel>
+        <StackPanel Margin="0,0,12,0">
+          <TextBlock Text="{Binding Localization[D_Reason]}" Style="{StaticResource Text.Label}"/>
+          <TextBox Width="260" Text="{Binding Reason, UpdateSourceTrigger=PropertyChanged}" MaxLength="200"/>
+        </StackPanel>
+        <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource Text.Caption}" VerticalAlignment="Bottom" Margin="10,0,0,6"/>
+      </WrapPanel>
+    </Border>
+
+    <DockPanel Margin="12" Visibility="{Binding HasPreview, Converter={StaticResource Visible}}">
+      <!-- Summary metrics -->
+      <Border DockPanel.Dock="Top" Style="{StaticResource Panel.Summary}" Margin="0,0,0,8">
+        <WrapPanel>
+          <StackPanel Margin="0,0,20,4">
+            <TextBlock Text="{Binding Localization[ACC_NetIncome]}" Style="{StaticResource Text.Label}"/>
+            <TextBlock Text="{Binding Preview.NetIncome}" Style="{StaticResource Text.NumericTotal}"/>
+          </StackPanel>
+          <StackPanel Margin="0,0,20,4">
+            <TextBlock Text="{Binding Localization[D_TotalDebit]}" Style="{StaticResource Text.Label}"/>
+            <TextBlock Text="{Binding Preview.TotalBalanceSheetDebit}" Style="{StaticResource Text.NumericTotal}"/>
+          </StackPanel>
+          <StackPanel Margin="0,0,20,4">
+            <TextBlock Text="{Binding Localization[D_TotalCredit]}" Style="{StaticResource Text.Label}"/>
+            <TextBlock Text="{Binding Preview.TotalBalanceSheetCredit}" Style="{StaticResource Text.NumericTotal}"/>
+          </StackPanel>
+          <StackPanel Margin="0,0,20,4">
+            <TextBlock Text="{Binding Localization[ACC_OpenItemsCount]}" Style="{StaticResource Text.Label}"/>
+            <TextBlock Text="{Binding Preview.OpenItemsCount}" FontWeight="SemiBold"/>
+          </StackPanel>
+          <StackPanel Margin="0,0,20,4">
+            <TextBlock Text="{Binding Localization[ACC_StockItemsCount]}" Style="{StaticResource Text.Label}"/>
+            <TextBlock Text="{Binding Preview.StockItemsCount}" FontWeight="SemiBold"/>
+          </StackPanel>
+        </WrapPanel>
+      </Border>
+
+      <!-- Account lines -->
+      <Border Style="{StaticResource Panel.Flat}">
+        <DataGrid ItemsSource="{Binding Preview.AccountLines}" IsReadOnly="True" SelectionUnit="FullRow" CanUserSortColumns="False" BorderThickness="0">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="{Binding DataContext.Localization[D_Account], RelativeSource={RelativeSource AncestorType=UserControl}}" Binding="{Binding AccountCode}" Width="120"/>
+            <DataGridTextColumn Header="{Binding DataContext.Localization[D_Name], RelativeSource={RelativeSource AncestorType=UserControl}}" Binding="{Binding AccountNameArabic}" Width="*"/>
+            <DataGridTextColumn Header="{Binding DataContext.Localization[D_Currency], RelativeSource={RelativeSource AncestorType=UserControl}}" Binding="{Binding CurrencyCode}" Width="80"/>
+            <DataGridTextColumn Header="{Binding DataContext.Localization[D_Debit], RelativeSource={RelativeSource AncestorType=UserControl}}" Binding="{Binding ClosingDebit}" Width="120" ElementStyle="{StaticResource Text.Numeric}"/>
+            <DataGridTextColumn Header="{Binding DataContext.Localization[D_Credit], RelativeSource={RelativeSource AncestorType=UserControl}}" Binding="{Binding ClosingCredit}" Width="120" ElementStyle="{StaticResource Text.Numeric}"/>
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+    </DockPanel>
+  </DockPanel>
+</UserControl>

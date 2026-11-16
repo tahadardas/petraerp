@@ -1,0 +1,43 @@
+<UserControl x:Class="PetraERP.Desktop.Reporting.PetraReportFilterBuilderControl"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:reporting="clr-namespace:PetraERP.Desktop.Reporting">
+ <UserControl.Resources>
+  <ResourceDictionary>
+   <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="ReportingStyles.xaml"/>
+   </ResourceDictionary.MergedDictionaries>
+  </ResourceDictionary>
+ </UserControl.Resources>
+ <Border Background="{DynamicResource Surface.Secondary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Control}" Padding="10">
+  <StackPanel>
+   <!-- Root group container -->
+   <Border x:Name="RootBorder" Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Control}" Padding="8" Margin="0,0,0,8">
+    <StackPanel x:Name="RootPanel">
+     <DockPanel Margin="0,0,0,6">
+      <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+       <Button x:Name="LogicToggle" Content="AND (كل الشروط)" Click="LogicToggleClicked" MinWidth="110" Padding="8,3" Background="{DynamicResource Brand.Navy}" Foreground="{DynamicResource Text.OnBrand}" FontWeight="SemiBold"/>
+       <TextBlock Text="مجموعة الشروط الرئيسية ( )" VerticalAlignment="Center" Margin="8,0,0,0" Foreground="{DynamicResource Text.Secondary}" FontSize="11"/>
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+       <Button x:Name="AddConditionButton" Content="+ شرط" Click="AddConditionClicked" Padding="8,3" Margin="0,0,4,0"/>
+       <Button x:Name="AddSubGroupButton" Content="+ مجموعة أقواس ( )" Click="AddSubGroupClicked" Padding="8,3" Margin="0,0,4,0"/>
+       <Button x:Name="ClearButton" Content="مسح الكل" Click="ClearClicked" Padding="8,3"/>
+      </StackPanel>
+     </DockPanel>
+
+     <!-- Dynamic conditions and subgroups list -->
+     <StackPanel x:Name="ItemsHost" Margin="0,4,0,0"/>
+    </StackPanel>
+   </Border>
+
+   <!-- Live Expression Preview -->
+   <Border Background="{DynamicResource Brand.TealSubtle}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Control}" Padding="8,5">
+    <DockPanel>
+     <TextBlock Text="التعبير الناتج / Expression:" Foreground="{DynamicResource Text.Secondary}" FontSize="11" VerticalAlignment="Center" Margin="0,0,8,0"/>
+     <TextBlock x:Name="ExpressionPreviewText" FontWeight="SemiBold" FontSize="11" FlowDirection="LeftToRight" TextTrimming="CharacterEllipsis"/>
+    </DockPanel>
+   </Border>
+  </StackPanel>
+ </Border>
+</UserControl>

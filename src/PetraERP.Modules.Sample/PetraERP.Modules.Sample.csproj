@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>PetraERP.Modules.Sample</RootNamespace>
+    <AssemblyName>PetraERP.Modules.Sample</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PetraERP.Modules.Abstractions\PetraERP.Modules.Abstractions.csproj" />
+  </ItemGroup>
+</Project>

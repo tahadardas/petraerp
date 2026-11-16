@@ -1,0 +1,35 @@
+<Window x:Class="PetraERP.Desktop.Printing.DocumentPrintWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ Title="{Binding Title}" Width="960" Height="780" MinWidth="640" MinHeight="480"
+ Style="{StaticResource Window.Tool}" WindowStartupLocation="CenterOwner" FlowDirection="{Binding Localization.FlowDirection}" Language="{Binding Localization.XmlLanguage}" PreviewKeyDown="OnPreviewKeyDown">
+ <!-- Print preview: the selected template laid out with this document's values, exactly as it will print. -->
+ <DockPanel Margin="8">
+  <Border DockPanel.Dock="Top" Style="{StaticResource Panel.Card}" Padding="8" Margin="0,0,0,8">
+   <WrapPanel>
+    <TextBlock Text="{Binding Localization[PRN_Template]}" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+    <ComboBox ItemsSource="{Binding Templates}" SelectedItem="{Binding SelectedTemplate}" DisplayMemberPath="Name" MinWidth="220" Margin="0,0,6,0" AutomationProperties.Name="{Binding Localization[PRN_Template]}"/>
+    <Button Style="{StaticResource Button.Command}" Content="{Binding Localization[PRN_SetDefault]}" Click="OnSetDefault" Margin="0,0,6,0"/>
+    <Button x:Name="DesignButton" Style="{StaticResource Button.Command}" Content="{Binding Localization[PRN_Design]}" Click="OnDesign" Margin="0,0,14,0"/>
+    <Button x:Name="PrintButton" Style="{StaticResource Button.Primary}" Content="{Binding Localization[PRN_Print]}" Click="OnPrint" IsDefault="True" Margin="0,0,6,0"/>
+    <Button Style="{StaticResource Button.Command}" Content="{Binding Localization[PRN_SavePdf]}" Click="OnSavePdf" Margin="0,0,14,0"/>
+    <Button Style="{StaticResource Button.Command}" Content="-" Click="OnZoomOut" MinWidth="32" ToolTip="Ctrl+-" AutomationProperties.Name="{Binding Localization[PRN_ZoomOut]}"/>
+    <TextBlock Text="{Binding ZoomPercent, StringFormat={}{0:0}%}" VerticalAlignment="Center" Margin="8,0" FlowDirection="LeftToRight"/>
+    <Button Style="{StaticResource Button.Command}" Content="+" Click="OnZoomIn" MinWidth="32" ToolTip="Ctrl++" AutomationProperties.Name="{Binding Localization[PRN_ZoomIn]}"/>
+    <TextBlock Text="{Binding PageSummary}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="14,0,0,0"/>
+   </WrapPanel>
+  </Border>
+  <ProgressBar DockPanel.Dock="Top" IsIndeterminate="True" Height="3" Visibility="{Binding IsBusy, Converter={StaticResource Visible}}"/>
+  <TextBlock DockPanel.Dock="Top" Text="{Binding Error}" Style="{StaticResource Text.Error}" TextWrapping="Wrap" Margin="0,4"/>
+  <ScrollViewer x:Name="PagesScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Background="{DynamicResource Alternate}">
+   <ItemsControl ItemsSource="{Binding Pages}" Margin="16" AutomationProperties.Name="{Binding Localization[PRN_Preview]}">
+    <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel HorizontalAlignment="Center"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+    <ItemsControl.ItemTemplate><DataTemplate>
+     <Border Background="White" BorderBrush="{DynamicResource Divider}" BorderThickness="1" Margin="0,0,0,16" HorizontalAlignment="Center" SnapsToDevicePixels="True">
+      <Image Source="{Binding Source}" Width="{Binding WidthDip}" Height="{Binding HeightDip}" Stretch="Fill" FlowDirection="LeftToRight">
+       <Image.LayoutTransform><ScaleTransform ScaleX="{Binding DataContext.ZoomFactor, RelativeSource={RelativeSource AncestorType=Window}}" ScaleY="{Binding DataContext.ZoomFactor, RelativeSource={RelativeSource AncestorType=Window}}"/></Image.LayoutTransform>
+      </Image>
+     </Border>
+    </DataTemplate></ItemsControl.ItemTemplate>
+   </ItemsControl>
+  </ScrollViewer>
+ </DockPanel>
+</Window>

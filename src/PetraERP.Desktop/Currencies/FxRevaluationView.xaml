@@ -1,0 +1,199 @@
+﻿<UserControl x:Class="PetraERP.Desktop.Currencies.FxRevaluationView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ux="clr-namespace:PetraERP.Desktop.Controls">
+  <UserControl.Resources>
+    <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+  </UserControl.Resources>
+
+  <UserControl.InputBindings>
+    <KeyBinding Key="F5" Command="{Binding PreviewCommand}"/>
+  </UserControl.InputBindings>
+
+  <DockPanel Margin="16">
+    <!-- Header -->
+    <ux:PageHeader DockPanel.Dock="Top" Title="معالج إعادة تقييم أرصدة العملات وفروقات الصرف">
+      <ux:PageHeader.Commands>
+        <WrapPanel>
+          <Button Style="{StaticResource Button.Command}" Content="معاينة الفروقات (F5)" Command="{Binding PreviewCommand}" Margin="0,0,8,0"/>
+          <Button Style="{StaticResource Button.Financial}" Content="إنشاء قيد فروقات" Command="{Binding ExecuteRevaluationCommand}"/>
+        </WrapPanel>
+      </ux:PageHeader.Commands>
+    </ux:PageHeader>
+
+    <!-- Success Banner when Executed -->
+    <Border DockPanel.Dock="Top" Background="{DynamicResource Success.Subtle}" BorderBrush="{DynamicResource Success}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Control}" Padding="16,12" Margin="0,0,0,12"
+            Visibility="{Binding IsExecuted, Converter={StaticResource BoolToVis}}">
+      <DockPanel>
+        <Button DockPanel.Dock="Right" Style="{StaticResource Button.Command}" Content="تقييم جديد" Command="{Binding ResetCommand}"/>
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+          <TextBlock Text="✔ " Foreground="{DynamicResource Success}" FontWeight="Bold" FontSize="16"/>
+          <TextBlock Text="تم توليد وترحيل قيد فروقات الصرف بنجاح! رقم القيد: " Foreground="{DynamicResource Success}" FontWeight="SemiBold"/>
+          <TextBlock Text="{Binding ExecutedJournalNumber}" Foreground="{DynamicResource Success}" FontWeight="Bold"/>
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
+    <!-- Options Ribbon -->
+    <Border DockPanel.Dock="Top" Background="{DynamicResource Alternate}" BorderBrush="{DynamicResource Divider}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Control}" Padding="12,10" Margin="0,0,0,12">
+      <WrapPanel VerticalAlignment="Center">
+        <TextBlock Text="تاريخ التقييم:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0"/>
+        <ux:PetraDatePicker SelectedDate="{Binding AsOfDate}" Width="130" Margin="0,0,16,0"/>
+
+        <TextBlock Text="العملة:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0"/>
+        <ComboBox ItemsSource="{Binding EnabledCurrencies}" DisplayMemberPath="Code" SelectedValuePath="Code" SelectedValue="{Binding SelectedCurrencyCode}" Width="110" Margin="0,0,16,0"/>
+
+        <TextBlock Text="سعر الإقفال (اختياري):" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0"/>
+        <ux:PetraNumericTextBox Kind="Rate" MaximumScale="8" Text="{Binding OverrideClosingRate, UpdateSourceTrigger=PropertyChanged}" Width="100" Margin="0,0,16,0"/>
+
+        <Button Style="{StaticResource Button.Command}" Content="تحديث المعاينة" Command="{Binding PreviewCommand}"/>
+      </WrapPanel>
+    </Border>
+
+    <!-- Account Mappings Ribbon -->
+    <Border DockPanel.Dock="Top" Background="{DynamicResource Info.Subtle}" BorderBrush="{DynamicResource Info}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Control}" Padding="12,10" Margin="0,0,0,12">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="1.5*"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+          <TextBlock Text="حساب أرباح فروقات الصرف:" FontWeight="SemiBold" Margin="0,0,0,4"/>
+          <ComboBox ItemsSource="{Binding Accounts}" DisplayMemberPath="DisplayText" SelectedValuePath="Id" SelectedValue="{Binding SelectedGainAccountId}"/>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Margin="0,0,12,0">
+          <TextBlock Text="حساب خسائر فروقات الصرف:" FontWeight="SemiBold" Margin="0,0,0,4"/>
+          <ComboBox ItemsSource="{Binding Accounts}" DisplayMemberPath="DisplayText" SelectedValuePath="Id" SelectedValue="{Binding SelectedLossAccountId}"/>
+        </StackPanel>
+
+        <StackPanel Grid.Column="2">
+          <TextBlock Text="البيان المحاسبي:" FontWeight="SemiBold" Margin="0,0,0,4"/>
+          <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- Summary KPI Cards Banner -->
+    <Grid DockPanel.Dock="Top" Margin="0,0,0,12">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+
+      <Border Grid.Column="0" Background="{DynamicResource Alternate}" CornerRadius="{DynamicResource Radius.Control}" Padding="12,8" Margin="0,0,8,0">
+        <StackPanel>
+          <TextBlock Text="الحسابات الخاضعة للتقييم" Foreground="{DynamicResource Text.Secondary}" FontSize="11"/>
+          <TextBlock Text="{Binding TotalCandidateAccounts}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Text}"/>
+        </StackPanel>
+      </Border>
+
+      <Border Grid.Column="1" Background="{DynamicResource Success.Subtle}" CornerRadius="{DynamicResource Radius.Control}" Padding="12,8" Margin="0,0,8,0">
+        <StackPanel>
+          <TextBlock Text="أرباح فروقات غير محققة" Foreground="{DynamicResource Success}" FontSize="11"/>
+          <TextBlock Text="{Binding TotalUnrealizedGains, StringFormat='{}{0:N2}'}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Success}"/>
+        </StackPanel>
+      </Border>
+
+      <Border Grid.Column="2" Background="{DynamicResource Error.Subtle}" CornerRadius="{DynamicResource Radius.Control}" Padding="12,8" Margin="0,0,8,0">
+        <StackPanel>
+          <TextBlock Text="خسائر فروقات غير محققة" Foreground="{DynamicResource Error}" FontSize="11"/>
+          <TextBlock Text="{Binding TotalUnrealizedLosses, StringFormat='{}{0:N2}'}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Error}"/>
+        </StackPanel>
+      </Border>
+
+      <Border Grid.Column="3" Background="{DynamicResource Warning.Subtle}" CornerRadius="{DynamicResource Radius.Control}" Padding="12,8">
+        <StackPanel>
+          <TextBlock Text="صافي أثر التقييم" Foreground="{DynamicResource Warning}" FontSize="11"/>
+          <TextBlock Text="{Binding NetDifference, StringFormat='{}{0:N2}'}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Warning}"/>
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <!-- Rate audit (read-only): posted foreign lines whose own rate differs from the bulletin rate on their date. Posts nothing. -->
+    <Border DockPanel.Dock="Bottom" Margin="0,12,0,0" Padding="12,10" Background="{DynamicResource Alternate}" BorderBrush="{DynamicResource Divider}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Control}" AutomationProperties.Name="تدقيق أسعار التعادل">
+      <DockPanel>
+        <TextBlock DockPanel.Dock="Top" Text="تدقيق أسعار التعادل (للقراءة فقط)" FontWeight="SemiBold" Margin="0,0,0,8"/>
+        <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8" VerticalAlignment="Center">
+          <TextBlock Text="من:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0"/>
+          <ux:PetraDatePicker SelectedDate="{Binding AuditFrom}" Width="130" Margin="0,0,16,0"/>
+          <TextBlock Text="إلى:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0"/>
+          <ux:PetraDatePicker SelectedDate="{Binding AuditTo}" Width="130" Margin="0,0,16,0"/>
+          <Button Style="{StaticResource Button.Command}" Content="تنفيذ التدقيق" Command="{Binding AuditCommand}" Margin="0,0,16,0"/>
+          <TextBlock Visibility="{Binding AuditRan, Converter={StaticResource BoolToVis}}" VerticalAlignment="Center" Foreground="{DynamicResource Text.Secondary}">
+            <Run Text="عدد الأسطر المفحوصة:"/> <Run Text="{Binding AuditLinesChecked, Mode=OneWay}"/>
+            <Run Text=" | بلا سعر نشرة:"/> <Run Text="{Binding AuditLinesWithoutRate, Mode=OneWay}"/>
+            <Run Text=" | مجموع الفروق:"/> <Run Text="{Binding AuditTotalDifference, Mode=OneWay, StringFormat='{}{0:N4}'}" FontWeight="Bold"/>
+          </TextBlock>
+        </WrapPanel>
+        <DataGrid ItemsSource="{Binding AuditItems}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True"
+                  GridLinesVisibility="Horizontal" HeadersVisibility="Column" SelectionMode="Single" MaxHeight="240">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="التاريخ" Binding="{Binding AccountingDate}" Width="95"/>
+            <DataGridTextColumn Header="رقم القيد" Binding="{Binding PostingSequence}" Width="75"/>
+            <DataGridTextColumn Header="رمز الحساب" Binding="{Binding AccountCode}" Width="100"/>
+            <DataGridTextColumn Header="اسم الحساب" Binding="{Binding AccountNameArabic}" Width="*" MinWidth="140"/>
+            <DataGridTextColumn Header="العملة" Binding="{Binding CurrencyCode}" Width="65"/>
+            <DataGridTextColumn Header="المبلغ بالعملة" Binding="{Binding ForeignAmount, Converter={StaticResource Number}}" Width="120" ElementStyle="{StaticResource Text.Numeric}"/>
+            <DataGridTextColumn Header="سعر السطر" Binding="{Binding BookedRate, Converter={StaticResource Number}, ConverterParameter=rate}" Width="90" ElementStyle="{StaticResource Text.Numeric}"/>
+            <DataGridTextColumn Header="سعر النشرة" Binding="{Binding BulletinRate, Converter={StaticResource Number}, ConverterParameter=rate}" Width="90" ElementStyle="{StaticResource Text.Numeric}"/>
+            <DataGridTextColumn Header="القيمة المسجلة" Binding="{Binding BookedBase, Converter={StaticResource Number}}" Width="120" ElementStyle="{StaticResource Text.Numeric}"/>
+            <DataGridTextColumn Header="القيمة بسعر النشرة" Binding="{Binding BulletinBase, Converter={StaticResource Number}}" Width="130" ElementStyle="{StaticResource Text.Numeric}"/>
+            <DataGridTextColumn Header="الفرق" Binding="{Binding Difference, Converter={StaticResource Number}, ConverterParameter=signed}" Width="110" ElementStyle="{StaticResource Text.Numeric}"/>
+          </DataGrid.Columns>
+        </DataGrid>
+      </DockPanel>
+    </Border>
+
+    <!-- Accounts Revaluation Table -->
+    <DataGrid ItemsSource="{Binding RevaluationItems}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+              GridLinesVisibility="Horizontal" HeadersVisibility="Column" SelectionMode="Single">
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="رمز الحساب" Binding="{Binding AccountCode}" Width="120" IsReadOnly="True"/>
+        <DataGridTextColumn Header="اسم الحساب" Binding="{Binding AccountNameArabic}" Width="240" IsReadOnly="True"/>
+        <DataGridTextColumn Header="العملة" Binding="{Binding CurrencyCode}" Width="70" IsReadOnly="True"/>
+        <DataGridTextColumn Header="الرصيد بالعملة" Binding="{Binding ForeignBalance, Converter={StaticResource Number}}" Width="130" IsReadOnly="True" ElementStyle="{StaticResource Text.Numeric}"/>
+        <DataGridTextColumn Header="الرصيد الدفتري الأساسي" Binding="{Binding BookBaseBalance, Converter={StaticResource Number}}" Width="140" IsReadOnly="True" ElementStyle="{StaticResource Text.Numeric}"/>
+        <DataGridTextColumn Header="سعر الإقفال" Binding="{Binding ClosingRate, Converter={StaticResource Number}, ConverterParameter=rate}" Width="90" IsReadOnly="True" ElementStyle="{StaticResource Text.Numeric}"/>
+        <DataGridTextColumn Header="القيمة بعد التقييم" Binding="{Binding RevaluedBaseBalance, Converter={StaticResource Number}}" Width="140" IsReadOnly="True" ElementStyle="{StaticResource Text.Numeric}"/>
+        <DataGridTextColumn Header="فارق التقييم" Binding="{Binding UnrealizedDifference, Converter={StaticResource Number}, ConverterParameter=signed}" Width="130" IsReadOnly="True" ElementStyle="{StaticResource Text.Numeric}"/>
+        <DataGridTemplateColumn Header="الأثر" Width="90" IsReadOnly="True">
+          <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate>
+              <Border CornerRadius="{DynamicResource Radius.Control}" Padding="6,2" HorizontalAlignment="Center">
+                <Border.Style>
+                  <Style TargetType="Border">
+                    <Setter Property="Background" Value="{DynamicResource Error.Subtle}"/>
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding IsGain}" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource Success.Subtle}"/>
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </Border.Style>
+                <TextBlock FontWeight="SemiBold" FontSize="11">
+                  <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                      <Setter Property="Text" Value="خسارة"/>
+                      <Setter Property="Foreground" Value="{DynamicResource Error}"/>
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsGain}" Value="True">
+                          <Setter Property="Text" Value="ربح"/>
+                          <Setter Property="Foreground" Value="{DynamicResource Success}"/>
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </TextBlock.Style>
+                </TextBlock>
+              </Border>
+            </DataTemplate>
+          </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+      </DataGrid.Columns>
+    </DataGrid>
+  </DockPanel>
+</UserControl>

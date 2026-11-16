@@ -1,0 +1,453 @@
+<UserControl x:Class="PetraERP.Desktop.Shell.HomeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ux="clr-namespace:PetraERP.Desktop.Controls"
+             Background="{DynamicResource App.Background}">
+ <UserControl.Resources>
+  <!-- Ameen Dashboard Panel Card Style (Matching Image 3) -->
+  <Style x:Key="Am.DashboardCard" TargetType="Border">
+   <Setter Property="Background" Value="{DynamicResource Surface.Primary}"/>
+   <Setter Property="BorderBrush" Value="{DynamicResource Border.Normal}"/>
+   <Setter Property="BorderThickness" Value="1"/>
+   <Setter Property="Margin" Value="0,0,0,8"/>
+   <Setter Property="SnapsToDevicePixels" Value="True"/>
+  </Style>
+
+  <Style x:Key="Am.CardHeader" TargetType="Border">
+   <Setter Property="Background" Value="{DynamicResource Surface.Secondary}"/>
+   <Setter Property="BorderBrush" Value="{DynamicResource Border.Normal}"/>
+   <Setter Property="BorderThickness" Value="0,0,0,1"/>
+   <Setter Property="Padding" Value="8,5"/>
+  </Style>
+
+  <Style x:Key="Am.CardTitle" TargetType="TextBlock">
+   <Setter Property="FontSize" Value="12"/>
+   <Setter Property="FontWeight" Value="SemiBold"/>
+   <Setter Property="Foreground" Value="{DynamicResource Text.Primary}"/>
+   <Setter Property="VerticalAlignment" Value="Center"/>
+  </Style>
+
+  <Style x:Key="Am.CardEmptyMessage" TargetType="TextBlock">
+   <Setter Property="FontSize" Value="11"/>
+   <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}"/>
+   <Setter Property="VerticalAlignment" Value="Center"/>
+   <Setter Property="Margin" Value="6,0,0,0"/>
+  </Style>
+
+  <!-- Quick Ameen Canvas Tab Style -->
+  <Style x:Key="Am.CanvasTab" TargetType="Button">
+   <Setter Property="Background" Value="Transparent"/>
+   <Setter Property="BorderThickness" Value="0,0,0,2"/>
+   <Setter Property="BorderBrush" Value="Transparent"/>
+   <Setter Property="Foreground" Value="{DynamicResource Text.Primary}"/>
+   <Setter Property="FontSize" Value="12"/>
+   <Setter Property="FontWeight" Value="SemiBold"/>
+   <Setter Property="Padding" Value="10,6"/>
+   <Setter Property="Margin" Value="2,0"/>
+   <Setter Property="Cursor" Value="Hand"/>
+   <Setter Property="Template">
+    <Setter.Value>
+     <ControlTemplate TargetType="Button">
+      <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}">
+       <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+      </Border>
+      <ControlTemplate.Triggers>
+       <Trigger Property="IsMouseOver" Value="True">
+        <Setter Property="Background" Value="{DynamicResource Surface.Recessed}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Accent}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Accent}"/>
+       </Trigger>
+      </ControlTemplate.Triggers>
+     </ControlTemplate>
+    </Setter.Value>
+   </Setter>
+  </Style>
+ </UserControl.Resources>
+
+ <!-- ========================================================================= -->
+ <!-- THREE-COLUMN AMEEN WORKSTATION LAYOUT (Image 3)                           -->
+ <!-- ========================================================================= -->
+ <Grid Background="{DynamicResource App.Background}">
+  <Grid.ColumnDefinitions>
+   <!-- Column 0 (Right in RTL): "تحذيرات" (Warnings Dock) -->
+   <ColumnDefinition Width="220"/>
+   <!-- Column 1 (Center in RTL): The MDI Workspace Canvas & Dashboard -->
+   <ColumnDefinition Width="*"/>
+   <!-- Column 2 (Left in RTL): Al-Ameen Calendar & License Dock -->
+   <ColumnDefinition Width="185"/>
+  </Grid.ColumnDefinitions>
+
+  <!-- ===================================================================== -->
+  <!-- COLUMN 0 (RIGHT in RTL): Warnings Side Panel                          -->
+  <!-- ===================================================================== -->
+  <Border Grid.Column="0" Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="0,0,1,0">
+   <DockPanel LastChildFill="True">
+    <!-- Header: تحذيرات -->
+    <Border DockPanel.Dock="Top" Background="{DynamicResource Brand.Navy}" Height="28" Padding="8,0">
+     <DockPanel LastChildFill="False">
+      <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+       <TextBlock Text="تحذيرات" Foreground="{DynamicResource Text.OnBrand}" FontWeight="Bold" FontSize="12" VerticalAlignment="Center"/>
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+       <TextBlock Text="&#xE718;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Text.OnBrand}" FontSize="11" Margin="4,0" ToolTip="تثبيت اللوحة" VerticalAlignment="Center"/>
+       <TextBlock Text="&#xE711;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Text.OnBrand}" FontSize="11" Margin="4,0" ToolTip="إغلاق" VerticalAlignment="Center"/>
+      </StackPanel>
+     </DockPanel>
+    </Border>
+
+    <!-- Warnings Accordion Items -->
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="4">
+     <StackPanel>
+      <!-- 1. أخطاء البريد الإلكتروني -->
+      <Border Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1" Margin="0,0,0,4">
+       <StackPanel>
+        <Border Background="{DynamicResource Surface.Secondary}" Padding="6,4" BorderBrush="{DynamicResource Divider}" BorderThickness="0,0,0,1">
+         <DockPanel LastChildFill="False">
+          <TextBlock Text="أخطاء البريد الإلكتروني" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource Text.Primary}" DockPanel.Dock="Right"/>
+          <TextBlock Text="&#xE70E;" FontFamily="Segoe MDL2 Assets" FontSize="{DynamicResource Font.Caption}" Foreground="{DynamicResource Text.Secondary}" DockPanel.Dock="Left" VerticalAlignment="Center"/>
+         </DockPanel>
+        </Border>
+        <TextBlock Text="لا يوجد أخطاء" FontSize="{DynamicResource Font.Caption}" Foreground="{DynamicResource Text.Secondary}" Margin="8,6"/>
+       </StackPanel>
+      </Border>
+
+      <!-- 2. أخطاء الرسائل النصية القصيرة -->
+      <Border Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1" Margin="0,0,0,4">
+       <StackPanel>
+        <Border Background="{DynamicResource Surface.Secondary}" Padding="6,4" BorderBrush="{DynamicResource Divider}" BorderThickness="0,0,0,1">
+         <DockPanel LastChildFill="False">
+          <TextBlock Text="أخطاء الرسائل النصية القصيرة" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource Text.Primary}" DockPanel.Dock="Right"/>
+          <TextBlock Text="&#xE70E;" FontFamily="Segoe MDL2 Assets" FontSize="{DynamicResource Font.Caption}" Foreground="{DynamicResource Text.Secondary}" DockPanel.Dock="Left" VerticalAlignment="Center"/>
+         </DockPanel>
+        </Border>
+        <TextBlock Text="لا يوجد أخطاء" FontSize="{DynamicResource Font.Caption}" Foreground="{DynamicResource Text.Secondary}" Margin="8,6"/>
+       </StackPanel>
+      </Border>
+
+      <!-- 3. أخطاء المهام المجدولة -->
+      <Border Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1" Margin="0,0,0,4">
+       <StackPanel>
+        <Border Background="{DynamicResource Surface.Secondary}" Padding="6,4" BorderBrush="{DynamicResource Divider}" BorderThickness="0,0,0,1">
+         <DockPanel LastChildFill="False">
+          <TextBlock Text="أخطاء المهام المجدولة" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource Text.Primary}" DockPanel.Dock="Right"/>
+          <TextBlock Text="&#xE70E;" FontFamily="Segoe MDL2 Assets" FontSize="{DynamicResource Font.Caption}" Foreground="{DynamicResource Text.Secondary}" DockPanel.Dock="Left" VerticalAlignment="Center"/>
+         </DockPanel>
+        </Border>
+        <TextBlock Text="ليس هناك من مهام مجدولة." FontSize="{DynamicResource Font.Caption}" Foreground="{DynamicResource Text.Secondary}" Margin="8,6"/>
+       </StackPanel>
+      </Border>
+
+      <!-- 4. لوحة تحذير المواد حسب حد الطلب -->
+      <Border Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1" Margin="0,0,0,4">
+       <StackPanel>
+        <Border Background="{DynamicResource Surface.Secondary}" Padding="6,4" BorderBrush="{DynamicResource Divider}" BorderThickness="0,0,0,1">
+         <DockPanel LastChildFill="False">
+          <TextBlock Text="لوحة تحذير المواد حسب حد..." FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource Text.Primary}" DockPanel.Dock="Right"/>
+          <TextBlock Text="&#xE70E;" FontFamily="Segoe MDL2 Assets" FontSize="{DynamicResource Font.Caption}" Foreground="{DynamicResource Text.Secondary}" DockPanel.Dock="Left" VerticalAlignment="Center"/>
+         </DockPanel>
+        </Border>
+        <TextBlock Text="لا يوجد مواد تجاوزت الحد" FontSize="{DynamicResource Font.Caption}" Foreground="{DynamicResource Text.Secondary}" Margin="8,6"/>
+       </StackPanel>
+      </Border>
+
+      <!-- 5. المواد -->
+      <Border Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1" Margin="0,0,0,4">
+       <StackPanel>
+        <Border Background="{DynamicResource Surface.Secondary}" Padding="6,4" BorderBrush="{DynamicResource Divider}" BorderThickness="0,0,0,1">
+         <DockPanel LastChildFill="False">
+          <TextBlock Text="المواد" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource Text.Primary}" DockPanel.Dock="Right"/>
+          <TextBlock Text="&#xE70E;" FontFamily="Segoe MDL2 Assets" FontSize="{DynamicResource Font.Caption}" Foreground="{DynamicResource Text.Secondary}" DockPanel.Dock="Left" VerticalAlignment="Center"/>
+         </DockPanel>
+        </Border>
+        <TextBlock Text="جميع الأرصدة طبيعية" FontSize="{DynamicResource Font.Caption}" Foreground="{DynamicResource Text.Secondary}" Margin="8,6"/>
+       </StackPanel>
+      </Border>
+     </StackPanel>
+    </ScrollViewer>
+   </DockPanel>
+  </Border>
+
+  <!-- ===================================================================== -->
+  <!-- COLUMN 1 (CENTER in RTL): Canvas + Quick Tabs + Dashboard Cards       -->
+  <!-- ===================================================================== -->
+  <DockPanel Grid.Column="1" LastChildFill="True">
+   <!-- Top Bar of Canvas: alAmeen Logo (Right) + Quick Tabs (Center/Left) -->
+   <Border DockPanel.Dock="Top" Background="{DynamicResource App.Background}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="0,0,0,1" Height="34" Padding="6,2">
+    <DockPanel LastChildFill="True">
+     <!-- Distinctive alAmeen Logo on the Right (RTL) -->
+     <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="0,0,8,0">
+      <TextBlock Text="Petra" FontFamily="Segoe UI, Arial" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Accent}" VerticalAlignment="Center"/><TextBlock Text=" ERP" FontFamily="Segoe UI, Arial" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Success}" VerticalAlignment="Center"/>
+     </StackPanel>
+
+     <!-- Quick Navigation Tabs matching Image 3: [البداية] [ملخصات] [المفضلة] [الموقع] -->
+     <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
+      <Button Style="{StaticResource Am.CanvasTab}">
+       <StackPanel Orientation="Horizontal">
+        <TextBlock Text="&#xE80F;" FontFamily="Segoe MDL2 Assets" FontSize="11" Margin="0,0,4,0" VerticalAlignment="Center"/>
+        <TextBlock Text="البداية" VerticalAlignment="Center"/>
+       </StackPanel>
+      </Button>
+
+      <Button Style="{StaticResource Am.CanvasTab}">
+       <StackPanel Orientation="Horizontal">
+        <TextBlock Text="&#xE72C;" FontFamily="Segoe MDL2 Assets" FontSize="11" Margin="0,0,4,0" VerticalAlignment="Center"/>
+        <TextBlock Text="ملخصات" VerticalAlignment="Center"/>
+       </StackPanel>
+      </Button>
+
+      <Button Style="{StaticResource Am.CanvasTab}">
+       <StackPanel Orientation="Horizontal">
+        <TextBlock Text="&#xE734;" FontFamily="Segoe MDL2 Assets" FontSize="11" Margin="0,0,4,0" VerticalAlignment="Center"/>
+        <TextBlock Text="المفضلة" VerticalAlignment="Center"/>
+       </StackPanel>
+      </Button>
+
+      <Button Style="{StaticResource Am.CanvasTab}">
+       <StackPanel Orientation="Horizontal">
+        <TextBlock Text="&#xE774;" FontFamily="Segoe MDL2 Assets" FontSize="11" Margin="0,0,4,0" VerticalAlignment="Center"/>
+        <TextBlock Text="الموقع" VerticalAlignment="Center"/>
+       </StackPanel>
+      </Button>
+     </StackPanel>
+    </DockPanel>
+   </Border>
+
+   <!-- The 7 Dashboard Cards Scrollable Area -->
+   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="8">
+    <StackPanel>
+     <!-- 1. لوحة الأوراق التجارية المستحقة -->
+     <Border Style="{StaticResource Am.DashboardCard}">
+      <StackPanel>
+       <Border Style="{StaticResource Am.CardHeader}">
+        <DockPanel LastChildFill="False">
+         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+          <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Accent}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+          <TextBlock Text="لوحة الأوراق التجارية المستحقة" Style="{StaticResource Am.CardTitle}"/>
+         </StackPanel>
+         <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+          <Button Style="{StaticResource Button.Icon}" Content="&#xE72C;" Width="20" Height="20" FontSize="{DynamicResource Font.Caption}" Margin="2,0" ToolTip="تحديث"/>
+          <Button Style="{StaticResource Button.Icon}" Content="&#xE70E;" Width="20" Height="20" FontSize="{DynamicResource Font.Caption}" Margin="2,0" ToolTip="طي / توسيع"/>
+          <Button Style="{StaticResource Button.Icon}" Content="&#xE711;" Width="20" Height="20" FontSize="{DynamicResource Font.Caption}" Margin="2,0" ToolTip="إغلاق اللوحة"/>
+         </StackPanel>
+        </DockPanel>
+       </Border>
+       <Border Padding="12,10" Background="{DynamicResource Surface.Primary}">
+        <StackPanel Orientation="Horizontal">
+         <TextBlock Text="&#xE946;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Text.Secondary}" FontSize="13" VerticalAlignment="Center"/>
+         <TextBlock Text="لا يوجد أوراق تجارية مستحقة" Style="{StaticResource Am.CardEmptyMessage}"/>
+        </StackPanel>
+       </Border>
+      </StackPanel>
+     </Border>
+
+     <!-- 2. لوحة المناسبات الخاصة -->
+     <Border Style="{StaticResource Am.DashboardCard}">
+      <StackPanel>
+       <Border Style="{StaticResource Am.CardHeader}">
+        <DockPanel LastChildFill="False">
+         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+          <TextBlock Text="&#xEA86;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Error}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+          <TextBlock Text="لوحة المناسبات الخاصة" Style="{StaticResource Am.CardTitle}"/>
+         </StackPanel>
+         <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+          <Button Style="{StaticResource Button.Icon}" Content="&#xE72C;" Width="20" Height="20" FontSize="{DynamicResource Font.Caption}" Margin="2,0"/>
+          <Button Style="{StaticResource Button.Icon}" Content="&#xE70E;" Width="20" Height="20" FontSize="{DynamicResource Font.Caption}" Margin="2,0"/>
+          <Button Style="{StaticResource Button.Icon}" Content="&#xE711;" Width="20" Height="20" FontSize="{DynamicResource Font.Caption}" Margin="2,0"/>
+         </StackPanel>
+        </DockPanel>
+       </Border>
+       <Border Padding="12,10" Background="{DynamicResource Surface.Primary}">
+        <StackPanel Orientation="Horizontal">
+         <TextBlock Text="&#xE946;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Text.Secondary}" FontSize="13" VerticalAlignment="Center"/>
+         <TextBlock Text="لا يوجد مناسبات بالفترة" Style="{StaticResource Am.CardEmptyMessage}"/>
+        </StackPanel>
+       </Border>
+      </StackPanel>
+     </Border>
+
+     <!-- 3. لوحة الفواتير المستحقة -->
+     <Border Style="{StaticResource Am.DashboardCard}">
+      <StackPanel>
+       <Border Style="{StaticResource Am.CardHeader}">
+        <DockPanel LastChildFill="False">
+         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+          <TextBlock Text="&#xE8F1;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Success}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+          <TextBlock Text="لوحة الفواتير المستحقة" Style="{StaticResource Am.CardTitle}"/>
+         </StackPanel>
+         <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+          <Button Style="{StaticResource Button.Icon}" Content="&#xE72C;" Width="20" Height="20" FontSize="{DynamicResource Font.Caption}" Margin="2,0"/>
+          <Button Style="{StaticResource Button.Icon}" Content="&#xE70E;" Width="20" Height="20" FontSize="{DynamicResource Font.Caption}" Margin="2,0"/>
+          <Button Style="{StaticResource Button.Icon}" Content="&#xE711;" Width="20" Height="20" FontSize="{DynamicResource Font.Caption}" Margin="2,0"/>
+         </StackPanel>
+        </DockPanel>
+       </Border>
+       <Border Padding="12,10" Background="{DynamicResource Surface.Primary}">
+        <StackPanel Orientation="Horizontal">
+         <TextBlock Text="&#xE946;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Text.Secondary}" FontSize="13" VerticalAlignment="Center"/>
+         <TextBlock Text="لا يوجد فواتير مستحقة" Style="{StaticResource Am.CardEmptyMessage}"/>
+        </StackPanel>
+       </Border>
+      </StackPanel>
+     </Border>
+
+     <!-- 4. لوحة الطلبيات المستحقة -->
+     <Border Style="{StaticResource Am.DashboardCard}">
+      <StackPanel>
+       <Border Style="{StaticResource Am.CardHeader}">
+        <DockPanel LastChildFill="False">
+         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+          <TextBlock Text="&#xE7BF;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Warning}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+          <TextBlock Text="لوحة الطلبيات المستحقة" Style="{StaticResource Am.CardTitle}"/>
+         </StackPanel>
+         <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+          <Button Style="{StaticResource Button.Icon}" Content="&#xE72C;" Width="20" Height="20" FontSize="{DynamicResource Font.Caption}" Margin="2,0"/>
+          <Button Style="{StaticResource Button.Icon}" Content="&#xE70E;" Width="20" Height="20" FontSize="{DynamicResource Font.Caption}" Margin="2,0"/>
+          <Button Style="{StaticResource Button.Icon}" Content="&#xE711;" Width="20" Height="20" FontSize="{DynamicResource Font.Caption}" Margin="2,0"/>
+         </StackPanel>
+        </DockPanel>
+       </Border>
+       <Border Padding="12,10" Background="{DynamicResource Surface.Primary}">
+        <StackPanel Orientation="Horizontal">
+         <TextBlock Text="&#xE946;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Text.Secondary}" FontSize="13" VerticalAlignment="Center"/>
+         <TextBlock Text="لا يوجد طلبيات مستحقة" Style="{StaticResource Am.CardEmptyMessage}"/>
+        </StackPanel>
+       </Border>
+      </StackPanel>
+     </Border>
+
+     <!-- 5. المماثلة ... -->
+     <Border Style="{StaticResource Am.DashboardCard}">
+      <StackPanel>
+       <Border Style="{StaticResource Am.CardHeader}">
+        <DockPanel LastChildFill="False">
+         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+          <TextBlock Text="&#xE9D9;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Info}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+          <TextBlock Text="المماثلة ..." Style="{StaticResource Am.CardTitle}"/>
+         </StackPanel>
+         <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+          <Button Style="{StaticResource Button.Icon}" Content="&#xE72C;" Width="20" Height="20" FontSize="{DynamicResource Font.Caption}" Margin="2,0"/>
+          <Button Style="{StaticResource Button.Icon}" Content="&#xE70E;" Width="20" Height="20" FontSize="{DynamicResource Font.Caption}" Margin="2,0"/>
+          <Button Style="{StaticResource Button.Icon}" Content="&#xE711;" Width="20" Height="20" FontSize="{DynamicResource Font.Caption}" Margin="2,0"/>
+         </StackPanel>
+        </DockPanel>
+       </Border>
+       <Border Padding="12,10" Background="{DynamicResource Surface.Primary}">
+        <StackPanel Orientation="Horizontal">
+         <TextBlock Text="&#xE946;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Text.Secondary}" FontSize="13" VerticalAlignment="Center"/>
+         <TextBlock Text="نتائج المماثلة جاهزة" Style="{StaticResource Am.CardEmptyMessage}"/>
+        </StackPanel>
+       </Border>
+      </StackPanel>
+     </Border>
+
+     <!-- 6. لوحة وثائق الفواتير -->
+     <Border Style="{StaticResource Am.DashboardCard}">
+      <StackPanel>
+       <Border Style="{StaticResource Am.CardHeader}">
+        <DockPanel LastChildFill="False">
+         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+          <TextBlock Text="&#xE7C3;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Text.Secondary}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+          <TextBlock Text="لوحة وثائق الفواتير" Style="{StaticResource Am.CardTitle}"/>
+         </StackPanel>
+         <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+          <Button Style="{StaticResource Button.Icon}" Content="&#xE72C;" Width="20" Height="20" FontSize="{DynamicResource Font.Caption}" Margin="2,0"/>
+          <Button Style="{StaticResource Button.Icon}" Content="&#xE70E;" Width="20" Height="20" FontSize="{DynamicResource Font.Caption}" Margin="2,0"/>
+          <Button Style="{StaticResource Button.Icon}" Content="&#xE711;" Width="20" Height="20" FontSize="{DynamicResource Font.Caption}" Margin="2,0"/>
+         </StackPanel>
+        </DockPanel>
+       </Border>
+       <Border Padding="12,10" Background="{DynamicResource Surface.Primary}">
+        <StackPanel Orientation="Horizontal">
+         <TextBlock Text="&#xE946;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Text.Secondary}" FontSize="13" VerticalAlignment="Center"/>
+         <TextBlock Text="لا توجد وثائق فواتير جديدة" Style="{StaticResource Am.CardEmptyMessage}"/>
+        </StackPanel>
+       </Border>
+      </StackPanel>
+     </Border>
+
+     <!-- 7. لوحة رسائل المستخدمين -->
+     <Border Style="{StaticResource Am.DashboardCard}">
+      <StackPanel>
+       <Border Style="{StaticResource Am.CardHeader}">
+        <DockPanel LastChildFill="False">
+         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+          <TextBlock Text="&#xE715;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Info}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+          <TextBlock Text="لوحة رسائل المستخدمين" Style="{StaticResource Am.CardTitle}"/>
+         </StackPanel>
+         <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+          <Button Style="{StaticResource Button.Icon}" Content="&#xE72C;" Width="20" Height="20" FontSize="{DynamicResource Font.Caption}" Margin="2,0"/>
+          <Button Style="{StaticResource Button.Icon}" Content="&#xE70E;" Width="20" Height="20" FontSize="{DynamicResource Font.Caption}" Margin="2,0"/>
+          <Button Style="{StaticResource Button.Icon}" Content="&#xE711;" Width="20" Height="20" FontSize="{DynamicResource Font.Caption}" Margin="2,0"/>
+         </StackPanel>
+        </DockPanel>
+       </Border>
+       <Border Padding="12,10" Background="{DynamicResource Surface.Primary}">
+        <StackPanel Orientation="Horizontal">
+         <TextBlock Text="&#xE946;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Text.Secondary}" FontSize="13" VerticalAlignment="Center"/>
+         <TextBlock Text="لا توجد رسائل غير مقروءة" Style="{StaticResource Am.CardEmptyMessage}"/>
+        </StackPanel>
+       </Border>
+      </StackPanel>
+     </Border>
+    </StackPanel>
+   </ScrollViewer>
+  </DockPanel>
+
+  <!-- ===================================================================== -->
+  <!-- COLUMN 2 (LEFT in RTL): Al-Ameen Calendar & License Dock (Image 3)    -->
+  <!-- ===================================================================== -->
+  <Border Grid.Column="2" Background="{DynamicResource Surface.Secondary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1,0,0,0">
+   <DockPanel LastChildFill="True">
+    <!-- 1. TOP: The Iconic Al-Ameen Calendar Widget -->
+    <Border DockPanel.Dock="Top" Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" Margin="6,6,6,8">
+     <StackPanel>
+      <!-- Day Name Header: Dark Blue (#0C3B78) with White Text -->
+      <Border Background="{DynamicResource Brand.Navy}" Padding="6,5">
+       <TextBlock Text="{Binding CalendarDayName, FallbackValue='السبت'}" Foreground="{DynamicResource Text.OnBrand}" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center"/>
+      </Border>
+
+      <!-- Gregorian Date Box -->
+      <Border Background="{DynamicResource Surface.Primary}" Padding="8,4">
+       <StackPanel HorizontalAlignment="Center">
+        <TextBlock Text="{Binding CalendarDayNumber, FallbackValue='17'}" FontSize="36" FontWeight="Bold" Foreground="{DynamicResource Accent}" HorizontalAlignment="Center"/>
+        <TextBlock Text="{Binding CalendarMonthYear, FallbackValue='يوليو 2021'}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource Text.Primary}" HorizontalAlignment="Center"/>
+       </StackPanel>
+      </Border>
+
+      <!-- Hijri Date Box -->
+      <Border Background="{DynamicResource Accent.Subtle}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="0,1,0,1" Padding="4,4">
+       <TextBlock Text="{Binding CalendarGregorianFullDate, FallbackValue='التاريخ الميلادي'}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource Text.Primary}" HorizontalAlignment="Center"/>
+      </Border>
+
+      <!-- Live Clock -->
+      <Border Background="{DynamicResource Surface.Primary}" Padding="6,4">
+       <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+        <TextBlock Text="&#xE823;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Accent}" FontSize="13" Margin="0,0,6,0" VerticalAlignment="Center"/>
+        <TextBlock Text="{Binding CalendarTime, FallbackValue='07:03 م'}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Accent}" VerticalAlignment="Center"/>
+       </StackPanel>
+      </Border>
+     </StackPanel>
+    </Border>
+
+    <!-- 2. Support Info Box: موقع الأمين سوفت -->
+    <Border DockPanel.Dock="Top" Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1" Margin="6,0,6,8" Padding="8">
+     <StackPanel>
+      <TextBlock Text="نظام بترا ERP المتكامل" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource Accent}" Margin="0,0,0,4"/>
+      <TextBlock Text="تفضل بزيارة موقعنا للتعرف على أحدث حلول إدارة الموارد والمحاسبة والمستودعات والتواصل مع الدعم الفني" FontSize="{DynamicResource Font.Caption}" Foreground="{DynamicResource Text.Secondary}" TextWrapping="Wrap" LineHeight="14"/>
+     </StackPanel>
+    </Border>
+
+    <!-- 3. Flexible Center Space -->
+    <Border/>
+
+    <!-- 4. BOTTOM: License Box (Dark Blue) -->
+    <Border DockPanel.Dock="Bottom" Background="{DynamicResource Brand.Navy}" Margin="6,0,6,6" Padding="8,6">
+     <StackPanel HorizontalAlignment="Center">
+      <TextBlock Text="هذه النسخة مرخصة باسم" Foreground="{DynamicResource Text.OnBrand}" FontSize="{DynamicResource Font.Caption}" HorizontalAlignment="Center"/>
+      <TextBlock Text="{Binding CompanyLabel, FallbackValue='شركة بترا للبرمجيات'}" Foreground="{DynamicResource Text.OnBrand}" FontSize="13" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+     </StackPanel>
+    </Border>
+   </DockPanel>
+  </Border>
+ </Grid>
+</UserControl>

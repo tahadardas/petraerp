@@ -1,0 +1,337 @@
+<UserControl x:Class="PetraERP.Desktop.Parties.PartyCardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:links="clr-namespace:PetraERP.Desktop.Sales"
+             xmlns:relations="clr-namespace:PetraERP.Desktop.Relationships"
+             xmlns:ux="clr-namespace:PetraERP.Desktop.Controls"
+             ux:ValidationFocus.Target="{Binding ValidationFocusTarget}" ux:ValidationFocus.Request="{Binding ValidationFocusRequest}">
+    <UserControl.InputBindings>
+        <KeyBinding Key="F5" Command="{Binding RefreshCommand}"/>
+        <KeyBinding Key="Escape" Command="{Binding CancelCardCommand}"/>
+        <KeyBinding Key="E" Modifiers="Control" Command="{Binding BeginEditCommand}"/>
+        <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCardCommand}"/>
+    </UserControl.InputBindings>
+    <UserControl.Resources>
+        <Style x:Key="Am.Label" TargetType="TextBlock"><Setter Property="VerticalAlignment" Value="Center"/><Setter Property="Margin" Value="6,3"/></Style>
+    </UserControl.Resources>
+    <DockPanel Margin="6">
+        <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource Divider}" BorderThickness="0,1,0,0" Padding="0,6,0,0" Margin="0,6,0,0">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="إضافة" Command="{Binding SaveCardCommand}" Visibility="{Binding IsNewMode, Converter={StaticResource Visible}}" Style="{StaticResource Button.Primary}" MinWidth="76" Margin="0,0,6,0" ToolTip="Ctrl+S"/>
+                <Button Content="جديد" Command="{Binding BeginNewCommand}" MinWidth="76" Margin="0,0,6,0"/>
+                <Button MinWidth="76" Margin="0,0,6,0">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="Content" Value="تعديل"/>
+                            <Setter Property="Command" Value="{Binding BeginEditCommand}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsEditMode}" Value="True">
+                                    <Setter Property="Content" Value="حفظ"/>
+                                    <Setter Property="Command" Value="{Binding SaveCardCommand}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Content="تعطيل" Command="{Binding DeactivateCommand}" MinWidth="76" Margin="0,0,6,0" Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+                <Button Content="تفعيل" Command="{Binding ReactivateCommand}" MinWidth="76" Margin="0,0,6,0" Visibility="{Binding CanManage, Converter={StaticResource Visible}}"/>
+                <Button Content="حسابات..." Click="AccountsClicked" MinWidth="76" Margin="0,0,6,0"/>
+                <Button Content="إلغاء الأمر" Command="{Binding CancelCardCommand}" Visibility="{Binding IsEditing, Converter={StaticResource Visible}}" MinWidth="76" Margin="0,0,6,0" ToolTip="Esc"/>
+                <Button Content="إغلاق" Click="CloseClicked" Visibility="{Binding IsViewMode, Converter={StaticResource Visible}}" MinWidth="76" Margin="0,0,6,0"/>
+                <TextBlock Text="{Binding StatusText}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="8,0"/>
+            </StackPanel>
+        </Border>
+        <Border DockPanel.Dock="Bottom" Background="{DynamicResource SubtleErrorBackground}" BorderBrush="{DynamicResource ErrorSurface}"
+                BorderThickness="1" CornerRadius="{DynamicResource Radius.Control}" Padding="8,4" Margin="0,6,0,0"
+                Visibility="{Binding HasValidationErrors, Converter={StaticResource Visible}}">
+            <DockPanel>
+                <TextBlock Text="&#xE783;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource ErrorSurface}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBlock Text="{Binding ValidationMessage}" Foreground="{DynamicResource ErrorSurface}" FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center"/>
+            </DockPanel>
+        </Border>
+        <ux:RecordNavigator DockPanel.Dock="Top" Margin="0,0,0,6" RecordNumber="{Binding RecordCode}" StatusText="{Binding StatusText}"
+                            FirstCommand="{Binding FirstPartyCommand}" PreviousCommand="{Binding PreviousPartyCommand}"
+                            NextCommand="{Binding NextPartyCommand}" LastCommand="{Binding LastPartyCommand}"/>
+        <CheckBox DockPanel.Dock="Top" Content="{Binding Localization[AR_CashCustomer]}" IsChecked="{Binding IsCashCustomer, Mode=OneWay}" IsEnabled="False" Margin="8,0,8,4"/>
+        <Grid DockPanel.Dock="Top" Margin="0,0,0,6">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="82"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+            <TextBlock Text="الاسم *" Style="{StaticResource Am.Label}"/>
+            <TextBox ux:ValidationFocus.Key="name-ar" Grid.Column="1" Text="{Binding DraftNameArabic, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" Margin="0,2"/>
+            <TextBlock Grid.Row="1" Text="الاسم اللاتيني" Style="{StaticResource Am.Label}"/>
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding DraftNameEnglish, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" FlowDirection="LeftToRight" Margin="0,2"/>
+            <TextBlock Grid.Row="2" Text="الرمز *" Style="{StaticResource Am.Label}"/>
+            <TextBox ux:ValidationFocus.Key="code" Grid.Row="2" Grid.Column="1" Text="{Binding DraftCode, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsCodeReadOnly}" FlowDirection="LeftToRight" Width="150" HorizontalAlignment="Left" Margin="0,2"/>
+        </Grid>
+        <Grid>
+            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="6"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+            <ListBox x:Name="NavList" SelectedIndex="0" MinWidth="124" AutomationProperties.Name="{Binding Title}">
+          <ListBoxItem Content="عام"/>
+          <ListBoxItem Content="الاتصال والعنوان"/>
+          <ListBoxItem Content="حسابات"/>
+          <ListBoxItem Content="سياسة الائتمان"/>
+          <ListBoxItem Content="المستندات المرتبطة"/>
+          <ListBoxItem Content="التدقيق"/>
+          <ListBoxItem Content="حقول مخصصة" IsEnabled="False" Visibility="Collapsed"/>
+            </ListBox>
+            <Border Grid.Column="2" Style="{StaticResource Panel.Card}" Padding="0">
+                <Grid>
+        <Grid>
+          <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers><DataTrigger Binding="{Binding SelectedIndex, ElementName=NavList}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+          </Style></Grid.Style>
+          <ScrollViewer VerticalScrollBarVisibility="Auto"><Grid Margin="8">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="90"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+              <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <TextBlock Text="اللقب" Style="{StaticResource Am.Label}"/>
+            <TextBox Grid.Column="1" Text="{Binding DraftTitle, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" MaxLength="100" Margin="0,2"/>
+            <TextBlock Grid.Row="1" Text="اللاحقة" Style="{StaticResource Am.Label}"/>
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding DraftSuffix, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" MaxLength="100" Margin="0,2"/>
+            <TextBlock Grid.Row="2" Text="رمز الباركود" Style="{StaticResource Am.Label}"/>
+            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding DraftBarcode, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" MaxLength="64" FlowDirection="LeftToRight" Margin="0,2"/>
+            <TextBlock Grid.Row="3" Text="الصفة *" Style="{StaticResource Am.Label}"/>
+            <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding RoleOptions}" SelectedValue="{Binding DraftRole}" SelectedValuePath="Value" DisplayMemberPath="Label" IsEnabled="{Binding IsEditing}" Margin="0,2"/>
+            <TextBlock Grid.Row="4" Text="العملة" Style="{StaticResource Am.Label}"/>
+            <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding DraftDefaultCurrencyCode, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" MaxLength="3" CharacterCasing="Upper" FlowDirection="LeftToRight" ux:Watermark.Text="{Binding BaseCurrencyCode}" ToolTip="{Binding Localization[CUR_PartyCurrencyHelp]}" Width="90" HorizontalAlignment="Left" Margin="0,2"/>
+            <TextBlock Grid.Row="5" Text="الرقم الضريبي" Style="{StaticResource Am.Label}"/>
+            <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding DraftTaxNumber, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" Margin="0,2"/>
+            <TextBlock Grid.Row="6" Text="السجل التجاري" Style="{StaticResource Am.Label}"/>
+            <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding DraftCommercialRegistration, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" Margin="0,2"/>
+            <TextBlock Grid.Row="7" Text="ملاحظات" Style="{StaticResource Am.Label}" VerticalAlignment="Top" Margin="6,8,6,3"/>
+            <TextBox Grid.Row="7" Grid.Column="1" Text="{Binding DraftNotes, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" MinHeight="70" MaxLength="1000" Margin="0,2"/>
+            <Border Grid.Row="8" Grid.ColumnSpan="2" BorderBrush="{DynamicResource Divider}" BorderThickness="1" Padding="6,2" Margin="0,8,0,0">
+              <CheckBox Content="إخفاء في نافذة البحث" IsChecked="{Binding DraftHideInSearch}" IsEnabled="{Binding IsEditing}" Margin="4,4"/>
+            </Border>
+          </Grid></ScrollViewer>
+        </Grid>
+        <Grid>
+          <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers><DataTrigger Binding="{Binding SelectedIndex, ElementName=NavList}" Value="1"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+          </Style></Grid.Style>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="16" MaxWidth="780" HorizontalAlignment="Left">
+                        <TextBlock Text="معلومات الاتصال الرئيسية" Style="{StaticResource Text.Subheading}" Margin="0,0,0,8"/>
+                        <WrapPanel Margin="0,0,0,12">
+                            <StackPanel Style="{StaticResource Field}" Width="240" Margin="0,0,12,0">
+                                <TextBlock Text="اسم جهة الاتصال" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding DraftContactName, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource Field}" Width="180" Margin="0,0,12,0">
+                                <TextBlock Text="الهاتف" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding DraftPhone, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource Field}" Width="180">
+                                <TextBlock Text="الجوال" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding DraftMobile, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}"/>
+                            </StackPanel>
+                        </WrapPanel>
+
+                        <WrapPanel Margin="0,0,0,12">
+                            <StackPanel Style="{StaticResource Field}" Width="280" Margin="0,0,12,0">
+                                <TextBlock Text="البريد الإلكتروني" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding DraftEmail, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource Field}" Width="360">
+                                <TextBlock Text="ملاحظات" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding DraftNotes, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}"/>
+                            </StackPanel>
+                        </WrapPanel>
+
+                        <Separator Margin="0,8,0,16"/>
+                        <TextBlock Text="العنوان الرئيسي" Style="{StaticResource Text.Subheading}" Margin="0,0,0,8"/>
+                        <WrapPanel Margin="0,0,0,12">
+                            <StackPanel Style="{StaticResource Field}" Width="320" Margin="0,0,12,0">
+                                <TextBlock Text="الشارع / التفاصيل" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding DraftStreet, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource Field}" Width="160" Margin="0,0,12,0">
+                                <TextBlock Text="المدينة" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding DraftCity, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource Field}" Width="160">
+                                <TextBlock Text="البلد" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding DraftCountry, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}"/>
+                            </StackPanel>
+                        </WrapPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            
+        </Grid>
+        <Grid>
+          <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers><DataTrigger Binding="{Binding SelectedIndex, ElementName=NavList}" Value="2"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+          </Style></Grid.Style>
+          <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="8">
+            <Grid>
+              <Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="150"/><ColumnDefinition Width="18"/><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+              <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+              <TextBlock Text="سعر المبيع" Style="{StaticResource Am.Label}"/>
+              <ComboBox Grid.Column="1" ItemsSource="{Binding PriceTypeOptions}" SelectedValue="{Binding DraftSalesPriceType}" SelectedValuePath="Code" DisplayMemberPath="Caption" IsEnabled="{Binding IsEditing}" Margin="0,2"/>
+              <TextBlock Grid.Column="3" Text="نسبة الحسم %" Style="{StaticResource Am.Label}"/>
+              <TextBox Grid.Column="4" Text="{Binding DraftDiscountPercent, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" FlowDirection="LeftToRight" Width="90" HorizontalAlignment="Left" Margin="0,2"/>
+              <TextBlock Grid.Row="1" Text="الرصيد الحالي" Style="{StaticResource Am.Label}"/>
+              <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Exposure.CurrentBalance, Mode=OneWay, FallbackValue='0.0000'}" IsReadOnly="True" FlowDirection="LeftToRight" Margin="0,2"/>
+              <TextBlock Grid.Row="1" Grid.Column="3" Text="مدة السداد (يوم)" Style="{StaticResource Am.Label}"/>
+              <TextBox Grid.Row="1" Grid.Column="4" Text="{Binding DraftPaymentTermDays, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}" FlowDirection="LeftToRight" Width="90" HorizontalAlignment="Left" Margin="0,2"/>
+            </Grid>
+            <Border BorderBrush="{DynamicResource Divider}" BorderThickness="1" Padding="6,2,6,6" Margin="0,10,0,0">
+              <StackPanel>
+                <TextBlock Text="حساب الزبون / المورد" FontWeight="SemiBold" Margin="0,2,0,4"/>
+                <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                  <TextBlock Text="حساب الذمم المدينة" Style="{StaticResource Am.Label}"/>
+                  <ux:LookupPicker ux:ValidationFocus.Key="receivable-account" Grid.Column="1" ItemsSource="{Binding AccountLookups, Converter={StaticResource EntryLookups}}" SelectedId="{Binding DraftReceivableAccountId}" IsEnabled="{Binding IsEditing}" IsArabic="{Binding Localization.IsRightToLeft}" Placeholder="تلقائي (إنشاء حساب في دليل الحسابات تحت الزبائن)" Margin="0,2"/></Grid>
+                <TextBlock Text="{Binding ReceivableAccountPlanText}" TextWrapping="Wrap" Foreground="{DynamicResource Text.Secondary}" FontSize="11" Margin="110,0,0,4">
+                  <TextBlock.Style><Style TargetType="TextBlock"><Style.Triggers><DataTrigger Binding="{Binding ReceivableAccountPlanText}" Value=""><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
+                </TextBlock>
+                <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                  <TextBlock Text="حساب الذمم الدائنة" Style="{StaticResource Am.Label}"/>
+                  <ux:LookupPicker ux:ValidationFocus.Key="payable-account" Grid.Column="1" ItemsSource="{Binding AccountLookups, Converter={StaticResource EntryLookups}}" SelectedId="{Binding DraftPayableAccountId}" IsEnabled="{Binding IsEditing}" IsArabic="{Binding Localization.IsRightToLeft}" Placeholder="تلقائي (إنشاء حساب في دليل الحسابات تحت الموردين)" Margin="0,2"/></Grid>
+                <TextBlock Text="{Binding PayableAccountPlanText}" TextWrapping="Wrap" Foreground="{DynamicResource Text.Secondary}" FontSize="11" Margin="110,0,0,4">
+                  <TextBlock.Style><Style TargetType="TextBlock"><Style.Triggers><DataTrigger Binding="{Binding PayableAccountPlanText}" Value=""><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
+                </TextBlock>
+              </StackPanel>
+            </Border>
+            <Border BorderBrush="{DynamicResource Divider}" BorderThickness="1" Padding="6,2,6,6" Margin="0,8,0,0">
+              <StackPanel>
+                <TextBlock Text="مقابل الحسم" FontWeight="SemiBold" Margin="0,2,0,4"/>
+                <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                  <TextBlock Text="حساب مقابل الحسم المشروط" Style="{StaticResource Am.Label}" TextWrapping="Wrap"/>
+                  <ux:LookupPicker Grid.Column="1" ItemsSource="{Binding AccountLookups, Converter={StaticResource EntryLookups}}" SelectedId="{Binding DraftConditionalDiscountAccountId}" IsEnabled="{Binding IsEditing}" IsArabic="{Binding Localization.IsRightToLeft}" Margin="0,2"/></Grid>
+              </StackPanel>
+            </Border>
+            <Border BorderBrush="{DynamicResource Divider}" BorderThickness="1" Padding="6,2,6,6" Margin="0,8,0,0">
+              <StackPanel>
+                <TextBlock Text="الضرائب" FontWeight="SemiBold" Margin="0,2,0,4"/>
+                <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                  <TextBlock Text="حساب ضريبة القيمة المضافة" Style="{StaticResource Am.Label}" TextWrapping="Wrap"/>
+                  <ux:LookupPicker Grid.Column="1" ItemsSource="{Binding AccountLookups, Converter={StaticResource EntryLookups}}" SelectedId="{Binding DraftVatAccountId}" IsEnabled="{Binding IsEditing}" IsArabic="{Binding Localization.IsRightToLeft}" Margin="0,2"/></Grid>
+              </StackPanel>
+            </Border>
+          </StackPanel></ScrollViewer>
+        </Grid>
+        <Grid>
+          <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers><DataTrigger Binding="{Binding SelectedIndex, ElementName=NavList}" Value="3"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+          </Style></Grid.Style>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="16" MaxWidth="780" HorizontalAlignment="Left">
+                        <TextBlock Text="سياسة الائتمان وسقوف السحب" Style="{StaticResource Text.Subheading}" Margin="0,0,0,8"/>
+                        <WrapPanel Margin="0,0,0,12">
+                            <StackPanel Style="{StaticResource Field}" Width="200" Margin="0,0,12,0">
+                                <TextBlock Text="نوع السياسة الائتمانية" Style="{StaticResource Text.Label}"/>
+                                <ComboBox ItemsSource="{Binding PolicyOptions}" SelectedValue="{Binding DraftPolicyKind}"
+                                          SelectedValuePath="Value" DisplayMemberPath="Label" IsEnabled="{Binding IsEditing}"/>
+                            </StackPanel>
+
+                            <StackPanel Style="{StaticResource Field}" Width="160" Margin="0,0,12,0">
+                                <TextBlock Text="{Binding CreditLimitCaption}" Style="{StaticResource Text.Label}"/>
+                                <ux:PetraMoneyBox ux:ValidationFocus.Key="credit-limit" Text="{Binding DraftCreditLimit, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}"/>
+                            </StackPanel>
+
+                            <StackPanel Style="{StaticResource Field}" Width="140">
+                                <TextBlock Text="مدة السداد (أيام)" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding DraftPaymentTermDays, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsViewMode}"/>
+                            </StackPanel>
+                        </WrapPanel>
+
+                        <CheckBox Content="{Binding Localization[AR_CreditSalesBlocked]}" IsChecked="{Binding DraftIsCreditBlocked}" IsEnabled="{Binding IsEditing}" Margin="0,0,0,12"/>
+                        <WrapPanel Margin="0,0,0,12">
+                         <StackPanel Margin="0,0,24,0"><TextBlock Text="{Binding Localization[AR_ReceivableBase]}" Style="{StaticResource Text.Label}"/><TextBlock Text="{Binding Party.ReceivableBalance}" FontSize="18" FontWeight="SemiBold"/></StackPanel>
+                         <StackPanel><TextBlock Text="{Binding Localization[AR_PayableBase]}" Style="{StaticResource Text.Label}"/><TextBlock Text="{Binding Party.PayableBalance}" FontSize="18" FontWeight="SemiBold"/></StackPanel>
+                        </WrapPanel>
+                        <Separator Margin="0,8,0,16"/>
+                        <TextBlock Text="الوضعية الائتمانية الحالية (مشتقة من الخادم - غير قابلة للتعديل اليدوي)" Style="{StaticResource Text.Subheading}" Margin="0,0,0,8"/>
+                        <WrapPanel Margin="0,0,0,12">
+                            <Border Style="{StaticResource Panel.Card}" Padding="16,12" Width="200" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="الرصيد الحالي" Style="{StaticResource Text.Label}"/>
+                                    <TextBlock Text="{Binding Exposure.CurrentBalance, FallbackValue='0.0000'}" FontSize="18" FontWeight="SemiBold" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource Panel.Card}" Padding="16,12" Width="200" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="الائتمان المتاح" Style="{StaticResource Text.Label}"/>
+                                    <TextBlock Text="{Binding Exposure.AvailableCredit, FallbackValue='0.0000'}" FontSize="18" FontWeight="SemiBold" Margin="0,4,0,0" Foreground="{DynamicResource Success}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource Panel.Card}" Padding="16,12" Width="200">
+                                <StackPanel>
+                                    <TextBlock Text="حالة التجاوز" Style="{StaticResource Text.Label}"/>
+                                    <TextBlock Text="{Binding Exposure.IsExceeded, FallbackValue='لا'}" FontSize="16" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </WrapPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            
+        </Grid>
+        <Grid>
+          <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers><DataTrigger Binding="{Binding SelectedIndex, ElementName=NavList}" Value="4"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+          </Style></Grid.Style>
+                <DockPanel>
+                    <WrapPanel DockPanel.Dock="Top" Margin="8,8,8,0">
+                        <Button Content="{Binding Localization[AR_CustomerStatement]}" Command="{Binding CustomerStatementCommand}" Margin="0,0,8,0"/>
+                        <Button Content="{Binding Localization[AR_SupplierStatement]}" Command="{Binding SupplierStatementCommand}" Margin="0,0,8,0"/>
+                        <Button Content="دفتر الأستاذ (كشف الحساب)..." Command="{Binding OpenAccountLedgerCommand}" Margin="0,0,8,0"/>
+                        <Button Content="{Binding Localization[D_NewReceipt]}" Command="{Binding NewReceiptCommand}"/>
+                        <Button Content="{Binding Localization[D_NewPayment]}" Command="{Binding NewPaymentCommand}" Margin="8,0"/>
+                        <Button Content="{Binding Localization[D_NewPurchaseForSupplier]}" Command="{Binding NewPurchaseCommand}"/>
+                    </WrapPanel>
+                    <TabControl>
+                        <TabItem Header="{Binding Localization[D_LinkedSalesInvoices]}"><links:SalesDocumentLinksView DataContext="{Binding DocumentLinks}"/></TabItem>
+                        <TabItem Header="{Binding Localization[D_LinkedPurchases]}" Visibility="{Binding PurchaseLinks.IsAvailable, Converter={StaticResource Visible}}"><relations:RelatedDocumentsView DataContext="{Binding PurchaseLinks}"/></TabItem>
+                        <TabItem Header="{Binding Localization[D_ReceiptVouchers]}" Visibility="{Binding ReceiptLinks.IsAvailable, Converter={StaticResource Visible}}"><relations:RelatedDocumentsView DataContext="{Binding ReceiptLinks}"/></TabItem>
+                        <TabItem Header="{Binding Localization[D_PaymentVouchers]}" Visibility="{Binding PaymentLinks.IsAvailable, Converter={StaticResource Visible}}"><relations:RelatedDocumentsView DataContext="{Binding PaymentLinks}"/></TabItem>
+                    </TabControl>
+                </DockPanel>
+            
+        </Grid>
+        <Grid>
+          <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers><DataTrigger Binding="{Binding SelectedIndex, ElementName=NavList}" Value="5"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+          </Style></Grid.Style>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="16" MaxWidth="1100" HorizontalAlignment="Left">
+                        <WrapPanel Margin="0,0,0,12">
+                            <StackPanel Style="{StaticResource Field}" Width="240" Margin="0,0,16,0">
+                                <TextBlock Text="تاريخ الإنشاء (UTC)" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding Party.CreatedAtUtc, StringFormat='yyyy-MM-dd HH:mm', Mode=OneWay}" IsReadOnly="True"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource Field}" Width="240">
+                                <TextBlock Text="تاريخ آخر تعديل (UTC)" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding Party.UpdatedAtUtc, StringFormat='yyyy-MM-dd HH:mm', Mode=OneWay}" IsReadOnly="True"/>
+                            </StackPanel>
+                        </WrapPanel>
+
+                        <TextBlock Text="{Binding Localization[AR_PolicyHistory]}" Style="{StaticResource Text.Label}" Margin="0,0,0,8"/>
+                        <DataGrid ItemsSource="{Binding PolicyHistory}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" MaxHeight="280" Margin="0,0,0,12">
+                         <DataGrid.Columns>
+                          <DataGridTextColumn Binding="{Binding DateUtc, StringFormat='yyyy-MM-dd HH:mm'}" Width="140"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[AR_Date], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+                          <DataGridTextColumn Binding="{Binding ActorId}" Width="230"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[AR_Actor], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+                          <DataGridTextColumn Binding="{Binding BeforeCreditLimit}" Width="110"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[AR_LimitBefore], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+                          <DataGridTextColumn Binding="{Binding AfterCreditLimit}" Width="110"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[AR_LimitAfter], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+                          <DataGridTextColumn Binding="{Binding BeforePolicy}" Width="130"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[AR_PolicyBefore], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+                          <DataGridTextColumn Binding="{Binding AfterPolicy}" Width="130"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[AR_PolicyAfter], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+                          <DataGridTextColumn Binding="{Binding BeforeBlocked}" Width="90"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[AR_BlockBefore], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+                          <DataGridTextColumn Binding="{Binding AfterBlocked}" Width="90"><DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[AR_BlockAfter], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
+                         </DataGrid.Columns>
+                        </DataGrid>
+                        <StackPanel Style="{StaticResource Field}" Width="320">
+                            <TextBlock Text="رمز النسخة (Concurrency Token)" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding Party.VersionToken, Mode=OneWay}" IsReadOnly="True"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            
+        </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </DockPanel>
+</UserControl>

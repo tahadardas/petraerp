@@ -1,0 +1,388 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="PetraERP.Desktop.Purchases.PurchasesView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ux="clr-namespace:PetraERP.Desktop.Controls" Background="{DynamicResource Surface.Secondary}" xmlns:purchases="clr-namespace:PetraERP.Desktop.Purchases">
+  <UIElement.InputBindings>
+    <KeyBinding Key="F5" Command="{Binding RefreshCommand}"/>
+    <KeyBinding Key="P" Modifiers="Control" Command="{Binding PrintCommand}"/>
+    <KeyBinding Key="Escape" Command="{Binding CancelCommand}"/>
+    <KeyBinding Key="E" Modifiers="Control" Command="{Binding EditCommand}"/>
+    <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCommand}"/>
+    <KeyBinding Key="N" Modifiers="Control" Command="{Binding NewCommand}"/>
+    <KeyBinding Key="Home" Modifiers="Control" Command="{Binding FirstCommand}"/>
+    <KeyBinding Key="PageUp" Modifiers="Control" Command="{Binding PreviousCommand}"/>
+    <KeyBinding Key="PageDown" Modifiers="Control" Command="{Binding NextCommand}"/>
+    <KeyBinding Key="End" Modifiers="Control" Command="{Binding LastCommand}"/>
+  </UIElement.InputBindings>
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <ux:BindingProxy x:Key="Proxy" Data="{Binding}"/>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <DockPanel LastChildFill="True">
+    <TabControl BorderThickness="0" Background="Transparent" SelectedIndex="{Binding WorkspaceTab}">
+      <TabItem Header="{Binding Localization[D_PurchaseList]}">
+        <DockPanel>
+          <ux:PageHeader DockPanel.Dock="Top" Title="{Binding Localization[D_PurchaseInvoices]}">
+            <ux:PageHeader.Commands>
+              <WrapPanel>
+                <Button Margin="0,0,8,0" Content="{Binding Localization[D_ManagePatterns]}" Command="{Binding ManagePatternsCommand}" Visibility="{Binding CanViewPatterns, Converter={StaticResource Visible}}"/>
+                <ux:DocumentCommandBar Screen="{Binding}"/>
+                <ItemsControl Focusable="False" ItemsSource="{Binding PurchasePatterns}">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <WrapPanel/>
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Button Style="{StaticResource Button.Command}" Margin="8,0,0,0" Content="{Binding Name}" Command="{Binding DataContext.NewByPatternCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"/>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Button Style="{StaticResource Button.Command}" Margin="8,0,0,0" Content="{Binding Localization[D_Refresh]}" Command="{Binding RefreshCommand}"/>
+              </WrapPanel>
+            </ux:PageHeader.Commands>
+          </ux:PageHeader>
+          <Border DockPanel.Dock="Top" Style="{StaticResource Panel.Card}" Margin="0,8,0,8" Padding="8">
+            <WrapPanel VerticalAlignment="Center">
+              <ux:LookupPicker Width="190" Margin="0,0,12,0" Placeholder="المورد" ItemsSource="{Binding Suppliers, Converter={StaticResource EntryLookups}}" AsyncSearchProvider="{Binding SearchSuppliersAsync}" SelectedId="{Binding FilterSupplierId}" AutomationProperties.Name="{Binding DataContext.Localization[D_Supplier], RelativeSource={RelativeSource AncestorType=UserControl}}" IsArabic="{Binding DataContext.Localization.IsRightToLeft, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+              <ComboBox Name="StatusFilter" DisplayMemberPath="Label" SelectedValuePath="Value" Width="130" Margin="0,0,12,0" AutomationProperties.Name="الحالة" ItemsSource="{Binding StatusFilterOptions}" SelectedValue="{Binding FilterStatus}"/>
+              <DatePicker Name="FromDateFilter" Width="130" Margin="0,0,6,0" AutomationProperties.Name="من تاريخ" ToolTip="من تاريخ" SelectedDate="{Binding FilterFromDateValue}"/>
+              <DatePicker Name="ToDateFilter" Width="130" Margin="0,0,12,0" AutomationProperties.Name="إلى تاريخ" ToolTip="إلى تاريخ" SelectedDate="{Binding FilterToDateValue}"/>
+              <Button Style="{StaticResource Button.Command}" Content="تصفية" Margin="0,0,8,0" Command="{Binding ApplyFiltersCommand}"/>
+              <Button Style="{StaticResource Button.Command}" Content="مسح التصفية" Margin="0,0,12,0" Command="{Binding ClearFiltersCommand}"/>
+              <TextBlock VerticalAlignment="Center" Style="{StaticResource Text.Caption}">
+                <Run Text="{Binding Invoices.Count, Mode=OneWay}"/>
+                <Run Text=" / "/>
+                <Run Text="{Binding TotalCount, Mode=OneWay}"/>
+              </TextBlock>
+            </WrapPanel>
+          </Border>
+          <WrapPanel DockPanel.Dock="Bottom" Margin="0,6" VerticalAlignment="Center">
+            <Button Style="{StaticResource Button.Command}" Content="السابق" Margin="0,0,8,0" Command="{Binding PreviousPageCommand}"/>
+            <Button Style="{StaticResource Button.Command}" Content="التالي" Margin="0,0,12,0" Command="{Binding NextPageCommand}"/>
+            <TextBlock VerticalAlignment="Center" Style="{StaticResource Text.Caption}" Text="{Binding PageSummary}"/>
+          </WrapPanel>
+          <ux:PetraAccountingDataGrid x:Name="PurchaseListGrid" ux:GridRowContext.Enabled="True" Margin="0,8" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single" ItemsSource="{Binding Invoices}" SelectedItem="{Binding SelectedInvoice}">
+            <FrameworkElement.ContextMenu>
+              <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                <MenuItem InputGestureText="Enter" Header="{Binding Localization[D_Details]}" Command="{Binding OpenCommand}"/>
+                <MenuItem Header="{Binding Localization[D_NewPurchase]}" Command="{Binding NewCommand}"/>
+              </ContextMenu>
+            </FrameworkElement.ContextMenu>
+            <UIElement.InputBindings>
+              <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding OpenCommand}"/>
+              <KeyBinding Key="Enter" Command="{Binding OpenCommand}"/>
+            </UIElement.InputBindings>
+            <DataGrid.Columns>
+              <DataGridTextColumn Width="110" Binding="{Binding InvoiceNumber}">
+                <DataGridColumn.Header>
+                  <TextBlock Text="{Binding DataContext.Localization[D_VoucherNumber], RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                </DataGridColumn.Header>
+              </DataGridTextColumn>
+              <DataGridTextColumn Width="95" Binding="{Binding InvoiceDateUtc, StringFormat=yyyy-MM-dd}">
+                <DataGridColumn.Header>
+                  <TextBlock Text="{Binding DataContext.Localization[D_DateTime], RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                </DataGridColumn.Header>
+              </DataGridTextColumn>
+              <DataGridTextColumn Width="*" Binding="{Binding SupplierName}">
+                <DataGridColumn.Header>
+                  <TextBlock Text="{Binding DataContext.Localization[D_Supplier], RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                </DataGridColumn.Header>
+              </DataGridTextColumn>
+              <DataGridTextColumn Width="110" Binding="{Binding GrandTotal}">
+                <DataGridColumn.Header>
+                  <TextBlock Text="{Binding DataContext.Localization[D_Amount], RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                </DataGridColumn.Header>
+              </DataGridTextColumn>
+              <DataGridTextColumn Width="90" Binding="{Binding SettledAmount}">
+                <DataGridColumn.Header>
+                  <TextBlock Text="{Binding DataContext.Localization[D_SettledAmount], RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                </DataGridColumn.Header>
+              </DataGridTextColumn>
+              <DataGridTextColumn Width="90" Binding="{Binding ReturnedAmount}">
+                <DataGridColumn.Header>
+                  <TextBlock Text="{Binding DataContext.Localization[D_ReturnReturned], RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                </DataGridColumn.Header>
+              </DataGridTextColumn>
+              <DataGridTextColumn Width="90" Binding="{Binding OutstandingAmount}">
+                <DataGridColumn.Header>
+                  <TextBlock Text="{Binding DataContext.Localization[D_OutstandingAmount], RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                </DataGridColumn.Header>
+              </DataGridTextColumn>
+              <DataGridTextColumn Width="80" Binding="{Binding Status}">
+                <DataGridColumn.Header>
+                  <TextBlock Text="{Binding DataContext.Localization[D_VoucherStatus], RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                </DataGridColumn.Header>
+              </DataGridTextColumn>
+            </DataGrid.Columns>
+          </ux:PetraAccountingDataGrid>
+        </DockPanel>
+      </TabItem>
+      <TabItem Header="{Binding Localization[D_Details]}">
+        <DockPanel LastChildFill="True">
+          <StackPanel DockPanel.Dock="Top" Margin="6,2,6,0">
+            <Border Background="{DynamicResource SubtleErrorBackground}" BorderBrush="{DynamicResource ErrorSurface}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Small}" Padding="8,4" Margin="0,0,0,4" Visibility="{Binding HasValidationErrors, Converter={StaticResource Visible}}">
+              <DockPanel>
+                <TextBlock Text="" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource ErrorSurface}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBlock Foreground="{DynamicResource ErrorSurface}" FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center" Text="{Binding ValidationMessage}"/>
+              </DockPanel>
+            </Border>
+            <Border Background="{DynamicResource SubtleInfoBackground}" BorderBrush="{DynamicResource InfoSurface}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Small}" Padding="8,4" Margin="0,0,0,4" Visibility="{Binding HasActionMessage, Converter={StaticResource Visible}}">
+              <TextBlock TextWrapping="Wrap" FontWeight="SemiBold" VerticalAlignment="Center" Text="{Binding ActionMessage}"/>
+            </Border>
+          </StackPanel>
+          <Border DockPanel.Dock="Top" Background="{DynamicResource Surface.Secondary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="0,0,0,1" Padding="8,6" Margin="0,0,0,2">
+            <Grid>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+              </Grid.RowDefinitions>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <DockPanel Grid.Row="0" Grid.Column="0" Margin="0,2,0,2">
+                <TextBlock Text="المورد" Width="70" Style="{StaticResource Am.Label}" DockPanel.Dock="Right" TextAlignment="Right"/>
+                <ux:LookupPicker Placeholder="🔍  ابحث بالاسم أو الرمز..." IsArabic="True" ItemsSource="{Binding Suppliers, Converter={StaticResource EntryLookups}}" AsyncSearchProvider="{Binding SearchSuppliersAsync}" SelectedId="{Binding DraftSupplierId}" IsEnabled="{Binding CanEditFields}"/>
+              </DockPanel>
+              <DockPanel Grid.Row="0" Grid.Column="2" Margin="0,2,0,2" LastChildFill="False">
+                <ux:RecordNavigator DockPanel.Dock="Left" VerticalAlignment="Center" RecordNumber="{Binding Current.InvoiceNumber}" StatusText="{Binding StatusText}" FirstCommand="{Binding FirstCommand}" PreviousCommand="{Binding PreviousCommand}" NextCommand="{Binding NextCommand}" LastCommand="{Binding LastCommand}"/>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="16,0,0,0">
+                  <TextBlock Text="" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Success}" FontSize="15" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                  <TextBlock Text="درجة السرية" Style="{StaticResource Am.Label}" Foreground="{DynamicResource Text.Primary}"/>
+                </StackPanel>
+              </DockPanel>
+              <DockPanel Grid.Row="1" Grid.Column="0" Margin="0,2,0,2">
+                <TextBlock Text="العملة" Width="70" Style="{StaticResource Am.Label}" DockPanel.Dock="Right" TextAlignment="Right"/>
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="130"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                  </Grid.ColumnDefinitions>
+                  <ComboBox Grid.Column="0" IsEditable="False" Height="24" BorderBrush="{DynamicResource Border.Strong}" ItemsSource="{Binding CurrencyOptions}" SelectedItem="{Binding DraftCurrency, Mode=TwoWay}" IsEnabled="{Binding CanEditFields}"/>
+                  <TextBlock Grid.Column="1" Text="التعادل" Style="{StaticResource Am.Label}" Margin="8,0,6,0" VerticalAlignment="Center"/>
+                  <Grid Column="2">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="4"/>
+                      <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <ux:PetraNumericTextBox Grid.Column="0" Kind="Rate" MaximumScale="5" Height="24" HorizontalContentAlignment="Center" BorderBrush="{DynamicResource Border.Strong}" BorderThickness="1" Text="{Binding DraftRate, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsFieldsReadOnly}"/>
+                    <TextBox Grid.Column="2" IsReadOnly="True" Height="24" HorizontalContentAlignment="Center" Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Strong}" BorderThickness="1" Text="{Binding DraftRate, Mode=OneWay}"/>
+                  </Grid>
+                </Grid>
+              </DockPanel>
+              <DockPanel Grid.Row="1" Grid.Column="2" Margin="0,2,0,2">
+                <TextBlock Text="المستودع" Width="75" Style="{StaticResource Am.Label}" DockPanel.Dock="Right" TextAlignment="Right"/>
+                <ux:LookupPicker Placeholder="🔍  01-المستودع الرئيسي" IsArabic="True" ItemsSource="{Binding Warehouses, Converter={StaticResource EntryLookups}}" SelectedId="{Binding DraftWarehouseId}" IsEnabled="{Binding CanEditFields}"/>
+              </DockPanel>
+              <DockPanel Grid.Row="2" Grid.Column="0" Margin="0,2,0,2">
+                <TextBlock Text="التاريخ" Width="70" Style="{StaticResource Am.Label}" DockPanel.Dock="Right" TextAlignment="Right"/>
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="130"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <ux:PetraDatePicker Grid.Column="0" Height="24" SelectedDate="{Binding DraftDate}" IsEnabled="{Binding CanEditFields}"/>
+                  <TextBlock Grid.Column="1" Text="الدفع" Style="{StaticResource Am.Label}" Margin="8,0,6,0" VerticalAlignment="Center"/>
+                  <ComboBox Grid.Column="2" SelectedValuePath="Method" DisplayMemberPath="Label" Height="24" BorderBrush="{DynamicResource Border.Strong}" ItemsSource="{Binding PaymentOptions}" SelectedValue="{Binding DraftPaymentMethod}" IsEnabled="{Binding CanEditFields}"/>
+                  <StackPanel Grid.Column="3" Orientation="Horizontal" Margin="8,0,0,0" VerticalAlignment="Center" Visibility="{Binding ShowDueDate, Converter={StaticResource Visible}}">
+                    <TextBlock Text="استحقاق:" Style="{StaticResource Am.Label}" Foreground="{DynamicResource Text.Secondary}" FontSize="11"/>
+                    <TextBlock FontWeight="Bold" FontSize="11" Foreground="{DynamicResource Accent}" VerticalAlignment="Center" FlowDirection="LeftToRight" Text="{Binding DueDateDisplay}"/>
+                  </StackPanel>
+                </Grid>
+              </DockPanel>
+              <DockPanel Grid.Row="2" Grid.Column="2" Margin="0,2,0,2">
+                <TextBlock Text="النمط" Width="75" Style="{StaticResource Am.Label}" DockPanel.Dock="Right" TextAlignment="Right"/>
+                <ux:LookupPicker Placeholder="🔍  اختر النمط..." IsArabic="True" ItemsSource="{Binding PurchasePatterns, Converter={StaticResource EntryLookups}}" SelectedId="{Binding DraftPatternRevisionId}" IsEnabled="{Binding PatternPickerEnabled}"/>
+              </DockPanel>
+              <DockPanel Grid.Row="3" Grid.Column="0" Margin="0,2,0,2">
+                <TextBlock Text="البيان" Width="70" Style="{StaticResource Am.Label}" DockPanel.Dock="Right" TextAlignment="Right"/>
+                <TextBox Height="24" BorderBrush="{DynamicResource Border.Strong}" BorderThickness="1" Text="{Binding DraftNotes, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsFieldsReadOnly}"/>
+              </DockPanel>
+              <DockPanel Grid.Row="3" Grid.Column="2" Margin="0,2,0,2">
+                <TextBlock Text="مركز الكلفة" Width="75" Style="{StaticResource Am.Label}" DockPanel.Dock="Right" TextAlignment="Right"/>
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <ux:LookupPicker Grid.Column="0" Placeholder="🔍  مركز الكلفة..." IsArabic="True" ItemsSource="{Binding CostCenters, Converter={StaticResource EntryLookups}}" SelectedId="{Binding DraftCostCenterId}" IsEnabled="{Binding CanEditFields}"/>
+                  <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="8,0,0,0" VerticalAlignment="Center" Visibility="{Binding CanUseManualNumber, Converter={StaticResource Visible}}">
+                    <TextBlock Text="رقم يدوي:" Style="{StaticResource Am.Label}" FontSize="11"/>
+                    <TextBox Width="90" Height="22" FlowDirection="LeftToRight" BorderBrush="{DynamicResource Border.Strong}" VerticalContentAlignment="Center" Text="{Binding ManualDocumentNumber, UpdateSourceTrigger=PropertyChanged}"/>
+                  </StackPanel>
+                </Grid>
+              </DockPanel>
+            </Grid>
+          </Border>
+          <StackPanel DockPanel.Dock="Bottom">
+            
+            <Border Background="{DynamicResource Surface.Secondary}" Padding="8,4">
+              <DockPanel LastChildFill="False">
+                <ux:DocumentCommandBar DockPanel.Dock="Right" Screen="{Binding}"/>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                  <Button Style="{StaticResource Am.CloseActionButton}" ToolTip="إغلاق النافذة" Click="CloseClicked">
+                    <StackPanel Orientation="Horizontal">
+                      <TextBlock Text="" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Error}" FontWeight="Bold" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                      <TextBlock Text="إغلاق" VerticalAlignment="Center"/>
+                    </StackPanel>
+                  </Button>
+                </StackPanel>
+              </DockPanel>
+            </Border>
+          </StackPanel>
+          <ux:DocumentTotalsBar DockPanel.Dock="Bottom" GrandTotal="{Binding GrandTotalDisplay}" SubTotal="{Binding SubTotalDisplay}" DiscountTotal="{Binding DiscountTotalDisplay}" TaxTotal="{Binding TaxTotalDisplay}" AdditionsTotal="{Binding AdditionsTotalDisplay}" TotalQuantity="{Binding TotalQuantityDisplay}" CurrencyCode="{Binding DisplayCurrency}" HasSettlement="{Binding HasSettlement}" SettledTotal="{Binding SettledDisplay}" ReturnedTotal="{Binding ReturnedDisplay}" OutstandingTotal="{Binding OutstandingDisplay}"/>
+          <Border Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Strong}" BorderThickness="0,1,0,0">
+            <ux:PetraAccountingDataGrid x:Name="PurchaseLinesGrid" EntryMode="True" ShowRowNumbers="True" ux:GridRowNumbers.Enabled="True" ux:GridEntry.Enabled="True" CanUserDeleteRows="False" CanUserSortColumns="False" SelectionMode="Single" HeadersVisibility="All" GridLinesVisibility="All" HorizontalGridLinesBrush="{DynamicResource Divider}" VerticalGridLinesBrush="{DynamicResource Divider}" RowHeight="25" FontSize="12" ItemsSource="{Binding Lines}" SelectedItem="{Binding SelectedLine}" AutoGrowCommand="{Binding AutoGrowCommand}" IsReadOnly="{Binding IsFieldsReadOnly}">
+              <UIElement.InputBindings>
+                <KeyBinding Key="Insert" Command="{Binding AddLineCommand}"/>
+                <KeyBinding Key="Delete" Modifiers="Control" Command="{Binding RemoveLineCommand}"/>
+                <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCommand}"/>
+              </UIElement.InputBindings>
+              <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="{x:Type DataGridColumnHeader}">
+                  <Setter Property="Background" Value="{DynamicResource App.Background}"/>
+                  <Setter Property="BorderBrush" Value="{DynamicResource Border.Strong}"/>
+                  <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                  <Setter Property="FontWeight" Value="Bold"/>
+                  <Setter Property="Foreground" Value="{DynamicResource Text.Primary}"/>
+                  <Setter Property="Height" Value="26"/>
+                  <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                  <Setter Property="Padding" Value="4,0"/>
+                </Style>
+              </DataGrid.ColumnHeaderStyle>
+              <DataGrid.RowStyle>
+                <Style TargetType="{x:Type DataGridRow}">
+                  <Setter Property="Background" Value="{DynamicResource Surface.Primary}"/>
+                  <Setter Property="Foreground" Value="{DynamicResource Text.Primary}"/>
+                  <Style.Triggers>
+                    <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+                      <Setter Property="Background" Value="{DynamicResource Grid.Alternate}"/>
+                    </Trigger>
+                    <Trigger Property="DataGridRow.IsSelected" Value="True">
+                      <Setter Property="Background" Value="{DynamicResource Grid.Selection}"/>
+                      <Setter Property="Foreground" Value="{DynamicResource Text.Primary}"/>
+                    </Trigger>
+                  </Style.Triggers>
+                </Style>
+              </DataGrid.RowStyle>
+              <DataGrid.RowHeaderStyle>
+                <Style TargetType="{x:Type DataGridRowHeader}">
+                  <Setter Property="Width" Value="30"/>
+                  <Setter Property="Background" Value="{DynamicResource App.Background}"/>
+                  <Setter Property="BorderBrush" Value="{DynamicResource Border.Strong}"/>
+                  <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                  <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                  <Setter Property="FontWeight" Value="SemiBold"/>
+                </Style>
+              </DataGrid.RowHeaderStyle>
+              <FrameworkElement.ContextMenu>
+                <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                  <MenuItem Command="{x:Static ux:GridEntry.CopyPreviousCell}" InputGestureText="F4" Header="{Binding Localization[D_CopyCellAbove]}" CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                  <MenuItem Header="{Binding Localization[D_OpenItem]}" Command="{Binding OpenItemCommand}"/>
+                  <MenuItem InputGestureText="Insert" Header="{Binding Localization[D_AddLine]}" Command="{Binding AddLineCommand}"/>
+                  <MenuItem InputGestureText="Ctrl+Delete" Header="{Binding Localization[D_RemoveLine]}" Command="{Binding RemoveLineCommand}"/>
+                </ContextMenu>
+              </FrameworkElement.ContextMenu>
+              <DataGrid.Columns>
+                <DataGridTemplateColumn Header="المادة" Width="*">
+                  <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                      <ux:LookupPicker Placeholder="🔍 اختر المادة..." IsArabic="True" ItemsSource="{Binding DataContext.Items, Converter={StaticResource EntryLookups}, RelativeSource={RelativeSource AncestorType=UserControl}}" AsyncSearchProvider="{Binding DataContext.SearchItemsAsync, RelativeSource={RelativeSource AncestorType=UserControl}}" SelectedId="{Binding ItemId, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding DataContext.CanEditFields, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                    </DataTemplate>
+                  </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="الوحدة" Width="85" ux:GridEntry.SkipOnEnter="True">
+                  <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                      <ux:LookupPicker Placeholder="الوحدة..." IsArabic="True" ItemsSource="{Binding UnitOptions}" SelectedId="{Binding UnitId, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding DataContext.CanEditFields, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                    </DataTemplate>
+                  </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="الكمية" Width="95" ux:GridEntry.CopyPath="Quantity" Binding="{Binding Quantity, Converter={StaticResource Number}, ConverterParameter=quantity, UpdateSourceTrigger=PropertyChanged}">
+                  <DataGridBoundColumn.ElementStyle>
+                    <Style TargetType="{x:Type TextBlock}">
+                      <Setter Property="HorizontalAlignment" Value="Right"/>
+                      <Setter Property="VerticalAlignment" Value="Center"/>
+                      <Setter Property="Margin" Value="6,0"/>
+                      <Setter Property="FontWeight" Value="SemiBold"/>
+                    </Style>
+                  </DataGridBoundColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="الإفرادي" Width="110" ux:GridEntry.CopyPath="UnitCost" Binding="{Binding UnitCost, Converter={StaticResource Number}, UpdateSourceTrigger=PropertyChanged}">
+                  <DataGridBoundColumn.ElementStyle>
+                    <Style TargetType="{x:Type TextBlock}">
+                      <Setter Property="HorizontalAlignment" Value="Right"/>
+                      <Setter Property="VerticalAlignment" Value="Center"/>
+                      <Setter Property="Margin" Value="6,0"/>
+                      <Setter Property="FontWeight" Value="SemiBold"/>
+                    </Style>
+                  </DataGridBoundColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="البيان" Width="140" ux:GridEntry.CopyPath="Notes" Binding="{Binding Notes, UpdateSourceTrigger=PropertyChanged}">
+                  <DataGridBoundColumn.ElementStyle>
+                    <Style TargetType="{x:Type TextBlock}">
+                      <Setter Property="VerticalAlignment" Value="Center"/>
+                      <Setter Property="Margin" Value="6,0"/>
+                    </Style>
+                  </DataGridBoundColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="الإجمالي" Width="120" IsReadOnly="True" Binding="{Binding TotalDisplay, Converter={StaticResource Number}}">
+                  <DataGridBoundColumn.ElementStyle>
+                    <Style TargetType="{x:Type TextBlock}">
+                      <Setter Property="HorizontalAlignment" Value="Right"/>
+                      <Setter Property="VerticalAlignment" Value="Center"/>
+                      <Setter Property="Margin" Value="6,0"/>
+                      <Setter Property="FontWeight" Value="Bold"/>
+                    </Style>
+                  </DataGridBoundColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="القيمة المضافة" Width="120" ux:GridEntry.CopyPath="TaxAmount" Binding="{Binding TaxAmount, Converter={StaticResource Number}, UpdateSourceTrigger=PropertyChanged}">
+                  <DataGridBoundColumn.ElementStyle>
+                    <Style TargetType="{x:Type TextBlock}">
+                      <Setter Property="HorizontalAlignment" Value="Right"/>
+                      <Setter Property="VerticalAlignment" Value="Center"/>
+                      <Setter Property="Margin" Value="6,0"/>
+                      <Setter Property="FontWeight" Value="SemiBold"/>
+                    </Style>
+                  </DataGridBoundColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="الحسم" Width="80" ux:GridEntry.CopyPath="DiscountAmount" Binding="{Binding DiscountAmount, Converter={StaticResource Number}, UpdateSourceTrigger=PropertyChanged}">
+                  <DataGridBoundColumn.ElementStyle>
+                    <Style TargetType="{x:Type TextBlock}">
+                      <Setter Property="HorizontalAlignment" Value="Right"/>
+                      <Setter Property="VerticalAlignment" Value="Center"/>
+                      <Setter Property="Margin" Value="6,0"/>
+                      <Setter Property="FontWeight" Value="SemiBold"/>
+                    </Style>
+                  </DataGridBoundColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTemplateColumn Header="مركز الكلفة" Width="120" ux:GridEntry.SkipOnEnter="True">
+                  <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                      <ux:LookupPicker Placeholder="مركز الكلفة..." IsArabic="True" ItemsSource="{Binding DataContext.CostCenters, Converter={StaticResource EntryLookups}, RelativeSource={RelativeSource AncestorType=UserControl}}" SelectedId="{Binding CostCenterId, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding DataContext.CanEditFields, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                    </DataTemplate>
+                  </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Width="32">
+                  <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                      <Button Style="{StaticResource Button.Icon}" Content="" FontSize="11" MinHeight="22" Padding="2" Command="{Binding DataContext.RemoveLineCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Visibility="{Binding DataContext.CanEditFields, Converter={StaticResource Visible}, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                    </DataTemplate>
+                  </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+              </DataGrid.Columns>
+            </ux:PetraAccountingDataGrid>
+          </Border>
+        </DockPanel>
+      </TabItem>
+    </TabControl>
+  </DockPanel>
+</UserControl>

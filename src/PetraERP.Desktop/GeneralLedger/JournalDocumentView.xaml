@@ -1,0 +1,18 @@
+<UserControl x:Class="PetraERP.Desktop.GeneralLedger.JournalDocumentView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ledger="clr-namespace:PetraERP.Desktop.GeneralLedger" xmlns:links="clr-namespace:PetraERP.Desktop.Sales" xmlns:relations="clr-namespace:PetraERP.Desktop.Relationships">
+ <!-- One journal document (its own view model): the journal workspace without the list. The list stays on the "journals" route page. -->
+ <UserControl.InputBindings>
+  <KeyBinding Key="N" Modifiers="Control" Command="{Binding NewDraftCommand}"/>
+  <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveDraftCommand}"/>
+ </UserControl.InputBindings>
+ <Border Style="{StaticResource Panel.Card}">
+  <DockPanel>
+   <Expander DockPanel.Dock="Bottom" Header="{Binding Localization[D_RelatedVouchers]}" Visibility="{Binding VoucherLinks.IsAvailable, Converter={StaticResource Visible}}">
+    <relations:RelatedDocumentsView DataContext="{Binding VoucherLinks}"/>
+   </Expander>
+   <Expander DockPanel.Dock="Bottom" Header="{Binding Localization[D_LinkedSalesInvoices]}">
+    <links:SalesDocumentLinksView DataContext="{Binding DocumentLinks}"/>
+   </Expander>
+   <ledger:JournalWorkspacePanel/>
+  </DockPanel>
+ </Border>
+</UserControl>
