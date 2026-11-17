@@ -84,4 +84,5 @@
  <DataTemplate DataType="{x:Type ast:CustomerRentalViewModel}"><ast:CustomerRentalView/></DataTemplate>
  <DataTemplate DataType="{x:Type ast:AssetDossierTcoViewModel}"><ast:AssetDossierTcoView/></DataTemplate>
  <DataTemplate DataType="{x:Type ast:AssetDepreciationRunViewModel}"><ast:AssetDepreciationRunView/></DataTemplate>
+ <DataTemplate DataType="{x:Type shell:ExecutiveDashboardViewModel}"><shell:ExecutiveDashboardView/></DataTemplate>
 </ResourceDictionary>

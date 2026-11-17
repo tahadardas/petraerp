@@ -46,8 +46,10 @@ public sealed class ShellPages
         Assets.AssetCustodyViewModel? assetCustody = null,
         Assets.CustomerRentalViewModel? customerRentals = null,
         Assets.AssetDossierTcoViewModel? assetDossier = null,
-        Assets.AssetDepreciationRunViewModel? assetDepreciation = null)
+        Assets.AssetDepreciationRunViewModel? assetDepreciation = null,
+        ExecutiveDashboardViewModel? executiveDashboard = null)
     {
+        ExecutiveDashboard = executiveDashboard;
         AssemblyDisassembly = assemblyDisassembly;
         AssetDirectory = assetDirectory; FleetExpenses = fleetExpenses; FuelDispensing = fuelDispensing;
         AssetCustody = assetCustody; CustomerRentals = customerRentals; AssetDossier = assetDossier; AssetDepreciation = assetDepreciation;
@@ -125,6 +127,7 @@ public sealed class ShellPages
     public FiscalYearRolloverViewModel? FiscalYearRollover { get; }
     public DocumentProcessing.PostingManagementViewModel? PostingManagement { get; }
     public Management.ManagementPages? Management { get; }
+    public ExecutiveDashboardViewModel? ExecutiveDashboard { get; }
     public UsersPage Users { get; }
     public RolesPage Roles { get; }
     public AuditPage Audit { get; }
@@ -156,6 +159,7 @@ public sealed class ShellPages
         .. (Backups is null ? Array.Empty<IShellPage>() : [Backups]),
         .. (AlAmeenImport is null ? Array.Empty<IShellPage>() : [AlAmeenImport]),
         .. (PostingManagement is null ? Array.Empty<IShellPage>() : [PostingManagement]),
+        .. (ExecutiveDashboard is null ? Array.Empty<IShellPage>() : [ExecutiveDashboard]),
         .. (Management?.Pages ?? Array.Empty<IShellPage>()),
         .. (ProfessionalReports?.Pages ?? Array.Empty<IShellPage>())];
 
@@ -185,6 +189,7 @@ public sealed class ShellPages
         "asset-depreciation" => AssetDepreciation,
         "asset-dossier" => AssetDossier,
         "stocktaking" => Stocktaking,
+        "executive-dashboard" => ExecutiveDashboard,
         "financial-reports" => CommercialReports,
         "currencies" => CurrencySettings,
         "fx-revaluation" => FxRevaluation,

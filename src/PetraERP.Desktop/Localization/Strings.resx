@@ -1655,6 +1655,7 @@
   <data name="D_Menu_Help" xml:space="preserve"><value>Help</value></data>
   <data name="D_Menu_Centers" xml:space="preserve"><value>Cost Centers</value></data>
   <data name="D_FinancialStatements" xml:space="preserve"><value>Financial Statements</value></data>
+  <data name="D_ExecutiveDashboard" xml:space="preserve"><value>Executive Financial Dashboard</value></data>
   <data name="D_PointOfSaleTerminal" xml:space="preserve"><value>POS Terminal</value></data>
   <data name="D_KeyboardShortcuts" xml:space="preserve"><value>Keyboard Shortcuts</value></data>
   <data name="D_LinkedPurchases" xml:space="preserve"><value>Supplier purchases and returns</value></data>

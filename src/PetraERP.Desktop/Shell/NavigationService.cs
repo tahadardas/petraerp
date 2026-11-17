@@ -73,6 +73,7 @@ public sealed class NavigationService : ObservableObject
         ("cheques", "treasury", "Treasury.Vouchers.View", "D_CommercialPapers", ""),
         ("bank-reconciliation", "treasury", "Treasury.Vouchers.View", "BKR_Title", ""),
         ("purchase-invoices", "purchases", "Purchases.Invoices.View", "D_PurchaseInvoices", ""),
+        ("executive-dashboard", "accounting", "Ledger.Reports.View", "D_ExecutiveDashboard", "\uE9D2"),
         ("financial-reports", "accounting", "Ledger.Reports.View", "D_FinancialStatements", ""),
         ("fx-revaluation", "accounting", "Ledger.Accounts.View", "CUR_FxRevaluationWizard", ""),
         ("posting-management", "accounting", "Posting.Batches.Manage", "D_PostingManagement", "\uE8A5"),
@@ -103,7 +104,7 @@ public sealed class NavigationService : ObservableObject
     /// </summary>
     internal static readonly IReadOnlyDictionary<string, string> SubMenus = new Dictionary<string, string>(StringComparer.Ordinal)
     {
-        ["general-journal"] = "reports", ["account-ledger"] = "reports", ["trial-balance"] = "reports", ["financial-reports"] = "reports",
+        ["general-journal"] = "reports", ["account-ledger"] = "reports", ["trial-balance"] = "reports", ["financial-reports"] = "reports", ["executive-dashboard"] = "reports",
         ["fx-revaluation"] = "tools", ["posting-management"] = "tools",
         ["customer-statement"] = "reports", ["supplier-statement"] = "reports", ["party-statement"] = "reports", ["currency-balance"] = "reports",
         ["stocktaking"] = "tools", ["units"] = "tools",

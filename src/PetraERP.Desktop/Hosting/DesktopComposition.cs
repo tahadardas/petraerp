@@ -71,7 +71,9 @@ public static class DesktopComposition
         services.AddSingleton<IUserPreferenceStore>(_ => new UserPreferenceStore(Path.Combine(directory, "Preferences", endpoint)));
         services.AddSingleton<UserPreferencesService>();
         services.AddSingleton(provider => new DashboardViewModel(provider.GetRequiredService<IGeneralLedgerClient>(),
-            provider.GetRequiredService<Treasury.ICommercialPapersClient>(), provider.GetRequiredService<ILocalizationService>()));
+            provider.GetRequiredService<Treasury.ICommercialPapersClient>(), provider.GetRequiredService<ILocalizationService>(),
+            provider.GetService<Reports.IReportsClient>(), provider.GetService<ShellNavigator>()));
+        services.AddSingleton<ExecutiveDashboardViewModel>();
         services.AddSingleton<ShellDialogService>();
         services.AddSingleton<IUserConfirmation>(provider => provider.GetRequiredService<ShellDialogService>());
         services.AddSingleton<NotificationCenter>();

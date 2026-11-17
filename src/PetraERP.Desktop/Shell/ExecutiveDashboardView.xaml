@@ -1,0 +1,262 @@
+<UserControl x:Class="PetraERP.Desktop.Shell.ExecutiveDashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ux="clr-namespace:PetraERP.Desktop.Controls"
+             FlowDirection="RightToLeft">
+  <UserControl.Resources>
+    <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+  </UserControl.Resources>
+
+  <UserControl.InputBindings>
+    <KeyBinding Key="F5" Command="{Binding RefreshDashboardCommand}"/>
+  </UserControl.InputBindings>
+
+  <DockPanel Margin="16" LastChildFill="True">
+    <!-- Top Header -->
+    <ux:PageHeader DockPanel.Dock="Top" Title="لوحة المؤشرات والتحليلات التنفيذية والرقابية (Executive Dashboard)">
+      <ux:PageHeader.Commands>
+        <WrapPanel>
+          <TextBlock Text="{Binding Dashboard.AsOf}" VerticalAlignment="Center" Foreground="{DynamicResource Text.Secondary}" FontSize="11" Margin="0,0,12,0"/>
+          <Button Style="{StaticResource Button.Primary}" Content="تحديث المؤشرات (F5)" Command="{Binding RefreshDashboardCommand}"/>
+          <Button Style="{StaticResource Button.Command}" Content="ميزان المراجعة" Command="{Binding OpenTrialBalanceCommand}" Margin="6,0,0,0"/>
+          <Button Style="{StaticResource Button.Command}" Content="قائمة الدخل" Command="{Binding OpenIncomeStatementCommand}" Margin="6,0,0,0"/>
+          <Button Style="{StaticResource Button.Command}" Content="الميزانية العامة" Command="{Binding OpenBalanceSheetCommand}" Margin="6,0,0,0"/>
+          <Button Style="{StaticResource Button.Command}" Content="حافظة الشيكات" Command="{Binding OpenChequesPortfolioCommand}" Margin="6,0,0,0"/>
+        </WrapPanel>
+      </ux:PageHeader.Commands>
+    </ux:PageHeader>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Margin="0,8,0,0">
+        <!-- 1. Executive Top KPI Strip (6 Cards) -->
+        <Grid Margin="0,0,0,14">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="*"/>
+          </Grid.ColumnDefinitions>
+
+          <!-- KPI 1: Cash & Banks Liquidity -->
+          <Border Grid.Column="0" Background="{DynamicResource Surface.Secondary}" BorderBrush="{DynamicResource Success}" BorderThickness="1,1,1,3" CornerRadius="{DynamicResource Radius.Small}" Padding="10,8">
+            <StackPanel>
+              <DockPanel>
+                <TextBlock Text="&#xE8C7;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Success}" FontSize="12" Margin="0,0,4,0"/>
+                <TextBlock Text="السيولة والنقدية المتاحة" FontSize="11" Foreground="{DynamicResource Text.Secondary}"/>
+              </DockPanel>
+              <TextBlock Text="{Binding Dashboard.TotalCashAndBanksDisplay}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Text.Primary}" FontFamily="{DynamicResource Font.Numeric}" Margin="0,4,0,2"/>
+              <DockPanel>
+                <TextBlock Text="{Binding Dashboard.LiquidityStatusDisplay}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource Success}"/>
+                <TextBlock DockPanel.Dock="Right" Text="{Binding Dashboard.LiquidityRatioDisplay, StringFormat='معيار: {0}'}" FontSize="9.5" Foreground="{DynamicResource Text.Muted}"/>
+              </DockPanel>
+            </StackPanel>
+          </Border>
+
+          <!-- KPI 2: Current Revenue -->
+          <Border Grid.Column="2" Background="{DynamicResource Surface.Secondary}" BorderBrush="{DynamicResource Accent}" BorderThickness="1,1,1,3" CornerRadius="{DynamicResource Radius.Small}" Padding="10,8">
+            <StackPanel>
+              <DockPanel>
+                <TextBlock Text="&#xE9D2;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Accent}" FontSize="12" Margin="0,0,4,0"/>
+                <TextBlock Text="إيرادات المبيعات" FontSize="11" Foreground="{DynamicResource Text.Secondary}"/>
+              </DockPanel>
+              <TextBlock Text="{Binding Dashboard.CurrentRevenueDisplay}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Accent}" FontFamily="{DynamicResource Font.Numeric}" Margin="0,4,0,2"/>
+              <TextBlock Text="إجمالي مبيعات السنة المالية" FontSize="9.5" Foreground="{DynamicResource Text.Muted}"/>
+            </StackPanel>
+          </Border>
+
+          <!-- KPI 3: Net Income -->
+          <Border Grid.Column="4" Background="{DynamicResource Surface.Secondary}" BorderBrush="{DynamicResource Success}" BorderThickness="1,1,1,3" CornerRadius="{DynamicResource Radius.Small}" Padding="10,8">
+            <StackPanel>
+              <DockPanel>
+                <TextBlock Text="&#xE8EF;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Success}" FontSize="12" Margin="0,0,4,0"/>
+                <TextBlock Text="صافي أرباح الفترة" FontSize="11" Foreground="{DynamicResource Text.Secondary}"/>
+              </DockPanel>
+              <TextBlock Text="{Binding Dashboard.CurrentNetIncomeDisplay}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Success}" FontFamily="{DynamicResource Font.Numeric}" Margin="0,4,0,2"/>
+              <TextBlock Text="بعد حسم مجمل التكاليف" FontSize="9.5" Foreground="{DynamicResource Text.Muted}"/>
+            </StackPanel>
+          </Border>
+
+          <!-- KPI 4: Inventory Valuation -->
+          <Border Grid.Column="6" Background="{DynamicResource Surface.Secondary}" BorderBrush="{DynamicResource Warning}" BorderThickness="1,1,1,3" CornerRadius="{DynamicResource Radius.Small}" Padding="10,8">
+            <StackPanel>
+              <DockPanel>
+                <TextBlock Text="&#xE71D;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Warning}" FontSize="12" Margin="0,0,4,0"/>
+                <TextBlock Text="بضاعة المستودعات" FontSize="11" Foreground="{DynamicResource Text.Secondary}"/>
+              </DockPanel>
+              <TextBlock Text="{Binding Dashboard.TotalInventoryValueDisplay}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Text.Primary}" FontFamily="{DynamicResource Font.Numeric}" Margin="0,4,0,2"/>
+              <TextBlock Text="تقييم المخزون بسعر التكلفة" FontSize="9.5" Foreground="{DynamicResource Text.Muted}"/>
+            </StackPanel>
+          </Border>
+
+          <!-- KPI 5: Due / Overdue Commercial Papers -->
+          <Border Grid.Column="8" Background="{DynamicResource Surface.Secondary}" BorderBrush="{DynamicResource Error}" BorderThickness="1,1,1,3" CornerRadius="{DynamicResource Radius.Small}" Padding="10,8">
+            <StackPanel>
+              <DockPanel>
+                <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Error}" FontSize="12" Margin="0,0,4,0"/>
+                <TextBlock Text="شيكات متأخرة" FontSize="11" Foreground="{DynamicResource Error}" FontWeight="SemiBold"/>
+              </DockPanel>
+              <DockPanel Margin="0,4,0,2">
+                <TextBlock Text="{Binding Dashboard.OverdueChequesCount, StringFormat='{}{0} ورقة'}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Error}" FontFamily="{DynamicResource Font.Numeric}"/>
+              </DockPanel>
+              <TextBlock Text="{Binding Dashboard.OverdueChequesTotalDisplay, StringFormat='بقيمة: {0}'}" FontSize="9.5" Foreground="{DynamicResource Text.Muted}"/>
+            </StackPanel>
+          </Border>
+
+          <!-- KPI 6: Pending Audit & Approval -->
+          <Border Grid.Column="10" Background="{DynamicResource Surface.Secondary}" BorderBrush="{DynamicResource Brand.Navy}" BorderThickness="1,1,1,3" CornerRadius="{DynamicResource Radius.Small}" Padding="10,8">
+            <StackPanel>
+              <DockPanel>
+                <TextBlock Text="&#xE8F1;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Brand.Navy}" FontSize="12" Margin="0,0,4,0"/>
+                <TextBlock Text="قيود قيد الترحيل" FontSize="11" Foreground="{DynamicResource Text.Secondary}"/>
+              </DockPanel>
+              <DockPanel Margin="0,4,0,2">
+                <TextBlock Text="{Binding Dashboard.ApprovedJournalsCount, StringFormat='{}{0} معتمد'}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Text.Primary}" FontFamily="{DynamicResource Font.Numeric}"/>
+              </DockPanel>
+              <TextBlock Text="{Binding Dashboard.DraftJournalsCount, StringFormat='{}{0} مسودة قيد التدقيق'}" FontSize="9.5" Foreground="{DynamicResource Text.Muted}"/>
+            </StackPanel>
+          </Border>
+        </Grid>
+
+        <!-- 2. Middle Dual-Panel: Cash Portfolio vs Maturity Risks -->
+        <Grid Margin="0,0,0,14">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="14"/>
+            <ColumnDefinition Width="2*"/>
+          </Grid.ColumnDefinitions>
+
+          <!-- Column 0: Live Cash & Banks Portfolio Grid -->
+          <Border Grid.Column="0" Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Small}">
+            <DockPanel LastChildFill="True">
+              <Border DockPanel.Dock="Top" Background="{DynamicResource Surface.Secondary}" BorderBrush="{DynamicResource Divider}" BorderThickness="0,0,0,1" Padding="12,8">
+                <DockPanel LastChildFill="False">
+                  <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                    <TextBlock Text="&#xE8C7;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Success}" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="محفظة الصناديق والمصارف الحية (Live Cash &amp; Bank Accounts)" FontWeight="Bold" FontSize="12" VerticalAlignment="Center"/>
+                  </StackPanel>
+                  <Button DockPanel.Dock="Left" Style="{StaticResource Button.Subtle}" Content="حركة الصناديق والمصارف" Command="{Binding Dashboard.OpenCashMovementCommand}"/>
+                </DockPanel>
+              </Border>
+
+              <DataGrid ItemsSource="{Binding Dashboard.CashAccounts}" AutoGenerateColumns="False" CanUserAddRows="False"
+                        IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" MinHeight="160" MaxHeight="240">
+                <DataGrid.Columns>
+                  <DataGridTextColumn Header="رمز الحساب" Binding="{Binding Code}" Width="90"/>
+                  <DataGridTextColumn Header="اسم الصندوق / الحساب البنكي" Binding="{Binding Name}" Width="*"/>
+                  <DataGridTextColumn Header="التصنيف" Binding="{Binding Role}" Width="110"/>
+                  <DataGridTextColumn Header="الرصيد المتاح" Binding="{Binding BalanceDisplay}" Width="140" ElementStyle="{StaticResource Text.Numeric}"/>
+                </DataGrid.Columns>
+              </DataGrid>
+            </DockPanel>
+          </Border>
+
+          <!-- Column 1: Commercial Papers Risk Matrix -->
+          <Border Grid.Column="2" Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Small}">
+            <DockPanel LastChildFill="True">
+              <Border DockPanel.Dock="Top" Background="{DynamicResource Surface.Secondary}" BorderBrush="{DynamicResource Divider}" BorderThickness="0,0,0,1" Padding="12,8">
+                <DockPanel LastChildFill="False">
+                  <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                    <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Warning}" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="استحقاقات ومخاطر الأوراق التجارية" FontWeight="Bold" FontSize="12" VerticalAlignment="Center"/>
+                  </StackPanel>
+                  <Button DockPanel.Dock="Left" Style="{StaticResource Button.Subtle}" Content="فتح الحافظة" Command="{Binding Dashboard.OpenOverduePapersCommand}"/>
+                </DockPanel>
+              </Border>
+
+              <StackPanel Padding="12">
+                <!-- Overdue Alert Row -->
+                <Border Background="{DynamicResource Error.Subtle}" BorderBrush="{DynamicResource Error}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Small}" Padding="10,8" Margin="0,0,0,8">
+                  <DockPanel LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Left" Text="&#xE783;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Error}" FontSize="16" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <StackPanel>
+                      <DockPanel>
+                        <TextBlock Text="أوراق متأخرة عن الاستحقاق" FontWeight="SemiBold" FontSize="11.5" Foreground="{DynamicResource Error}"/>
+                        <TextBlock DockPanel.Dock="Right" Text="{Binding Dashboard.OverdueChequesCount, StringFormat='{}{0} ورقة'}" FontWeight="Bold" Foreground="{DynamicResource Error}"/>
+                      </DockPanel>
+                      <TextBlock Text="{Binding Dashboard.OverdueChequesTotalDisplay, StringFormat='إجمالي المبالغ المتأخرة: {0}'}" FontSize="10.5" Foreground="{DynamicResource Text.Secondary}" Margin="0,2,0,0"/>
+                    </StackPanel>
+                  </DockPanel>
+                </Border>
+
+                <!-- Due Today Row -->
+                <Border Background="{DynamicResource Warning.Subtle}" BorderBrush="{DynamicResource Warning}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Small}" Padding="10,8" Margin="0,0,0,8">
+                  <DockPanel LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Left" Text="&#xE787;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Warning}" FontSize="16" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <StackPanel>
+                      <DockPanel>
+                        <TextBlock Text="أوراق تستحق اليوم" FontWeight="SemiBold" FontSize="11.5" Foreground="{DynamicResource Warning}"/>
+                        <TextBlock DockPanel.Dock="Right" Text="{Binding Dashboard.DueTodayChequesCount, StringFormat='{}{0} ورقة'}" FontWeight="Bold" Foreground="{DynamicResource Warning}"/>
+                      </DockPanel>
+                      <TextBlock Text="يلزم مراجعة الساحب أو الإيداع في البنك" FontSize="10.5" Foreground="{DynamicResource Text.Secondary}" Margin="0,2,0,0"/>
+                    </StackPanel>
+                  </DockPanel>
+                </Border>
+
+                <!-- Under Collection Row -->
+                <Border Background="{DynamicResource Surface.Secondary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Small}" Padding="10,8">
+                  <DockPanel LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Left" Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Accent}" FontSize="16" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <StackPanel>
+                      <DockPanel>
+                        <TextBlock Text="شيكات برسم التحصيل" FontWeight="SemiBold" FontSize="11.5" Foreground="{DynamicResource Text.Primary}"/>
+                        <TextBlock DockPanel.Dock="Right" Text="{Binding Dashboard.UnderCollectionTotalDisplay}" FontWeight="Bold" Foreground="{DynamicResource Accent}"/>
+                      </DockPanel>
+                      <TextBlock Text="مودعة لدى المصارف بانتظار إشعار المقاصة" FontSize="10.5" Foreground="{DynamicResource Text.Secondary}" Margin="0,2,0,0"/>
+                    </StackPanel>
+                  </DockPanel>
+                </Border>
+              </StackPanel>
+            </DockPanel>
+          </Border>
+        </Grid>
+
+        <!-- 3. Monthly Activity & Trends Vector Bar Chart -->
+        <Border Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Small}" Padding="14,12">
+          <StackPanel>
+            <DockPanel Margin="0,0,0,12">
+              <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                <TextBlock Text="&#xE9D2;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Accent}" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                <TextBlock Text="حركة المبيعات والمشتريات الشهرية وهوامش النشاط (Monthly Trends)" FontWeight="Bold" FontSize="12" VerticalAlignment="Center"/>
+              </StackPanel>
+              <!-- Legend -->
+              <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                <Rectangle Width="10" Height="10" Fill="{DynamicResource Accent}" RadiusX="2" RadiusY="2" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                <TextBlock Text="المبيعات (إيرادات)" FontSize="10.5" Foreground="{DynamicResource Text.Secondary}" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                <Rectangle Width="10" Height="10" Fill="{DynamicResource Success}" RadiusX="2" RadiusY="2" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                <TextBlock Text="المشتريات والتكاليف" FontSize="10.5" Foreground="{DynamicResource Text.Secondary}" Margin="0,0,12,0" VerticalAlignment="Center"/>
+              </StackPanel>
+            </DockPanel>
+
+            <!-- Dynamic ItemsControl Bars Container -->
+            <ItemsControl ItemsSource="{Binding Dashboard.MonthlyTrends}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <UniformGrid Rows="1" Height="130"/>
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="8,0">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Center">
+                      <Border Width="18" Height="{Binding SalesBarHeight}" Background="{DynamicResource Accent}" CornerRadius="3,3,0,0" Margin="0,0,3,0" ToolTip="{Binding SalesDisplay, StringFormat='مبيعات: {0}'}"/>
+                      <Border Width="18" Height="{Binding PurchasesBarHeight}" Background="{DynamicResource Success}" CornerRadius="3,3,0,0" ToolTip="{Binding PurchasesDisplay, StringFormat='تكاليف: {0}'}"/>
+                    </StackPanel>
+                    <Border Height="1" Background="{DynamicResource Border.Normal}" Margin="0,4,0,4"/>
+                    <TextBlock Text="{Binding MonthName}" FontSize="10.5" Foreground="{DynamicResource Text.Secondary}" HorizontalAlignment="Center"/>
+                  </StackPanel>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</UserControl>

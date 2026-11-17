@@ -40,6 +40,7 @@ internal static class AmeenWindowSizes
         "periods" => (680, 450),
         "posting-management" => (820, 520),
         "financial-reports" => (760, 520),
+        "executive-dashboard" => (1020, 680),
         "general-journal" => (780, 500),
         _ => (780, 500),
     };

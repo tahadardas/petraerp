@@ -136,6 +136,7 @@ public static class MenuRegistry
 
         // ───────── 7. مالية ─────────
         new("financial", "MN_Finance", Glyph: "", Order: 70),
+        new("financial.dashboard", "D_ExecutiveDashboard", Glyph: "\uE9D2", ParentId: "financial", RequiredPermission: "Ledger.Reports.View", Route: "executive-dashboard", Order: 5),
         new("financial.statements", "D_FinancialStatements", Glyph: "", ParentId: "financial", RequiredPermission: "Ledger.Reports.View", Route: "financial-reports", Order: 10),
 
         // ───────── 8. مراكز ─────────
