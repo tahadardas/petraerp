@@ -365,6 +365,9 @@
      - تصحيح إسناد أسماء الحسابات النقدية ومراكز التكلفة في `SalesInvoiceCardViewModel.InvoiceInfo.cs` و `PurchasesViewModel.InvoiceInfo.cs`.
      - تصحيح كشف شيكات وأوراق القبض `CommercialPaperAlertsResponse.Alerts` في `DashboardViewModel.Financial.cs`.
 - **نتائج التحقق النهائي:**
-  - `dotnet build src/PetraERP.Desktop/PetraERP.Desktop.csproj -c Release`: **نجح بالكامل مع 0 أخطاء و 0 تحذيرات (الوقت المستغرق: 02:18)**.
-  - مسار الملف التنفيذي الناتج: `D:\PetraERP\src\PetraERP.Desktop\bin\Release\net10.0-windows\PetraERP.Desktop.exe`.
+  - `dotnet build src/PetraERP.Desktop/PetraERP.Desktop.csproj -c Release`: **نجح بالكامل مع 0 أخطاء و 0 تحذيرات**.
+  - ضبط وضع ملء الشاشة التلقائي `WindowState="Maximized"` في [DesktopWindow.xaml](file:///D:/PetraERP/src/PetraERP.Desktop/DesktopWindow.xaml).
+  - ضبط منفذ الاتصال الافتراضي `https://localhost:17483/` في [desktopsettings.json](file:///D:/PetraERP/src/PetraERP.Desktop/desktopsettings.json).
+  - تعيين بيانات الدخول الافتراضية التجريبية تلقائياً (`admin` / `Try!NsfRGISWtqD+8sTWjJmC`).
+  - مسار الملف التنفيذي المحدث: `D:\PetraERP\src\PetraERP.Desktop\bin\Release\net10.0-windows\PetraERP.Desktop.exe`.
   - اختبارات الأدوات والحدود المعمارية: `pytest tests/tooling/` **46/46 ناجحة (100%)**.
