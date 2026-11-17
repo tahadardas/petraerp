@@ -9,6 +9,7 @@ namespace PetraERP.Desktop.Tests;
 /// Every custom control styled in Components.xaml must instantiate its template: a markup cycle or a missing resource inside a
 /// template only throws when the template is applied, i.e. when the first screen that uses the control is shown.
 /// </summary>
+[Collection(WpfApplicationGroup.Name)]
 public sealed class ControlTemplateInstantiationTests
 {
     [Fact]

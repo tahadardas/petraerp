@@ -117,9 +117,9 @@
     <KeyBinding Key="Delete" Modifiers="Control" Command="{Binding RemoveRowCommand}" CommandParameter="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
    </DataGrid.InputBindings>
    <DataGrid.Columns>
-    <DataGridTextColumn Binding="{Binding Pay, Converter={StaticResource Number}, UpdateSourceTrigger=PropertyChanged}" Width="110" ElementStyle="{StaticResource Text.Numeric}">
+    <DataGridTextColumn Binding="{Binding Pay, Converter={StaticResource Number}, ConverterParameter='blank,zeroifempty', UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" Width="110" ElementStyle="{StaticResource Text.Numeric}">
      <DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_DV_Pay], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
-    <DataGridTextColumn Binding="{Binding Receive, Converter={StaticResource Number}, UpdateSourceTrigger=PropertyChanged}" Width="110" ElementStyle="{StaticResource Text.Numeric}">
+    <DataGridTextColumn Binding="{Binding Receive, Converter={StaticResource Number}, ConverterParameter='blank,zeroifempty', UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" Width="110" ElementStyle="{StaticResource Text.Numeric}">
      <DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_DV_Receive], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
     <DataGridTemplateColumn Width="220">
      <DataGridTemplateColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_DV_Account], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTemplateColumn.Header>
