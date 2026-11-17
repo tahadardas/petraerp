@@ -727,7 +727,7 @@ public sealed partial class SalesInvoiceCardViewModel : EntityCardViewModel
         }
         if (IsEditing)
         {
-            EnsureEntryBuffer(50);
+            EnsureEntryBuffer(EntryOptionsHub.Current.InvoiceRows);
         }
     }
 

@@ -282,7 +282,7 @@ public sealed partial class PurchasesViewModel
                 ValidationMessage = Localization["D_DocumentPostedLocked"];
                 return;
             }
-            IsEditing = true; EnsureEntryBuffer(50); Refresh();
+            IsEditing = true; EnsureEntryBuffer(EntryOptionsHub.Current.InvoiceRows); Refresh();
             CaptureDraftBaseline();
             OnPropertyChanged(nameof(HasUnsavedChanges));
         }, () => HasContext && Idle && CanManage && (Current is null || Current.Status == PurchaseInvoiceStatus.Draft) && !IsEditing);
@@ -430,7 +430,7 @@ public sealed partial class PurchasesViewModel
         PopulateAdjustments(detail);
         if (detail.Status == PurchaseInvoiceStatus.Draft && IsEditing)
         {
-            EnsureEntryBuffer(50);
+            EnsureEntryBuffer(EntryOptionsHub.Current.InvoiceRows);
         }
         Refresh();
     }
