@@ -413,8 +413,8 @@ public sealed partial class VouchersViewModel : PageViewModel, ISavablePage
         if (!string.IsNullOrEmpty(baseCurrency)) CurrencyOptions.Add(baseCurrency);
         foreach (var currency in settings?.Currencies ?? [])
             if (currency.Code is { Length: 3 } code && currency.IsActive == true && !CurrencyOptions.Contains(code)) CurrencyOptions.Add(code);
-        foreach (var fallback in new[] { "SYP", "USD", "EUR", "SAR", "AED", "JOD" })
-            if (!CurrencyOptions.Contains(fallback)) CurrencyOptions.Add(fallback);
+        if (string.IsNullOrWhiteSpace(DraftCurrency) && CurrencyOptions.Count > 0)
+            DraftCurrency = CurrencyOptions[0];
         CostCenters.Clear();
         if (costCentersTask is not null)
             foreach (var c in (await costCentersTask.ConfigureAwait(true)).Items ?? []) CostCenters.Add(c);

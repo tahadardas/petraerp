@@ -155,10 +155,6 @@ public sealed partial class DailyVoucherViewModel : PageViewModel
             if (!string.IsNullOrEmpty(cur.Code) && !CurrencyOptions.Contains(cur.Code))
                 CurrencyOptions.Add(cur.Code);
         }
-        foreach (var fallback in new[] { "SYP", "USD", "EUR", "SAR", "AED", "JOD" })
-        {
-            if (!CurrencyOptions.Contains(fallback)) CurrencyOptions.Add(fallback);
-        }
         if (string.IsNullOrEmpty(CurrencyCode)) CurrencyCode = baseCurrency;
         if (parameter is OpenDailyVoucherRequest request)
         {

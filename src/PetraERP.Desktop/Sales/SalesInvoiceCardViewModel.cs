@@ -1280,7 +1280,6 @@ public sealed partial class SalesInvoiceCardViewModel : EntityCardViewModel
             foreach (var u in units) UnitLookups.Add(u);
 
             CurrencyOptions.Clear();
-            CurrencyOptions.Add(string.Empty);
             if (settingsTask is not null)
             {
                 var settings = await settingsTask.ConfigureAwait(true);
@@ -1291,11 +1290,8 @@ public sealed partial class SalesInvoiceCardViewModel : EntityCardViewModel
                     if (currency.Code is { Length: 3 } code && currency.IsActive == true && !CurrencyOptions.Contains(code))
                         CurrencyOptions.Add(code);
             }
-            foreach (var fallback in new[] { "SYP", "USD", "EUR", "SAR", "AED", "JOD" })
-            {
-                if (!CurrencyOptions.Contains(fallback))
-                    CurrencyOptions.Add(fallback);
-            }
+            if (string.IsNullOrWhiteSpace(DraftCurrencyCode) && CurrencyOptions.Count > 0)
+                DraftCurrencyCode = CurrencyOptions[0];
 
             await LoadAdjustmentAccountsAsync(cancellationToken).ConfigureAwait(true);
             var costCentersResponse = await costCentersTask.ConfigureAwait(true);
