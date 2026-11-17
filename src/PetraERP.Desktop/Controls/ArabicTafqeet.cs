@@ -120,9 +120,20 @@ public static class ArabicTafqeet
         return sb.ToString();
     }
 
-    /// <summary>Display-safe variant: an amount outside the supported range yields an empty string instead of an exception.</summary>
-    public static string ToWordsOrEmpty(decimal amount, string? currency = null) =>
-        Math.Abs(amount) > MaximumAmount ? string.Empty : ToWords(amount, currency);
+    /// <summary>
+    /// Display-safe variant for text shown next to an accounting figure. It returns an empty string instead of an exception when the
+    /// amount is out of range, and also when the words would NOT equal the figure: an amount with more decimals than the currency's
+    /// minor unit would be rounded in the words but not in the number beside them, so no text is better than a different amount.
+    /// The range is checked on the rounded value, so a carry past the limit (999,999,999,999,999.996) is caught too.
+    /// </summary>
+    public static string ToWordsOrEmpty(decimal amount, string? currency = null)
+    {
+        var digits = CurrencyFractionDigits(currency);
+        if (Math.Abs(amount) > MaximumAmount) return string.Empty;
+        var rounded = decimal.Round(amount, digits, MidpointRounding.AwayFromZero);
+        if (rounded != amount || Math.Abs(rounded) > MaximumAmount) return string.Empty;
+        return ToWords(amount, currency);
+    }
 
     /// <summary>
     /// Converts an integer into Arabic words without prefix or suffix.

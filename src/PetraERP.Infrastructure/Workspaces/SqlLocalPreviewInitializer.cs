@@ -85,13 +85,13 @@ public sealed class SqlLocalPreviewInitializer(SystemDbContext central, ICompany
                 SqlFiscalDatabaseResolver.InvalidateReadiness();
             }
         }
-        var workspace = await resolver.ResolveAsync(current.Id, token).ConfigureAwait(false);
+        var workspace = await resolver.ResolveFreshAsync(current.Id, token).ConfigureAwait(false);
         await EnsureChartAsync(workspace, branch.Id, actor.Id, token).ConfigureAwait(false);
         await EnsureInventoryAsync(workspace, branch.Id, actor.Id, token).ConfigureAwait(false);
         await EnsurePartiesAsync(workspace, branch.Id, actor.Id, token).ConfigureAwait(false);
         await EnsurePatternsAsync(workspace, branch.Id, actor.Id, token).ConfigureAwait(false);
         // Resolve again after initialization: readiness must be actual, not inferred from process startup.
-        _ = await resolver.ResolveAsync(current.Id, token).ConfigureAwait(false);
+        _ = await resolver.ResolveFreshAsync(current.Id, token).ConfigureAwait(false);
         return new LocalPreviewWorkspace(company.Id, company.Code, company.NameArabic, branch.Id, branch.Code,
             branch.NameArabic, current.Id, current.FiscalYearId, current.YearNumber, workspace.DatabaseName, "Ready");
     }

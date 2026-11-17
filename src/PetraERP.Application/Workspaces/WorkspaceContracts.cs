@@ -44,6 +44,13 @@ public sealed record ResolvedFiscalDatabase(
 public interface IFiscalDatabaseResolver
 {
     Task<ResolvedFiscalDatabase> ResolveAsync(Guid workspaceId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Resolves from the registry even if this unit of work already resolved the workspace. <see cref="ResolveAsync"/> may reuse a
+    /// result obtained earlier in the same scope; use this after changing the workspace or its database when the new state is required.
+    /// </summary>
+    Task<ResolvedFiscalDatabase> ResolveFreshAsync(Guid workspaceId, CancellationToken cancellationToken = default) => ResolveAsync(workspaceId, cancellationToken);
+
     Task<ResolvedFiscalDatabase> ResolveByCompanyAndYearAsync(Guid companyId, Guid fiscalYearId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<ResolvedFiscalDatabase>> ListCompanyWorkspacesAsync(Guid companyId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<ResolvedFiscalDatabase>> ListAllActiveWorkspacesAsync(CancellationToken cancellationToken = default);

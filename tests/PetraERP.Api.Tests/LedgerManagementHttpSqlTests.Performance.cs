@@ -84,6 +84,90 @@ public sealed partial class LedgerManagementHttpSqlTests
         }
     }
 
+    /// <summary>
+    /// Per-route cost of what the sales invoice card issues when it opens (document read + lookups): SQL commands and times from the
+    /// Server-Timing header, warm, p50 of 10 runs. Comparable before/after only on the same machine; command counts are deterministic.
+    /// </summary>
+    [Fact(Explicit = true)]
+    [Trait("Category", "SqlServer")]
+    public async Task MeasureSalesInvoiceOpenReadsPerRoute()
+    {
+        var host = await ApiSqlHost.CreateWithWorkspaceAsync().ConfigureAwait(true);
+        await using (host.ConfigureAwait(true))
+        {
+            using var client = host.Factory.CreateClient();
+            var token = (await ApiSqlHost.LoginAsync(client, ApiSqlHost.AdminUser, ApiSqlHost.AdminPassword).ConfigureAwait(true)).AccessToken;
+            var fixture = await PrepareNumberedSalesAsync(host, client, token).ConfigureAwait(true);
+            var root = $"/api/v1/companies/{host.CompanyId}/branches/{host.BranchId}";
+            await SetPostingModeAsync(host, client, token, root, DocumentPostingMode.ApproveAndPost).ConfigureAwait(true);
+            var created = await SendAsync<DocumentProcessingResultDto>(host, client, HttpMethod.Post, root + "/sales/invoices/save-and-process", token,
+                new SaveAndProcessSalesInvoiceRequest { Document = TwoLineSale(fixture), IdempotencyKey = $"open-{Guid.NewGuid():N}" }).ConfigureAwait(true);
+            Assert.Equal(System.Net.HttpStatusCode.Created, created.Status);
+            var invoiceId = created.Body!.DocumentId;
+
+            var routes = new (string Name, string Path)[]
+            {
+                ("GET invoice", $"{root}/sales/invoices/{invoiceId}"),
+                ("GET parties/lookup", $"{root}/parties/lookup?limit=200"),
+                ("GET inventory/warehouses", $"{root}/inventory/warehouses"),
+                ("GET inventory/items/lookup", $"{root}/inventory/items/lookup?limit=500"),
+                ("GET inventory/units", $"{root}/inventory/units"),
+                ("GET currencies", $"{root}/currencies"),
+                ("GET patterns/runnable", $"{root}/patterns/runnable"),
+                ("GET sales/links", $"{root}/sales/links"),
+            };
+            var lines = new List<string> { "route;status;cmds_p50;sql_ms_p50;total_ms_p50;runs" };
+            foreach (var (name, path) in routes)
+            {
+                var commands = new List<double>();
+                var sql = new List<double>();
+                var total = new List<double>();
+                var status = 0;
+                for (var index = 0; index < 13; index++)
+                {
+                    using var request = host.WorkspaceRequest(HttpMethod.Get, path, token, null);
+                    using var response = await client.SendAsync(request, Cancellation).ConfigureAwait(true);
+                    _ = await response.Content.ReadAsStringAsync(Cancellation).ConfigureAwait(true);
+                    status = (int)response.StatusCode;
+                    if (index < 3 || !response.Headers.TryGetValues("Server-Timing", out var header)) continue;
+                    var match = ServerTimingPattern().Match(string.Join(", ", header));
+                    if (!match.Success) continue;
+                    total.Add(double.Parse(match.Groups["total"].Value, CultureInfo.InvariantCulture));
+                    sql.Add(double.Parse(match.Groups["db"].Value, CultureInfo.InvariantCulture));
+                    commands.Add(double.Parse(match.Groups["cmds"].Value, CultureInfo.InvariantCulture));
+                }
+
+                if (commands.Count == 0) { lines.Add($"{name};{status};n/a;n/a;n/a;0"); continue; }
+                double P50(List<double> values) => values.Order().ElementAt((values.Count - 1) / 2);
+                lines.Add(FormattableString.Invariant($"{name};{status};{P50(commands):F0};{P50(sql):F1};{P50(total):F1};{commands.Count}"));
+            }
+
+            // 100 more document reads, then the statements executed most often: what a single open really runs (÷ ~113).
+            for (var index = 0; index < 100; index++)
+            {
+                using var request = host.WorkspaceRequest(HttpMethod.Get, $"{root}/sales/invoices/{invoiceId}", token, null);
+                using var response = await client.SendAsync(request, Cancellation).ConfigureAwait(true);
+                _ = await response.Content.ReadAsStringAsync(Cancellation).ConfigureAwait(true);
+            }
+
+            lines.Add(string.Empty);
+            lines.Add("most executed statements (annual database): executions;total_ms;text");
+            using (var annual = host.AnnualContext())
+            {
+                lines.AddRange((await TopStatementsAsync(annual, "qs.execution_count").ConfigureAwait(true)).Take(12));
+            }
+
+            lines.Add("most executed statements (system database): executions;total_ms;text");
+            using (var system = host.CreateContext())
+            {
+                lines.AddRange((await TopStatementsAsync(system, "qs.execution_count").ConfigureAwait(true)).Take(12));
+            }
+
+            var path2 = Environment.GetEnvironmentVariable("PETRAERP_BENCH_OUT_OPEN") ?? Path.Combine(Path.GetTempPath(), "petra_open_bench.txt");
+            await File.WriteAllLinesAsync(path2, lines, Cancellation).ConfigureAwait(true);
+        }
+    }
+
     [Fact(Explicit = true)]
     [Trait("Category", "SqlServer")]
     public async Task MeasureColdAndWarmLoginLatency()
