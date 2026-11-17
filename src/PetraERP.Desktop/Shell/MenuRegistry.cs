@@ -189,7 +189,7 @@ public static class MenuRegistry
         new("tools.reports-group", "D_Menu_Reports", Glyph: "", ParentId: "tools", Order: 30),
         new("tools.reports-center", "RC_Title", ParentId: "tools.reports-group", RequiredPermission: "Ledger.Reports.View", Route: "reports-center", Order: 10),
         new("tools.analytical-report", "RC_Analytical", ParentId: "tools.reports-group", RequiredPermission: "Ledger.Reports.View", Route: "analytical-report", Order: 20),
-        new("tools.preferences", "UI_Preferences", Glyph: "", ParentId: "tools", Command: "preferences", Order: 40, SeparatorBefore: true),
+        new("tools.preferences", "OPT_Title", Glyph: "", ParentId: "tools", Command: "preferences", Order: 40, SeparatorBefore: true),
         new("tools.report-options", "REP_Title", Glyph: "\uE9D2", ParentId: "tools", Command: "report-options", Order: 45),
         new("tools.language", "UX_Language", Glyph: "", ParentId: "tools", Command: "language", Order: 50),
         new("tools.theme", "D_Menu_Theme", Glyph: "", ParentId: "tools", Command: "theme", Order: 60),
