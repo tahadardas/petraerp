@@ -37,6 +37,7 @@ public sealed partial class PatternManagerViewModel : PageViewModel
                 "cash" => BusinessOperationKind.CashJournal,
                 "inventory" => BusinessOperationKind.InventoryReceipt,
                 "assembly" => BusinessOperationKind.Assembly,
+                "assets" => BusinessOperationKind.AssetDepreciation,
                 _ => (BusinessOperationKind?)null,
             };
             return navigator.NavigateAsync("patterns", new NewPatternCardRequest(InitialOperationKind: kind));
@@ -65,6 +66,7 @@ public sealed partial class PatternManagerViewModel : PageViewModel
         Categories.Add(new("cash", Localization["D_PM_Cash"], Localization["D_PM_CashHelp"], "cash"));
         Categories.Add(new("inventory", Localization["D_PM_Inventory"], Localization["D_PM_InventoryHelp"], "inventory"));
         Categories.Add(new("assembly", Localization["D_PM_Assembly"], Localization["D_PM_AssemblyHelp"], "assembly"));
+        Categories.Add(new("assets", Localization["D_PM_Assets"], Localization["D_PM_AssetsHelp"], "assets"));
     }
 
     private Task EditAsync() =>

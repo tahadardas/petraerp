@@ -39,9 +39,18 @@ public sealed class ShellPages
         DailyVoucherViewModel? dailyVouchers = null,
         AccountDirectoryViewModel? accountDirectory = null, ItemDirectoryViewModel? itemDirectory = null,
         Patterns.PatternManagerViewModel? patternManager = null, ItemLimitsViewModel? itemLimits = null, ItemPriceToolViewModel? itemPriceTool = null,
-        Inventory.AssemblyDisassemblyViewModel? assemblyDisassembly = null)
+        Inventory.AssemblyDisassemblyViewModel? assemblyDisassembly = null,
+        Assets.AssetDirectoryViewModel? assetDirectory = null,
+        Assets.FleetExpenseJournalViewModel? fleetExpenses = null,
+        Assets.FuelDispensingViewModel? fuelDispensing = null,
+        Assets.AssetCustodyViewModel? assetCustody = null,
+        Assets.CustomerRentalViewModel? customerRentals = null,
+        Assets.AssetDossierTcoViewModel? assetDossier = null,
+        Assets.AssetDepreciationRunViewModel? assetDepreciation = null)
     {
         AssemblyDisassembly = assemblyDisassembly;
+        AssetDirectory = assetDirectory; FleetExpenses = fleetExpenses; FuelDispensing = fuelDispensing;
+        AssetCustody = assetCustody; CustomerRentals = customerRentals; AssetDossier = assetDossier; AssetDepreciation = assetDepreciation;
         DailyVouchers = dailyVouchers; PatternManager = patternManager; ItemLimits = itemLimits; ItemPriceTool = itemPriceTool; AccountDirectory = accountDirectory; ItemDirectory = itemDirectory;
         Management = management;
         Administration = administration; Journals = journals; Accounts = accounts; CostCenters = costCenters; Periods = periods;
@@ -65,6 +74,13 @@ public sealed class ShellPages
 
     public DailyVoucherViewModel? DailyVouchers { get; }
     public Inventory.AssemblyDisassemblyViewModel? AssemblyDisassembly { get; }
+    public Assets.AssetDirectoryViewModel? AssetDirectory { get; }
+    public Assets.FleetExpenseJournalViewModel? FleetExpenses { get; }
+    public Assets.FuelDispensingViewModel? FuelDispensing { get; }
+    public Assets.AssetCustodyViewModel? AssetCustody { get; }
+    public Assets.CustomerRentalViewModel? CustomerRentals { get; }
+    public Assets.AssetDossierTcoViewModel? AssetDossier { get; }
+    public Assets.AssetDepreciationRunViewModel? AssetDepreciation { get; }
     public AccountDirectoryViewModel? AccountDirectory { get; }
     public Patterns.PatternManagerViewModel? PatternManager { get; }
     public ItemLimitsViewModel? ItemLimits { get; }
@@ -124,6 +140,13 @@ public sealed class ShellPages
         .. (ItemPriceTool is null ? Array.Empty<IShellPage>() : [ItemPriceTool]),
         .. (Purchases is null ? Array.Empty<IShellPage>() : [Purchases]), .. (InventoryOperations is null ? Array.Empty<IShellPage>() : [InventoryOperations]),
         .. (AssemblyDisassembly is null ? Array.Empty<IShellPage>() : [AssemblyDisassembly]),
+        .. (AssetDirectory is null ? Array.Empty<IShellPage>() : [AssetDirectory]),
+        .. (FleetExpenses is null ? Array.Empty<IShellPage>() : [FleetExpenses]),
+        .. (FuelDispensing is null ? Array.Empty<IShellPage>() : [FuelDispensing]),
+        .. (AssetCustody is null ? Array.Empty<IShellPage>() : [AssetCustody]),
+        .. (CustomerRentals is null ? Array.Empty<IShellPage>() : [CustomerRentals]),
+        .. (AssetDossier is null ? Array.Empty<IShellPage>() : [AssetDossier]),
+        .. (AssetDepreciation is null ? Array.Empty<IShellPage>() : [AssetDepreciation]),
         .. (Stocktaking is null ? Array.Empty<IShellPage>() : [Stocktaking]),
         .. (CommercialReports is null ? Array.Empty<IShellPage>() : [CommercialReports]), .. (CurrencySettings is null ? Array.Empty<IShellPage>() : [CurrencySettings]),
         .. (Units is null ? Array.Empty<IShellPage>() : [Units]), .. (FxRevaluation is null ? Array.Empty<IShellPage>() : [FxRevaluation]),
@@ -154,6 +177,13 @@ public sealed class ShellPages
         "items" => Items,
         "inventory-operations" => InventoryOperations,
         "assembly-disassembly" => AssemblyDisassembly,
+        "assets-directory" => AssetDirectory,
+        "fleet-expenses" => FleetExpenses,
+        "fuel-dispensing" => FuelDispensing,
+        "asset-custody" => AssetCustody,
+        "customer-rentals" => CustomerRentals,
+        "asset-depreciation" => AssetDepreciation,
+        "asset-dossier" => AssetDossier,
         "stocktaking" => Stocktaking,
         "financial-reports" => CommercialReports,
         "currencies" => CurrencySettings,

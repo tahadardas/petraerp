@@ -128,3 +128,42 @@
 - **الاختبارات:**
   - `AssemblyDisassemblyTests.cs`: فحص احتساب المكونات، تحميل مصاريف التشغيل، توزيع التفكيك، والتفقيط.
   - `PatternDomainTests.cs`: فحص مطابقة قواعد النمط، الصلاحيات، وحساب التشغيل.
+
+---
+
+## موديول إدارة الأصول الثابتة والمتحركة والآليات والعهد وصرفيات المازوت (2026-11-17)
+- **المفهوم والتصميم المحاسبي الرقابي:**
+  - معالجة معضلة "تخريب دليل الحسابات" (Preventing CoA clutter): فصل كامل بين شجرة الحسابات العامة (حسابات رئيسية مجمعة فقط) وسجل الأصول التحليلي المساعد (Sub-ledger) الذي يستوعب ملايين الوحدات والسيريالات ومركبات الأسطول ومراكز التكلفة التحليلية التلقائية.
+  - إدارة متخصصة للآليات والمركبات والمعدات الثقيلة (شاحنات، حفارات، تركسات، مولدات، سيارات) مع تتبع العدادات المزدوج (كيلومترات وساعات تشغيل)، وتنبيهات الزيوت الدورية، والتراخيص والتأمين.
+- **العقود والنطاق (Domain & Contracts):**
+  - إضافة `AssetDepreciation = 13`, `AssetMaintenance = 14`, `AssetFuelDispensing = 15`, `AssetCustomerRental = 16` إلى `BusinessOperationKind`.
+  - إضافة `Assets = 6` إلى `BusinessOperationCategory` وتصنيفها كـ `Runnable`.
+  - إضافة الأدوار المحاسبية للأصول في `PatternAccountRoles`:
+    - `AssetAccount` (حساب الأصل).
+    - `AccumulatedDepreciation` (مجمع الاهتلاك).
+    - `DepreciationExpense` (مصروف الاهتلاك).
+    - `DisposalGainLoss` (أرباح/خسائر استبعاد الأصول).
+    - `MaintenanceExpense` (مصروفات صيانة وإصلاح الآليات).
+    - `FuelExpense` (مصروفات وقود ومحروقات).
+  - محرك الحسابات `AssetCalculationEngine`:
+    - الإهلاك بالقسط الثابت (Straight-Line)، القسط المتناقص (Declining Balance)، ووحدات وساعات الإنتاج (Units of Production).
+    - احتساب السعر الوسطي المتحرك للمحروقات (Moving Weighted Average Cost) وفق معيار IAS 2 لمعالجة تقلبات الأسعار وسحب التكلفة تلقائياً من خزان الوقود.
+    - احتساب معدل الاستهلاك واكتشاف التلاعب وسرقة الوقود (Variance Leak Alert) ومعدل تكلفة الكيلومتر أو ساعة التشغيل.
+  - عقود DTOs في `PetraERP.Contracts.Assets`: `AssetDto`, `MachineryVehicleDetailsDto`, `AssetCustodyDto`, `AssetCustomerRentalDto`, `AssetMaintenanceExpenseDto`, `AssetFuelDispensingDto`, `AssetDossierTcoReportDto`, `AssetDepreciationRunDto`.
+- **واجهات المستخدم (WPF MVVM) بنمط MDI:**
+  1. `AssetDirectoryView` & `AssetDirectoryViewModel`: دليل وسجل الأصول مع الفلاتر السريعة، مؤشرات KPIs، والبحث المتقدم.
+  2. `FleetExpenseJournalView` & `FleetExpenseJournalViewModel`: دفتر يومية مصاريف وصيانة الآليات السريع بنمط دفتر القيد والجدول المتتابع، مع تعدد حسابات الدفع والعهد النقدية لمشرفي الورش والتفقيط الفوري.
+  3. `FuelDispensingView` & `FuelDispensingViewModel`: سند صرف وتوزيع المازوت مع الحسم التلقائي من الخزان بالسعر الوسطي دون تسعير يدوي وكشف الهدر والتلاعب.
+  4. `AssetCustodyView` & `AssetCustodyViewModel`: مذكرات استلام ونقل واسترداد العهد مع توليد وطباعة "محضر استلام العهدة الموحد" القانوني والفني وبراءة الذمة.
+  5. `CustomerRentalView` & `CustomerRentalViewModel`: إدارة أصول ومعدات الزبائن (تأجير تشغيلي وبرسم الأمانة) مع متابعة التأمين المسترد وفحص الاسترجاع واحتساب فواتير الأضرار.
+  6. `AssetDossierTcoView` & `AssetDossierTcoViewModel`: تقرير ملف الآلية الشامل وتكلفة الامتلاك (TCO) للإجابة الفورية عن الشراء، الاهتلاك، الصيانة، الوقود، وتكلفة ساعة العمل.
+  7. `AssetDepreciationRunView` & `AssetDepreciationRunViewModel`: احتساب وتوليد قيود إهلاك الأصول الدورية وترحيلها.
+- **التكامل والتسجيل:**
+  - تسجيل DataTemplates في `DocumentTemplates.xaml`.
+  - تسجيل القائمة الرئيسية "الأصول والآليات" والمسارات السبعة في `MenuRegistry.cs` و `NavigationService.cs` و `ShellPages.cs`.
+  - تسجيل الخدمات في `DesktopComposition.cs`.
+  - دعم أنماط الأصول في `PatternManager.cs`, `DocumentPatternsView.xaml`, `DocumentPatternsViewModel.cs`.
+  - إضافة مفاتيح التعريب في `Strings.ar.resx`.
+- **الاختبارات:**
+  - `AssetsTests.cs`: فحص دقة حسابات الإهلاك الثلاثة، حساب السعر الوسطي للمازوت في السوق المتقلب، رصد انحرافات الوقود، وصحة قواعد أنماط الأصول.
+  - اختبارات الأدوات والحدود المعمارية: 46/46 ناجحة (100%).

@@ -55,6 +55,13 @@ public sealed class NavigationService : ObservableObject
         ("units", "inventory", "Inventory.Items.View", "UNT_Title", ""),
         ("inventory-operations", "inventory", "Inventory.Movements.View", "INV_Title", ""),
         ("assembly-disassembly", "inventory", "Inventory.Movements.View", "D_AssemblyDisassembly", "\uE74C"),
+        ("assets-directory", "assets", "Ledger.Accounts.View", "AST_Directory", "\uE71D"),
+        ("fleet-expenses", "assets", "Ledger.Journals.Manage", "AST_ExpenseJournal", "\uE8A5"),
+        ("fuel-dispensing", "assets", "Inventory.Movements.View", "AST_FuelVoucher", "\uE9D2"),
+        ("asset-custody", "assets", "Ledger.Accounts.View", "AST_Custody", "\uE77B"),
+        ("customer-rentals", "assets", "Sales.Invoices.View", "AST_Rental", "\uE749"),
+        ("asset-depreciation", "assets", "Ledger.Journals.Manage", "AST_Depreciation", "\uE74C"),
+        ("asset-dossier", "assets", "Ledger.Reports.View", "AST_DossierReport", "\uE9D2"),
         ("stocktaking", "inventory", "Inventory.Movements.View", "INV_StocktakingWizard", ""),
         ("sales-invoices", "sales", "Sales.Invoices.View", "D_SalesInvoices", ""),
         ("treasury-vouchers", "treasury", "Treasury.Vouchers.View", "D_Vouchers", ""),
@@ -132,6 +139,7 @@ public sealed class NavigationService : ObservableObject
     public IReadOnlyList<MenuEntry> PurchasesMenu => MenuFor("purchases");
     public IReadOnlyList<MenuEntry> PartiesMenu => MenuFor("parties");
     public IReadOnlyList<MenuEntry> InventoryMenu => MenuFor("inventory");
+    public IReadOnlyList<MenuEntry> AssetsMenu => MenuFor("assets");
     public IReadOnlyList<MenuEntry> MultiMenu => MenuFor("multi");
     public IReadOnlyList<MenuEntry> CurrencyMenu => MenuFor("currency");
     public IReadOnlyList<MenuEntry> ReportsMenu => MenuFor("reports");

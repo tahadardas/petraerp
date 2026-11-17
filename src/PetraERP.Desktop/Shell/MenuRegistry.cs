@@ -124,6 +124,16 @@ public static class MenuRegistry
         new("accounts.rate-bulletin", "CUR_RateBulletin", Glyph: "", ParentId: "accounts.currencies-group", RequiredPermission: "Ledger.Accounts.View", Route: "rate-bulletin", Order: 20),
         new("accounts.fx-revaluation", "CUR_FxRevaluationWizard", Glyph: "", ParentId: "accounts.currencies-group", RequiredPermission: "Ledger.Accounts.View", Route: "fx-revaluation", Order: 30),
 
+        // ───────── 6.5. أصول (Assets) ─────────
+        new("assets", "MN_Assets", Glyph: "\uE71D", Order: 65),
+        new("assets.directory", "AST_Directory", Glyph: "\uE71D", ParentId: "assets", RequiredPermission: "Ledger.Accounts.View", Route: "assets-directory", Order: 10),
+        new("assets.expense-journal", "AST_ExpenseJournal", Glyph: "\uE8A5", ParentId: "assets", RequiredPermission: "Ledger.Journals.Manage", Route: "fleet-expenses", Order: 20),
+        new("assets.fuel-voucher", "AST_FuelVoucher", Glyph: "\uE9D2", ParentId: "assets", RequiredPermission: "Inventory.Movements.View", Route: "fuel-dispensing", Order: 30),
+        new("assets.custody", "AST_Custody", Glyph: "\uE77B", ParentId: "assets", RequiredPermission: "Ledger.Accounts.View", Route: "asset-custody", Order: 40),
+        new("assets.rental", "AST_Rental", Glyph: "\uE749", ParentId: "assets", RequiredPermission: "Sales.Invoices.View", Route: "customer-rentals", Order: 50),
+        new("assets.depreciation", "AST_Depreciation", Glyph: "\uE74C", ParentId: "assets", RequiredPermission: "Ledger.Journals.Manage", Route: "asset-depreciation", Order: 60),
+        new("assets.dossier-report", "AST_DossierReport", Glyph: "\uE9D2", ParentId: "assets", RequiredPermission: "Ledger.Reports.View", Route: "asset-dossier", Order: 70),
+
         // ───────── 7. مالية ─────────
         new("financial", "MN_Finance", Glyph: "", Order: 70),
         new("financial.statements", "D_FinancialStatements", Glyph: "", ParentId: "financial", RequiredPermission: "Ledger.Reports.View", Route: "financial-reports", Order: 10),

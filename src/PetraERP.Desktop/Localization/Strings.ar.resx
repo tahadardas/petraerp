@@ -2861,4 +2861,14 @@
   <data name="D_LineUnitSetupMissing" xml:space="preserve">
     <value>لا توجد وحدة أساسية معرّفة لهذه المادة. عرّف وحدات المادة من بطاقتها ثم أعد الاختيار.</value>
   </data>
+  <data name="MN_Assets" xml:space="preserve"><value>الأصول والآليات</value></data>
+  <data name="AST_Directory" xml:space="preserve"><value>دليل وسجل الأصول والآليات</value></data>
+  <data name="AST_ExpenseJournal" xml:space="preserve"><value>دفتر يومية مصاريف وصيانة الآليات</value></data>
+  <data name="AST_FuelVoucher" xml:space="preserve"><value>سند صرف وتوزيع مازوت ووقود</value></data>
+  <data name="AST_Custody" xml:space="preserve"><value>محاضر ومذكرات العهد</value></data>
+  <data name="AST_Rental" xml:space="preserve"><value>أصول ومعدات الزبائن (تأجير/أمانة)</value></data>
+  <data name="AST_Depreciation" xml:space="preserve"><value>احتساب وإقفال الاهتلاك الدوري</value></data>
+  <data name="AST_DossierReport" xml:space="preserve"><value>ملف وتكلفة الآلية الشامل (TCO)</value></data>
+  <data name="D_PM_Assets" xml:space="preserve"><value>الأصول والآليات</value></data>
+  <data name="D_PM_AssetsHelp" xml:space="preserve"><value>أنماط إهلاك وصيانة وتشغيل أسطول الآليات والمعدات الثقيلة والعهد</value></data>
 </root>

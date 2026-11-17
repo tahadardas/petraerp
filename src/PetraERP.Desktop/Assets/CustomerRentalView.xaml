@@ -1,0 +1,99 @@
+<UserControl x:Class="PetraERP.Desktop.Assets.CustomerRentalView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ux="clr-namespace:PetraERP.Desktop.Controls"
+             xmlns:ast="clr-namespace:PetraERP.Desktop.Assets"
+             Background="{DynamicResource Surface.Secondary}">
+
+    <DockPanel LastChildFill="True">
+        <!-- 1. Header & Actions -->
+        <Border DockPanel.Dock="Top" Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="0,0,0,1" Padding="12,10">
+            <DockPanel LastChildFill="True">
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+                    <TextBlock Text="أصول ومعدات الزبائن (تأجير تشغيلي / برسم الأمانة)" Style="{StaticResource Text.Title}" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                    <ux:StatusBadge Text="تتبع الخروج والاسترجاع مع التأمين" Kind="Success" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+                    <Button Style="{StaticResource Button.Command}" Content="احتساب فاتورة الاسترجاع" Command="{Binding CalculateReturnBillingCommand}" Margin="0,0,6,0" ux:Icon.Glyph="&#xE9D2;"/>
+                    <Button Style="{StaticResource Am.PrimaryActionButton}" Content="حفظ وتثبيت الحركة" Command="{Binding SaveDispatchCommand}" Margin="0,0,6,0" ux:Icon.Glyph="&#xE74E;"/>
+                    <Button Style="{StaticResource Am.CloseActionButton}" Content="تفريغ" Command="{Binding ClearCommand}"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- Top Input Card -->
+        <Border DockPanel.Dock="Top" Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="0,0,0,1" Padding="12,10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="160"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="220"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Row 1 -->
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="رقم السند:" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding VoucherNumber}" Height="28" VerticalContentAlignment="Center" Margin="0,0,16,0"/>
+
+                <TextBlock Grid.Row="0" Grid.Column="2" Text="الآلية / المعدة *:" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <ComboBox Grid.Row="0" Grid.Column="3" ItemsSource="{Binding RentableAssets}" SelectedItem="{Binding SelectedAsset}" DisplayMemberPath="NameArabic" Height="28" VerticalContentAlignment="Center" Margin="0,0,16,0"/>
+
+                <TextBlock Grid.Row="0" Grid.Column="4" Text="اسم الزبون / العميل *:" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBox Grid.Row="0" Grid.Column="5" Text="{Binding CustomerName, UpdateSourceTrigger=PropertyChanged}" Height="28" VerticalContentAlignment="Center" Margin="0,0,16,0"/>
+
+                <TextBlock Grid.Row="0" Grid.Column="6" Text="الموقع / المشروع:" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBox Grid.Row="0" Grid.Column="7" Text="{Binding ProjectOrSite}" Height="28" VerticalContentAlignment="Center"/>
+
+                <!-- Row 2 -->
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="تاريخ الخروج:" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <DatePicker Grid.Row="2" Grid.Column="1" SelectedDate="{Binding DispatchDate}" Height="28" VerticalContentAlignment="Center" Margin="0,0,16,0"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="2" Text="المتوقع للإرجاع:" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <DatePicker Grid.Row="2" Grid.Column="3" SelectedDate="{Binding ExpectedReturnDate}" Height="28" VerticalContentAlignment="Center" Margin="0,0,16,0"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="4" Text="قيمة الإيجار / التأمين:" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <StackPanel Grid.Row="2" Grid.Column="5" Orientation="Horizontal" Margin="0,0,16,0">
+                    <TextBox Width="95" Text="{Binding RentalRate, StringFormat={}{0:N0}}" Height="28" VerticalContentAlignment="Center" ToolTip="قيمة الإيجار"/>
+                    <TextBlock Text="/" VerticalAlignment="Center" Margin="4,0"/>
+                    <TextBox Width="95" Text="{Binding SecurityDeposit, StringFormat={}{0:N0}}" Height="28" VerticalContentAlignment="Center" ToolTip="مبلغ التأمين المسترد"/>
+                </StackPanel>
+
+                <TextBlock Grid.Row="2" Grid.Column="6" Text="تعويض أضرار / ملاحظات:" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <Grid Grid.Row="2" Grid.Column="7">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" Text="{Binding DamageRepairCost, StringFormat={}{0:N2}}" Height="28" VerticalContentAlignment="Center" Margin="0,0,8,0" ToolTip="تكلفة أضرار الاسترجاع"/>
+                    <TextBox Grid.Column="1" Text="{Binding Notes}" Height="28" VerticalContentAlignment="Center"/>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- Main Rental History DataGrid -->
+        <DataGrid ItemsSource="{Binding RentalHistory}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single" Margin="10" Style="{StaticResource {x:Type DataGrid}}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="رقم السند" Binding="{Binding VoucherNumber}" Width="120"/>
+                <DataGridTextColumn Header="اسم الزبون" Binding="{Binding CustomerName}" Width="200"/>
+                <DataGridTextColumn Header="الأصل / المعدة" Binding="{Binding AssetName}" Width="220"/>
+                <DataGridTextColumn Header="المشروع / الموقع" Binding="{Binding CustomerProjectOrSite}" Width="180"/>
+                <DataGridTextColumn Header="تاريخ الخروج" Binding="{Binding DispatchDate, StringFormat={}{0:yyyy/MM/dd}}" Width="110"/>
+                <DataGridTextColumn Header="تاريخ الإرجاع المتوقع" Binding="{Binding ExpectedReturnDate, StringFormat={}{0:yyyy/MM/dd}}" Width="125"/>
+                <DataGridTextColumn Header="الإيجار الدوري" Binding="{Binding DailyOrMonthlyRentalRate, StringFormat={}{0:N2}}" Width="110"/>
+                <DataGridTextColumn Header="مبلغ التأمين" Binding="{Binding SecurityDeposit, StringFormat={}{0:N2}}" Width="110"/>
+                <DataGridTextColumn Header="الحالة الفنية عند الخروج" Binding="{Binding ConditionOnDispatch}" Width="140"/>
+                <DataGridTextColumn Header="حالة الإعارة" Binding="{Binding Status}" Width="130"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

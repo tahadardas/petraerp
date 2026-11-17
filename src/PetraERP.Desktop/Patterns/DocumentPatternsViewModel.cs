@@ -161,6 +161,11 @@ public sealed partial class DocumentPatternsViewModel : PageViewModel, IShellPag
         {
             if (item.OperationKind is not (BusinessOperationKind.Assembly or BusinessOperationKind.Disassembly)) return false;
         }
+        else if (FilterTab == "assets")
+        {
+            if (item.OperationKind is not (BusinessOperationKind.AssetDepreciation or BusinessOperationKind.AssetMaintenance
+                or BusinessOperationKind.AssetFuelDispensing or BusinessOperationKind.AssetCustomerRental)) return false;
+        }
 
         if (string.IsNullOrWhiteSpace(Search)) return true;
 

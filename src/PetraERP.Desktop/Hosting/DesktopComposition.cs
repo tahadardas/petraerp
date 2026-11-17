@@ -84,6 +84,14 @@ public static class DesktopComposition
         services.AddSingleton<DocumentPatternsViewModel>(); services.AddSingleton<PartiesViewModel>(); services.AddSingleton<ItemsViewModel>();
         services.AddSingleton<Inventory.StocktakingWizardViewModel>();
         services.AddSingleton<Inventory.AssemblyDisassemblyViewModel>();
+        services.AddSingleton<Assets.IAssetsClient, Assets.AssetsMockService>();
+        services.AddSingleton<Assets.AssetDirectoryViewModel>();
+        services.AddSingleton<Assets.FleetExpenseJournalViewModel>();
+        services.AddSingleton<Assets.FuelDispensingViewModel>();
+        services.AddSingleton<Assets.AssetCustodyViewModel>();
+        services.AddSingleton<Assets.CustomerRentalViewModel>();
+        services.AddSingleton<Assets.AssetDossierTcoViewModel>();
+        services.AddSingleton<Assets.AssetDepreciationRunViewModel>();
         services.AddSingleton<SalesInvoicesViewModel>();
         services.AddSingleton<Treasury.VouchersViewModel>();
         services.AddSingleton<Treasury.ChequesViewModel>();

@@ -10,6 +10,7 @@
  xmlns:cur="clr-namespace:PetraERP.Desktop.Currencies"
  xmlns:reporting="clr-namespace:PetraERP.Desktop.Reporting"
  xmlns:mgmt="clr-namespace:PetraERP.Desktop.Management"
+ xmlns:ast="clr-namespace:PetraERP.Desktop.Assets"
  xmlns:doc="clr-namespace:PetraERP.Desktop.DocumentProcessing">
  <!-- Document views by view-model type. Shared by the main tab host and detached document windows, so a document renders
       the same view wherever it is hosted (and only in one host at a time). -->
@@ -76,4 +77,11 @@
  <DataTemplate DataType="{x:Type shell:UsersPage}"><views:UsersView DataContext="{Binding Model}"/></DataTemplate>
  <DataTemplate DataType="{x:Type shell:RolesPage}"><views:RolesView DataContext="{Binding Model}"/></DataTemplate>
  <DataTemplate DataType="{x:Type shell:AuditPage}"><views:AuditView DataContext="{Binding Model}"/></DataTemplate>
+ <DataTemplate DataType="{x:Type ast:AssetDirectoryViewModel}"><ast:AssetDirectoryView/></DataTemplate>
+ <DataTemplate DataType="{x:Type ast:FleetExpenseJournalViewModel}"><ast:FleetExpenseJournalView/></DataTemplate>
+ <DataTemplate DataType="{x:Type ast:FuelDispensingViewModel}"><ast:FuelDispensingView/></DataTemplate>
+ <DataTemplate DataType="{x:Type ast:AssetCustodyViewModel}"><ast:AssetCustodyView/></DataTemplate>
+ <DataTemplate DataType="{x:Type ast:CustomerRentalViewModel}"><ast:CustomerRentalView/></DataTemplate>
+ <DataTemplate DataType="{x:Type ast:AssetDossierTcoViewModel}"><ast:AssetDossierTcoView/></DataTemplate>
+ <DataTemplate DataType="{x:Type ast:AssetDepreciationRunViewModel}"><ast:AssetDepreciationRunView/></DataTemplate>
 </ResourceDictionary>
