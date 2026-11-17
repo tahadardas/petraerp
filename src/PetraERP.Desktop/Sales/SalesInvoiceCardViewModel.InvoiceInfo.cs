@@ -141,14 +141,14 @@ public sealed partial class SalesInvoiceCardViewModel
 
     public string DraftFinancialAccountDisplay =>
         DraftPaymentMethod == PaymentMethod.Cash
-            ? (CashAccountLookups.FirstOrDefault(a => a.Id == DraftCashAccountId)?.NameArabic ?? "الصندوق الرئيسي")
+            ? (DraftPattern?.CashAccountId != null ? "الصندوق النقدي" : "الصندوق الرئيسي")
             : (SelectedCustomer is not null ? $"ذمم — {SelectedCustomer.NameArabic}" : "ذمم العملاء");
 
     public void NotifyInvoiceInfoProperties()
     {
         OnPropertyChanged(nameof(EstimatedTotalCost));
         OnPropertyChanged(nameof(EstimatedTotalCostDisplay));
-        OnPropertyChanged(nameof(EstimatedProfit));
+        OnPropertyChanged(nameof(EstimatedGrossProfit));
         OnPropertyChanged(nameof(EstimatedProfitDisplay));
         OnPropertyChanged(nameof(EstimatedProfitMarginPercent));
         OnPropertyChanged(nameof(EstimatedProfitMarginDisplay));

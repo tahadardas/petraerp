@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using PetraERP.Contracts.Assets;
 using PetraERP.Desktop.Localization;
 using PetraERP.Desktop.Shell;
 
@@ -79,5 +78,11 @@ public sealed partial class AssetDossierTcoViewModel : PageViewModel
         {
             IsLoading = false;
         }
+    }
+
+    protected override void ClearPage()
+    {
+        DossierReport = null;
+        ExpenseCategories.Clear();
     }
 }

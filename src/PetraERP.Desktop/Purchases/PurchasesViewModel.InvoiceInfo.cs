@@ -99,11 +99,11 @@ public sealed partial class PurchasesViewModel
         Warehouses.FirstOrDefault(w => w.Id == DraftWarehouseId)?.NameArabic ?? Current?.WarehouseCode ?? "—";
 
     public string DraftCostCenterNameDisplay =>
-        CostCenters.FirstOrDefault(c => c.Id == DraftCostCenterId)?.NameArabic ?? Current?.CostCenterCode ?? "بدون مركز كلفة";
+        CostCenters.FirstOrDefault(c => c.Id == DraftCostCenterId)?.NameArabic ?? "بدون مركز كلفة";
 
     public string DraftFinancialAccountDisplay =>
         DraftPaymentMethod == PaymentMethod.Cash
-            ? (Accounts.FirstOrDefault(a => a.Id == DraftCashAccountId)?.NameArabic ?? "الصندوق الرئيسي")
+            ? "الصندوق الرئيسي"
             : (SelectedSupplier is not null ? $"ذمم — {SelectedSupplier.NameArabic}" : "ذمم الموردين");
 
     public string AverageLineAmountDisplay

@@ -188,13 +188,13 @@ public sealed partial class DashboardViewModel
                 foreach (var ca in cashAccs)
                 {
                     decimal bal = 0m;
-                    var matchLine = bs.Lines.FirstOrDefault(l => l.AccountId == ca.AccountId || l.Code == ca.Code);
+                    var matchLine = bs.Lines?.FirstOrDefault(l => l.AccountId == ca.AccountId || l.Code == ca.Code);
                     if (matchLine is not null && decimal.TryParse(matchLine.Amount, NumberStyles.Number | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var b))
                     {
                         bal = b;
                     }
                     totalCash += bal;
-                    CashAccounts.Add(new CashAccountSummary(ca.AccountId, ca.Code, ca.NameArabic, ca.Role, bal, baseCurr));
+                    CashAccounts.Add(new CashAccountSummary(ca.AccountId ?? Guid.Empty, ca.Code ?? string.Empty, ca.NameArabic ?? string.Empty, ca.Role ?? string.Empty, bal, baseCurr));
                 }
             }
             catch
@@ -249,12 +249,12 @@ public sealed partial class DashboardViewModel
 
                 decimal overdueTot = 0m;
                 decimal underCollTot = 0m;
-                foreach (var item in cpAlerts.Items)
+                foreach (var item in cpAlerts.Alerts)
                 {
                     if (decimal.TryParse(item.Amount, NumberStyles.Number | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var amt))
                     {
-                        if (item.Severity == Treasury.CommercialPaperAlertSeverity.Overdue) overdueTot += amt;
-                        if (item.Status == Treasury.CommercialPaperStatus.UnderCollection) underCollTot += amt;
+                        if (item.Severity == CommercialPaperAlertSeverity.Overdue) overdueTot += amt;
+                        if (item.Status == CommercialPaperStatus.UnderCollection) underCollTot += amt;
                     }
                 }
                 OverdueChequesTotalDisplay = overdueTot.ToString("N2", CultureInfo.InvariantCulture) + " " + baseCurr;
@@ -271,11 +271,11 @@ public sealed partial class DashboardViewModel
         {
             try
             {
-                var draftResp = await ledger.SearchJournalsAsync(shellContext.CompanyId, shellContext.BranchId, GeneralLedger.JournalState.Draft, null, null, null, 1, 1, CancellationToken.None).ConfigureAwait(true);
+                var draftResp = await ledger.SearchJournalsAsync(shellContext.CompanyId, shellContext.BranchId, JournalState.Draft, null, null, null, 1, 1, CancellationToken.None).ConfigureAwait(true);
                 if (stamp != generation) return;
                 DraftJournalsCount = (int)draftResp.TotalCount;
 
-                var approvedResp = await ledger.SearchJournalsAsync(shellContext.CompanyId, shellContext.BranchId, GeneralLedger.JournalState.Approved, null, null, null, 1, 1, CancellationToken.None).ConfigureAwait(true);
+                var approvedResp = await ledger.SearchJournalsAsync(shellContext.CompanyId, shellContext.BranchId, JournalState.Approved, null, null, null, 1, 1, CancellationToken.None).ConfigureAwait(true);
                 if (stamp != generation) return;
                 ApprovedJournalsCount = (int)approvedResp.TotalCount;
             }

@@ -1,4 +1,4 @@
-namespace PetraERP.Contracts.Assets;
+namespace PetraERP.Desktop.Assets;
 
 /// <summary>
 /// Operational category of the maintenance or fleet expense.

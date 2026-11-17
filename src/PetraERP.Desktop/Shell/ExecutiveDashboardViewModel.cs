@@ -13,50 +13,47 @@ namespace PetraERP.Desktop.Shell;
 public sealed partial class ExecutiveDashboardViewModel : PageViewModel
 {
     public const string ViewPermission = "Ledger.Reports.View";
+    protected override string RequiredPermission => ViewPermission;
 
     private readonly DashboardViewModel dashboard;
     private readonly ShellNavigator navigator;
-    private readonly ILocalizationService localization;
-
-    private ShellContext? currentContext;
 
     public ExecutiveDashboardViewModel(
+        DesktopOperation operation,
         DashboardViewModel dashboard,
         ShellNavigator navigator,
-        ILocalizationService localization)
+        ILocalizationService localization) : base(operation, localization)
     {
         this.dashboard = dashboard;
         this.navigator = navigator;
-        this.localization = localization;
 
-        PageTitle = localization["D_ExecutiveDashboard"];
+        pageTitle = localization["D_ExecutiveDashboard"];
     }
 
     public DashboardViewModel Dashboard => dashboard;
 
     [ObservableProperty] private string pageTitle;
 
-    public override async Task ActivateAsync(ShellContext shellContext, object? parameter, CancellationToken cancellationToken)
+    protected override async Task LoadAsync(object? parameter, CancellationToken cancellationToken)
     {
-        await base.ActivateAsync(shellContext, parameter, cancellationToken).ConfigureAwait(true);
-        currentContext = shellContext;
-        PageTitle = localization["D_ExecutiveDashboard"];
-        await dashboard.RefreshAsync(shellContext).ConfigureAwait(true);
+        PageTitle = Localization["D_ExecutiveDashboard"];
+        if (Context is not null)
+        {
+            await dashboard.RefreshAsync(Context).ConfigureAwait(true);
+        }
     }
 
-    public override void Clear()
+    protected override void ClearPage()
     {
-        currentContext = null;
-        base.Clear();
     }
 
     // Top Header Commands
     [RelayCommand]
     private async Task RefreshDashboardAsync()
     {
-        if (currentContext is not null)
+        if (Context is not null)
         {
-            await dashboard.RefreshAsync(currentContext).ConfigureAwait(true);
+            await dashboard.RefreshAsync(Context).ConfigureAwait(true);
         }
     }
 

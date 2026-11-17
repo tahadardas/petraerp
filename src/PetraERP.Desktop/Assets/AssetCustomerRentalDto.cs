@@ -1,4 +1,4 @@
-namespace PetraERP.Contracts.Assets;
+namespace PetraERP.Desktop.Assets;
 
 /// <summary>
 /// Status of customer rental or loan dispatch.

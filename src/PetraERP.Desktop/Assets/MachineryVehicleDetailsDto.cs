@@ -1,4 +1,4 @@
-namespace PetraERP.Contracts.Assets;
+namespace PetraERP.Desktop.Assets;
 
 /// <summary>
 /// Metric tracked for vehicle or heavy machinery usage.

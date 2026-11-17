@@ -1,8 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using PetraERP.Contracts.Assets;
-using PetraERP.Domain.Assets;
 using PetraERP.Desktop.Controls;
 using PetraERP.Desktop.Localization;
 using PetraERP.Desktop.Shell;
@@ -300,6 +298,8 @@ public sealed partial class FuelDispensingViewModel : PageViewModel
         notifications.Text(NotificationKind.Success, "تم الصرف بنجاح", $"تم خصم {TotalLitersIssued} لتر مازوت من الخزان وتوزيعها على الآليات بتكلفة إجمالية {GrandTotalCost:N2}");
         ClearForm();
     }
+
+    protected override void ClearPage() => ClearForm();
 
     private void ClearForm()
     {

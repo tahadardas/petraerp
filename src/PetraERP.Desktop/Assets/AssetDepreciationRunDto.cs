@@ -1,4 +1,4 @@
-namespace PetraERP.Contracts.Assets;
+namespace PetraERP.Desktop.Assets;
 
 /// <summary>
 /// One line in the periodic depreciation run.

@@ -1,4 +1,4 @@
-namespace PetraERP.Contracts.Assets;
+namespace PetraERP.Desktop.Assets;
 
 /// <summary>
 /// Operational workflow status for customer and workshop maintenance work orders.

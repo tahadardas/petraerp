@@ -170,7 +170,7 @@
                 </DockPanel>
               </Border>
 
-              <StackPanel Padding="12">
+              <StackPanel Margin="12">
                 <!-- Overdue Alert Row -->
                 <Border Background="{DynamicResource Error.Subtle}" BorderBrush="{DynamicResource Error}" BorderThickness="1" CornerRadius="{DynamicResource Radius.Small}" Padding="10,8" Margin="0,0,0,8">
                   <DockPanel LastChildFill="True">

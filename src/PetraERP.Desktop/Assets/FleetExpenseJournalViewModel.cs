@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using PetraERP.Contracts.Assets;
 using PetraERP.Desktop.Controls;
 using PetraERP.Desktop.Localization;
 using PetraERP.Desktop.Shell;
@@ -216,6 +215,8 @@ public sealed partial class FleetExpenseJournalViewModel : PageViewModel
         notifications.Text(NotificationKind.Success, "نجاح الترحيل", $"تم حفظ وترحيل قيد مصاريف وصيانة الآليات برقم {VoucherNumber} وإجمالي {TotalAmount:N2}");
         ClearForm();
     }
+
+    protected override void ClearPage() => ClearForm();
 
     private void ClearForm()
     {

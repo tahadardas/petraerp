@@ -11,6 +11,7 @@
     <AssemblyName>PetraERP.Desktop</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <NeutralLanguage>en</NeutralLanguage>
+    <NoWarn>$(NoWarn);CA2007;CA1305;CA1861;CA1822;CA1001;CA1304;CA1311;CA1859;CA1510;CA1806;CA1854;CA1062;CA1851;CA1827</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" />

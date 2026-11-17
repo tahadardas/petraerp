@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using PetraERP.Contracts.Assets;
 using PetraERP.Desktop.Controls;
 using PetraERP.Desktop.Localization;
 using PetraERP.Desktop.Shell;
@@ -69,5 +68,11 @@ public sealed partial class AssetDepreciationRunViewModel : PageViewModel
         IsPosted = true;
         notifications.Text(NotificationKind.Success, "تم ترحيل الاهتلاك", $"تم توليد وترحيل سند قيد إهلاك الأصول برقم {VoucherNumber} ومبلغ {TotalDepreciationAmount:N2}");
         PostJournalCommand.NotifyCanExecuteChanged();
+    }
+
+    protected override void ClearPage()
+    {
+        Lines.Clear();
+        IsPosted = false;
     }
 }

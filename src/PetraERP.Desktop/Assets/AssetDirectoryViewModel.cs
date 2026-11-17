@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using PetraERP.Contracts.Assets;
 using PetraERP.Desktop.Localization;
 using PetraERP.Desktop.Shell;
 
@@ -95,5 +94,11 @@ public sealed partial class AssetDirectoryViewModel : PageViewModel
     {
         if (SelectedAsset is null) return Task.CompletedTask;
         return navigator.NavigateAsync("asset-dossier", SelectedAsset.Id);
+    }
+
+    protected override void ClearPage()
+    {
+        FilteredAssets.Clear();
+        SelectedAsset = null;
     }
 }

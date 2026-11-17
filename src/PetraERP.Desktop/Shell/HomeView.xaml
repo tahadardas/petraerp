@@ -281,7 +281,7 @@
              <TextBlock Text="{Binding Dashboard.ApprovedJournalsCount}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Warning}" FontFamily="{DynamicResource Font.Numeric}"/>
              <TextBlock Text="قيود جديدة" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource Text.Secondary}" Margin="6,5,0,0"/>
             </StackPanel>
-            <TextBlock Text="{Binding Dashboard.DraftJournalsCount, StringFormat='{0} مسودة قيد التدقيق'}" FontSize="9.5" Foreground="{DynamicResource Text.Muted}" Margin="0,2,0,0"/>
+            <TextBlock Text="{Binding Dashboard.DraftJournalsCount, StringFormat='{}{0} مسودة قيد التدقيق'}" FontSize="9.5" Foreground="{DynamicResource Text.Muted}" Margin="0,2,0,0"/>
            </StackPanel>
           </Border>
 

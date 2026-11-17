@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using PetraERP.Contracts.Assets;
 using PetraERP.Desktop.Controls;
 using PetraERP.Desktop.Localization;
 using PetraERP.Desktop.Shell;
@@ -349,6 +348,8 @@ public sealed partial class MaintenanceWorkOrderViewModel : PageViewModel
         NetCustomerTotal = Math.Max(0m, gross - DiscountAmount);
     }
 
+    protected override void ClearPage() => NewOrder();
+
     public void NewOrder()
     {
         ActiveOrderId = Guid.NewGuid();
@@ -389,7 +390,7 @@ public sealed partial class MaintenanceWorkOrderViewModel : PageViewModel
         RecalculateTotals();
         DeliverAndInvoiceCommand.NotifyCanExecuteChanged();
 
-        notifications.Publish(new NotificationMessage(NotificationSeverity.Info, "أمر صيانة جديد", "تم فتح بطاقة أمر صيانة فارغة للاستلام"));
+        notifications.Text(NotificationKind.Info, "أمر صيانة جديد", "تم فتح بطاقة أمر صيانة فارغة للاستلام");
     }
 
     private void AddSparePart()
@@ -462,10 +463,7 @@ public sealed partial class MaintenanceWorkOrderViewModel : PageViewModel
         }
 
         await SaveOrderAsync();
-        notifications.Publish(new NotificationMessage(
-            NotificationSeverity.Success,
-            "تحديث حالة أمر الصيانة",
-            $"تم تحديث حالة الأمر {OrderNumber} إلى ({GetStatusArabic(newStatus)})"));
+        notifications.Text(NotificationKind.Success, "تحديث حالة أمر الصيانة", $"تم تحديث حالة الأمر {OrderNumber} إلى ({GetStatusArabic(newStatus)})");
     }
 
     private async Task DeliverAndInvoiceAsync()
@@ -497,10 +495,7 @@ public sealed partial class MaintenanceWorkOrderViewModel : PageViewModel
 
         DeliverAndInvoiceCommand.NotifyCanExecuteChanged();
 
-        notifications.Publish(new NotificationMessage(
-            NotificationSeverity.Success,
-            "تم التسليم والفوترة بنجاح",
-            $"تم تسليم الجهاز/الآلية وإصدار فاتورة الصيانة برقم [{InvoiceNumber}] بمبلغ صافي {NetCustomerTotal:N0} ل.س"));
+        notifications.Text(NotificationKind.Success, "تم التسليم والفوترة بنجاح", $"تم تسليم الجهاز/الآلية وإصدار فاتورة الصيانة برقم [{InvoiceNumber}] بمبلغ صافي {NetCustomerTotal:N0} ل.س");
     }
 
     private async Task SaveOrderAsync()
@@ -578,10 +573,10 @@ public sealed partial class MaintenanceWorkOrderViewModel : PageViewModel
         ApplyFilter();
         SelectedOrderInList = saved;
 
-        notifications.Publish(new NotificationMessage(
-            NotificationSeverity.Success,
+        notifications.Text(
+            NotificationKind.Success,
             "حفظ أمر الصيانة",
-            $"تم حفظ أمر الصيانة [{saved.OrderNumber}] للعميل ({saved.CustomerName}) بنجاح"));
+            $"تم حفظ أمر الصيانة [{saved.OrderNumber}] للعميل ({saved.CustomerName}) بنجاح");
     }
 
     private void PrintReceiptTicket()
@@ -595,7 +590,7 @@ public sealed partial class MaintenanceWorkOrderViewModel : PageViewModel
                   $"الكفالة: {GetWarrantyArabic(Warranty)}\n" +
                   $"التكلفة المقدرة: {EstimatedCost:N0} ل.س - التسليم المتوقع: {ExpectedDeliveryDate:yyyy/MM/dd}";
 
-        notifications.Publish(new NotificationMessage(NotificationSeverity.Info, "طباعة بطاقة الاستلام", msg));
+        notifications.Text(NotificationKind.Info, "طباعة بطاقة الاستلام", msg);
     }
 
     public static string GetStatusArabic(WorkOrderStatus s) => s switch

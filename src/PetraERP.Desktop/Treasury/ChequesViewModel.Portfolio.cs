@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using PetraERP.Contracts.Treasury;
+using PetraERP.ApiClient;
 using PetraERP.Desktop.Controls;
 using PetraERP.Desktop.Shell;
 
@@ -52,8 +52,8 @@ public sealed partial class ChequesViewModel
             if (SelectedPaper?.PartyId is { } pId)
             {
                 var kind = SelectedPaper.PaperKind == CommercialPaperKind.ChequeIssued
-                    ? Reports.PartyStatementKind.Supplier
-                    : Reports.PartyStatementKind.Customer;
+                    ? PartyStatementKind.Supplier
+                    : PartyStatementKind.Customer;
                 await navigator.NavigateAsync("customer-statement", new Reports.OpenPartyStatementRequest(pId, kind));
             }
         },

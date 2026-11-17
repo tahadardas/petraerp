@@ -163,8 +163,7 @@ public sealed partial class DocumentPatternsViewModel : PageViewModel, IShellPag
         }
         else if (FilterTab == "assets")
         {
-            if (item.OperationKind is not (BusinessOperationKind.AssetDepreciation or BusinessOperationKind.AssetMaintenance
-                or BusinessOperationKind.AssetFuelDispensing or BusinessOperationKind.AssetCustomerRental)) return false;
+            if ((int)item.OperationKind is not (12 or 13 or 14 or 15)) return false;
         }
 
         if (string.IsNullOrWhiteSpace(Search)) return true;

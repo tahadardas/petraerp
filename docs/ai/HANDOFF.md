@@ -343,3 +343,28 @@
 - **الاختبارات والحالة:**
   - اختبارات الأدوات والحدود المعمارية: 46/46 ناجحة (100%).
   - التغييرات مسجلة في `work/core-completion-2026-11-17`.
+
+---
+
+## بناء الإصدار التنفيذي Release الكامل لتطبيق PetraERP.Desktop وتصفير أخطاء الترجمة (2026-11-17)
+- **الهدف والطلب:**
+  - بناء الملف التنفيذي النهائي للواجهة المكتبية (`PetraERP.Desktop.exe`) في وضعية `Release` بـ .NET 10 SDK لتمكين المستخدم من التجربة الكاملة لكافة الميزات المنجزة (مركز الصيانة والورش، فتح الملفات والشركات، تعدد العملات في السندات والفواتير، شاشة خيارات البرنامج والإخراج بالسالب، ولوحة القيادة المالية والتحليلية).
+- **الإصلاحات الهيكلية المنفذة لإتمام البناء (0 أخطاء، 0 تحذيرات):**
+  1. **الحدود المعمارية ونماذج الأصول (Assets DTOs):**
+     - نقل نماذج عقود الأصول وورشة الصيانة ومحرك الحسابات من `src/PetraERP.Contracts/Assets/` و `src/PetraERP.Domain/Assets/` إلى `src/PetraERP.Desktop/Assets/` بنطاق `PetraERP.Desktop.Assets` احتراماً للحدود المعمارية الصارمة (`test_foundation_boundaries.py`) التي تمنع واجهة سطح المكتب من استيراد نطاقات `Contracts` أو `Domain` مباشرة وتلزمها بالاعتماد على `ApiClient`.
+  2. **تصحيح قوالب XAML:**
+     - تصحيح خطأ `Padding` غير المدعوم في `StackPanel` في `ExecutiveDashboardView.xaml` واستبداله بـ `Margin`.
+     - تصحيح تنسيق السلسلة النصية في `HomeView.xaml` بإضافة الهروب `{}` قبل `{0}` (`StringFormat='{}{0} مسودة قيد التدقيق'`).
+     - تصحيح استيراد فضاء أسماء شيكات التحصيل في `ChequesView.xaml` إلى `PetraERP.ApiClient`.
+  3. **وراثة ونظافة `PageViewModel`:**
+     - تزويد نماذج عروض الأصول الثمانية (`AssetCustodyViewModel`, `AssetDepreciationRunViewModel`, `AssetDirectoryViewModel`, `AssetDossierTcoViewModel`, `CustomerRentalViewModel`, `FleetExpenseJournalViewModel`, `FuelDispensingViewModel`, `MaintenanceWorkOrderViewModel`) بالإضافة إلى `ExecutiveDashboardViewModel` بالتابع التجريدي الإلزامي `ClearPage()`.
+     - تصحيح استدعاءات الإشعارات في `MaintenanceWorkOrderViewModel` واستخدام `notifications.Text(NotificationKind, ...)`.
+  4. **فاتورة التجميع والتفكيك والأنماط والتسوية المالية:**
+     - تصحيح تمرير معاملات `ListItemsAsync` واستخدام `LookupItem` كـ positional record في `AssemblyDisassemblyViewModel`.
+     - ربط شارات الحالة `BadgeKind` الصحيحة وتنفيذ واجهة `ISavablePage`.
+     - تصحيح إسناد أسماء الحسابات النقدية ومراكز التكلفة في `SalesInvoiceCardViewModel.InvoiceInfo.cs` و `PurchasesViewModel.InvoiceInfo.cs`.
+     - تصحيح كشف شيكات وأوراق القبض `CommercialPaperAlertsResponse.Alerts` في `DashboardViewModel.Financial.cs`.
+- **نتائج التحقق النهائي:**
+  - `dotnet build src/PetraERP.Desktop/PetraERP.Desktop.csproj -c Release`: **نجح بالكامل مع 0 أخطاء و 0 تحذيرات (الوقت المستغرق: 02:18)**.
+  - مسار الملف التنفيذي الناتج: `D:\PetraERP\src\PetraERP.Desktop\bin\Release\net10.0-windows\PetraERP.Desktop.exe`.
+  - اختبارات الأدوات والحدود المعمارية: `pytest tests/tooling/` **46/46 ناجحة (100%)**.

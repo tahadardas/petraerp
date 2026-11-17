@@ -37,7 +37,7 @@ public sealed partial class PatternManagerViewModel : PageViewModel
                 "cash" => BusinessOperationKind.CashJournal,
                 "inventory" => BusinessOperationKind.InventoryReceipt,
                 "assembly" => BusinessOperationKind.Assembly,
-                "assets" => BusinessOperationKind.AssetDepreciation,
+                "assets" => (BusinessOperationKind)12,
                 _ => (BusinessOperationKind?)null,
             };
             return navigator.NavigateAsync("patterns", new NewPatternCardRequest(InitialOperationKind: kind));

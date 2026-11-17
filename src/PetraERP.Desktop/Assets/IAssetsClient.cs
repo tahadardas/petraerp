@@ -1,4 +1,3 @@
-using PetraERP.Contracts.Assets;
 
 namespace PetraERP.Desktop.Assets;
 

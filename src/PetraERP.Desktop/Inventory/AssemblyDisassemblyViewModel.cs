@@ -4,7 +4,6 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PetraERP.ApiClient;
-using PetraERP.Contracts.Inventory;
 using PetraERP.Desktop.Accounting;
 using PetraERP.Desktop.Controls;
 using PetraERP.Desktop.Localization;
@@ -92,6 +91,7 @@ public sealed partial class AssemblyDisassemblyViewModel : PageViewModel, IShell
     private readonly ShellNavigator navigator;
     private readonly IUserConfirmation confirmation;
     private readonly DesktopOperation operation;
+    private readonly NotificationCenter notifications;
 
     // --- State & Mode ---
     [ObservableProperty] private AssemblyDisassemblyMode mode = AssemblyDisassemblyMode.Assembly;
@@ -125,7 +125,7 @@ public sealed partial class AssemblyDisassemblyViewModel : PageViewModel, IShell
 
     // --- Status Badge ---
     [ObservableProperty] private string statusBadgeText = "مسودة";
-    [ObservableProperty] private StatusBadgeKind statusBadgeKind = StatusBadgeKind.Neutral;
+    [ObservableProperty] private BadgeKind statusBadgeKind = BadgeKind.Neutral;
 
     // --- Collections ---
     public ObservableCollection<AssemblyGridLine> ComponentLines { get; } = [];
@@ -170,7 +170,8 @@ public sealed partial class AssemblyDisassemblyViewModel : PageViewModel, IShell
         ShellNavigator navigator,
         DesktopOperation operation,
         ILocalizationService localization,
-        IUserConfirmation confirmation)
+        IUserConfirmation confirmation,
+        NotificationCenter notifications)
         : base(operation, localization)
     {
         this.patternsClient = patternsClient;
@@ -179,20 +180,21 @@ public sealed partial class AssemblyDisassemblyViewModel : PageViewModel, IShell
         this.navigator = navigator;
         this.operation = operation;
         this.confirmation = confirmation;
+        this.notifications = notifications;
 
         NewCommand = new AsyncRelayCommand(CreateNewDraftAsync, () => HasContext && Idle && CanManage);
         NewByPatternCommand = new AsyncRelayCommand<AssemblyPatternLookupItem>(CreateNewDraftWithPatternAsync, _ => HasContext && Idle && CanManage);
         EditCommand = new AsyncRelayCommand(() =>
         {
-            if (Lifecycle != DocumentLifecycle.Saved) return Task.CompletedTask;
+            if (Lifecycle != DocumentLifecycle.Draft) return Task.CompletedTask;
             Lifecycle = DocumentLifecycle.Draft;
             UpdateUiState();
             return Task.CompletedTask;
-        }, () => HasContext && Idle && CanManage && Lifecycle == DocumentLifecycle.Saved);
+        }, () => HasContext && Idle && CanManage && Lifecycle == DocumentLifecycle.Draft);
 
         SaveCommand = new AsyncRelayCommand(SaveDocumentAsync, () => HasContext && Idle && CanManage && IsEditing);
         CancelCommand = new AsyncRelayCommand(CancelDraftAsync, () => HasContext && Idle && IsEditing);
-        PostCommand = new AsyncRelayCommand(PostDocumentAsync, () => HasContext && Idle && CanManage && Lifecycle == DocumentLifecycle.Saved);
+        PostCommand = new AsyncRelayCommand(PostDocumentAsync, () => HasContext && Idle && CanManage && Lifecycle == DocumentLifecycle.Draft);
         PrintCommand = new AsyncRelayCommand(PrintDocumentAsync, () => HasContext && Idle);
         RefreshCommand = new AsyncRelayCommand(RefreshLookupsAsync, () => HasContext && Idle);
         ManagePatternsCommand = new AsyncRelayCommand(() =>
@@ -211,6 +213,8 @@ public sealed partial class AssemblyDisassemblyViewModel : PageViewModel, IShell
     protected override string RequiredPermission => "Inventory.Movements.View";
 
     public bool HasUnsavedChanges => IsEditing;
+    public bool CanSaveBeforeClose => SaveCommand.CanExecute(null);
+    public async Task<bool> SaveBeforeCloseAsync() => await SaveDocumentAsync().ConfigureAwait(true);
     public Task<bool> SaveAsync(CancellationToken token) => SaveDocumentAsync();
 
     protected override async Task LoadAsync(object? parameter, CancellationToken cancellationToken)
@@ -297,7 +301,7 @@ public sealed partial class AssemblyDisassemblyViewModel : PageViewModel, IShell
                         ShortCode = p.ShortCode ?? "ASM",
                         OperationKind = p.OperationKind,
                         LockDocumentDate = cfg?.EntryPolicy?.LockDocumentDate ?? false,
-                        AllowManualNumbering = cfg?.NumberingPolicy?.AllowManualOverride ?? false,
+                        AllowManualNumbering = cfg?.NumberingPolicy != null,
                         DefaultWarehouseId = cfg?.DefaultWarehouseId,
                         DefaultCostCenterId = cfg?.DefaultCostCenterId,
                         OperatingAccountId = cfg?.AccountMappings?.FirstOrDefault(m => string.Equals(m.Role, "OperatingAccount", StringComparison.OrdinalIgnoreCase))?.AccountId,
@@ -313,17 +317,17 @@ public sealed partial class AssemblyDisassemblyViewModel : PageViewModel, IShell
         // 2. Load Item Lookups
         try
         {
-            var itemsRes = await inventoryClient.ListItemsAsync(CompanyId, null, null, null, null, null, 1, 300, ct).ConfigureAwait(true);
+            var itemsRes = await inventoryClient.ListItemsAsync(CompanyId, BranchId, 1, 300, null, null, null, null, ct).ConfigureAwait(true);
             AssembledItemLookups.Clear();
             RawComponentLookups.Clear();
             if (itemsRes?.Items != null)
             {
                 foreach (var it in itemsRes.Items)
                 {
-                    var lk = new LookupItem { Id = it.Id, Code = it.Code, NameArabic = it.NameArabic, NameEnglish = it.NameEnglish };
-                    RawComponentLookups.Add(lk);
-                    if (it.IsAssembly == true)
+                    if (it.Id is { } id)
                     {
+                        var lk = new LookupItem(id, it.Code ?? string.Empty, it.NameArabic ?? string.Empty, it.NameEnglish);
+                        RawComponentLookups.Add(lk);
                         AssembledItemLookups.Add(lk);
                     }
                 }
@@ -334,13 +338,13 @@ public sealed partial class AssemblyDisassemblyViewModel : PageViewModel, IShell
         // 3. Load Accounts
         try
         {
-            var accRes = await accountsClient.ListAccountsAsync(CompanyId, null, null, null, 1, 500, ct).ConfigureAwait(true);
+            var accTree = await accountsClient.GetAccountTreeAsync(CompanyId, BranchId, ct).ConfigureAwait(true);
             AccountLookups.Clear();
-            if (accRes?.Items != null)
+            if (accTree != null)
             {
-                foreach (var a in accRes.Items)
+                foreach (var a in accTree)
                 {
-                    AccountLookups.Add(new LookupItem { Id = a.Id, Code = a.Code, NameArabic = a.NameArabic, NameEnglish = a.NameEnglish });
+                    AccountLookups.Add(new LookupItem(a.Id, a.Code, a.NameArabic, a.NameEnglish));
                 }
             }
         }
@@ -552,25 +556,25 @@ public sealed partial class AssemblyDisassemblyViewModel : PageViewModel, IShell
     {
         if (!AssembledItemId.HasValue)
         {
-            operation.Notifications.Warning("تنبيه", "يرجى اختيار المادة التجميعية أو المفككة أولاً.");
+            notifications.Text(NotificationKind.Warning, "تنبيه", "يرجى اختيار المادة التجميعية أو المفككة أولاً.");
             return false;
         }
         if (ComponentLines.Count == 0)
         {
-            operation.Notifications.Warning("تنبيه", "يجب أن تحتوي الفاتورة على مكون واحد على الأقل.");
+            notifications.Text(NotificationKind.Warning, "تنبيه", "يجب أن تحتوي الفاتورة على مكون واحد على الأقل.");
             return false;
         }
 
-        Lifecycle = DocumentLifecycle.Saved;
+        Lifecycle = DocumentLifecycle.Draft;
         UpdateUiState();
-        operation.Notifications.Success("تم الحفظ", $"تم حفظ فاتورة {(IsAssemblyMode ? "التجميع" : "التفكيك")} رقم {DocumentNumber} بنجاح.");
+        notifications.Text(NotificationKind.Success, "تم الحفظ", $"تم حفظ فاتورة {(IsAssemblyMode ? "التجميع" : "التفكيك")} رقم {DocumentNumber} بنجاح.");
         NotifyCommands();
         return true;
     }
 
     private async Task CancelDraftAsync()
     {
-        if (await confirmation.ConfirmAsync("إلغاء التعديلات", "هل أنت متأكد من إلغاء المسودة الحالية والرجوع؟").ConfigureAwait(true))
+        if (await confirmation.ConfirmAsync("D_ConfirmDiscard").ConfigureAwait(true))
         {
             ClearPage();
             UpdateUiState();
@@ -580,26 +584,26 @@ public sealed partial class AssemblyDisassemblyViewModel : PageViewModel, IShell
 
     private async Task PostDocumentAsync()
     {
-        if (Lifecycle != DocumentLifecycle.Saved) return;
+        if (Lifecycle != DocumentLifecycle.Draft) return;
 
         if (OperatingAccountId == null)
         {
-            operation.Notifications.Warning("تنبيه محاسبي", "النمط المحدد لا يحتوي على حساب التشغيل (OperatingAccount). يرجى تعيينه في بطاقة النمط لإتمام القيد المتوازن.");
+            notifications.Text(NotificationKind.Warning, "تنبيه محاسبي", "النمط المحدد لا يحتوي على حساب التشغيل (OperatingAccount). يرجى تعيينه في بطاقة النمط لإتمام القيد المتوازن.");
             return;
         }
 
-        if (await confirmation.ConfirmAsync("ترحيل الفاتورة", $"هل أنت متأكد من ترحيل فاتورة {(IsAssemblyMode ? "التجميع" : "التفكيك")} وتحديث أرصدة المخزون وتوليد قيد حساب التشغيل؟").ConfigureAwait(true))
+        if (await confirmation.ConfirmAsync("D_ConfirmPost").ConfigureAwait(true))
         {
             Lifecycle = DocumentLifecycle.Posted;
             UpdateUiState();
-            operation.Notifications.Success("تم الترحيل بنجاح", $"تم ترحيل الفاتورة {DocumentNumber}، وإثبات حركة المخزون المزدوجة وقيد حساب التشغيل المتوازن.");
+            notifications.Text(NotificationKind.Success, "تم الترحيل بنجاح", $"تم ترحيل الفاتورة {DocumentNumber}، وإثبات حركة المخزون المزدوجة وقيد حساب التشغيل المتوازن.");
             NotifyCommands();
         }
     }
 
     private Task PrintDocumentAsync()
     {
-        operation.Notifications.Info("طباعة الفاتورة", $"جاري تجهيز تقرير وطباعة سند {(IsAssemblyMode ? "التجميع" : "التفكيك")} {DocumentNumber}...");
+        notifications.Text(NotificationKind.Info, "طباعة الفاتورة", $"جاري تجهيز تقرير وطباعة سند {(IsAssemblyMode ? "التجميع" : "التفكيك")} {DocumentNumber}...");
         return Task.CompletedTask;
     }
 
@@ -609,21 +613,21 @@ public sealed partial class AssemblyDisassemblyViewModel : PageViewModel, IShell
         OnPropertyChanged(nameof(IsReadOnly));
         switch (Lifecycle)
         {
-            case DocumentLifecycle.Draft:
-                StatusBadgeText = "مسودة تعديل";
-                StatusBadgeKind = StatusBadgeKind.Warning;
+            case DocumentLifecycle.New:
+                StatusBadgeText = "مسودة جديدة";
+                StatusBadgeKind = BadgeKind.Warning;
                 break;
-            case DocumentLifecycle.Saved:
+            case DocumentLifecycle.Draft:
                 StatusBadgeText = "محفوظة جاهزة للترحيل";
-                StatusBadgeKind = StatusBadgeKind.Info;
+                StatusBadgeKind = BadgeKind.Info;
                 break;
             case DocumentLifecycle.Posted:
                 StatusBadgeText = "مرحلة ومغلقة";
-                StatusBadgeKind = StatusBadgeKind.Success;
+                StatusBadgeKind = BadgeKind.Success;
                 break;
             default:
                 StatusBadgeText = "جاهز";
-                StatusBadgeKind = StatusBadgeKind.Neutral;
+                StatusBadgeKind = BadgeKind.Neutral;
                 break;
         }
     }
