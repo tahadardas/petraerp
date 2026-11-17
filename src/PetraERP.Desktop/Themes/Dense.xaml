@@ -111,8 +111,8 @@
   <Style TargetType="DataGrid" BasedOn="{StaticResource {x:Type DataGrid}}">
     <Setter Property="AutoGenerateColumns" Value="False"/><Setter Property="CanUserAddRows" Value="False"/>
     <Setter Property="CanUserResizeColumns" Value="True"/><Setter Property="CanUserReorderColumns" Value="True"/>
-    <Setter Property="EnableRowVirtualization" Value="True"/><Setter Property="EnableColumnVirtualization" Value="True"/>
-    <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling"/><Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
+    <Setter Property="EnableRowVirtualization" Value="True"/><Setter Property="EnableColumnVirtualization" Value="False"/>
+    <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Standard"/><Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
     <Setter Property="RowHeight" Value="{DynamicResource Density.Row}"/><Setter Property="ColumnHeaderHeight" Value="{DynamicResource Grid.ColumnHeaderHeight}"/><Setter Property="HeadersVisibility" Value="Column"/>
     <Setter Property="RowHeaderWidth" Value="0"/><Setter Property="GridLinesVisibility" Value="Horizontal"/>
     <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource Divider}"/><Setter Property="BorderBrush" Value="{DynamicResource Border}"/>

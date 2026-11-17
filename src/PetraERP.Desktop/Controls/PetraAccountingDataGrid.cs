@@ -34,9 +34,9 @@ public sealed class PetraAccountingDataGrid : DataGrid
 
         // Row height comes from the active density token; local values would make theme switching ineffective.
         EnableRowVirtualization = true;
-        EnableColumnVirtualization = true;
+        EnableColumnVirtualization = false;
         VirtualizingPanel.SetIsVirtualizing(this, true);
-        VirtualizingPanel.SetVirtualizationMode(this, VirtualizationMode.Recycling);
+        VirtualizingPanel.SetVirtualizationMode(this, VirtualizationMode.Standard);
         ScrollViewer.SetCanContentScroll(this, true);
         CanUserAddRows = false;
         AutoGenerateColumns = false;

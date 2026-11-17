@@ -37,7 +37,7 @@ public sealed record AssemblyDocumentLineDto
     public decimal UnitCost { get; init; }
     public decimal TotalCost { get; init; }
     public bool IsFlexible { get; init; } = true;
-    public bool IsMandatory { get; init; } = false;
+    public bool IsMandatory { get; init; }
     public string? AlternateGroupId { get; init; }
     public decimal CostPercentage { get; init; }
 }

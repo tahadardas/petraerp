@@ -434,7 +434,7 @@
                       <TextBlock Foreground="{DynamicResource ErrorSurface}" VerticalAlignment="Center" Style="{StaticResource Text.Caption}" Text="{Binding SearchErrorMessage, FallbackValue=فشل البحث / Search failed, RelativeSource={RelativeSource TemplatedParent}}"/>
                     </DockPanel>
                   </Border>
-                  <ListBox Name="PART_List" Grid.Row="1" ItemsSource="{TemplateBinding ux:LookupPicker.Results}" Background="Transparent" Focusable="False">
+                  <ListBox Name="PART_List" Grid.Row="1" ItemsSource="{TemplateBinding ux:LookupPicker.Results}" Background="Transparent" Focusable="False" VirtualizingPanel.VirtualizationMode="Standard">
                     <ItemsControl.ItemTemplate>
                       <DataTemplate>
                         <DockPanel>

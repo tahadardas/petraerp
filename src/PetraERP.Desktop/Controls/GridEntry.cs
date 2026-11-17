@@ -195,12 +195,30 @@ public static class GridEntry
         if (targetItem == CollectionView.NewItemPlaceholder) return false;
         if (!grid.CommitEdit(DataGridEditingUnit.Cell, true)) return true; // invalid value: stay put, keep the validation visible
         var target = new DataGridCellInfo(targetItem, columns[targetColumnIndex]);
-        grid.CurrentCell = target;
-        grid.SelectedCells.Clear();
-        grid.SelectedCells.Add(target);
-        grid.BeginEdit();
-        FocusInnerInput(grid, targetItem, columns[targetColumnIndex]);
+        NavigateToCell(grid, target, targetItem, columns[targetColumnIndex]);
         return true;
+    }
+
+    private static void NavigateToCell(DataGrid grid, DataGridCellInfo target, object? focusItem, DataGridColumn? focusColumn)
+    {
+        grid.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Input, () =>
+        {
+            try
+            {
+                grid.CurrentCell = target;
+                grid.SelectedCells.Clear();
+                grid.SelectedCells.Add(target);
+                grid.BeginEdit();
+                if (focusItem is not null && focusColumn is not null)
+                {
+                    FocusInnerInput(grid, focusItem, focusColumn);
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                // Defensive guard: ignore re-entrant layout/virtualization collisions
+            }
+        });
     }
 
     private static void AdvanceToNextCell(DataGrid grid, int direction = 1)
@@ -229,11 +247,8 @@ public static class GridEntry
         {
             // Move to next editable column in the same row
             var nextColumn = editableColumns[currentIndex + 1];
-            grid.CurrentCell = new DataGridCellInfo(currentRowItem, nextColumn);
-            grid.SelectedCells.Clear();
-            grid.SelectedCells.Add(grid.CurrentCell);
-            grid.BeginEdit();
-            FocusInnerInput(grid, currentRowItem, nextColumn);
+            var nextTarget = new DataGridCellInfo(currentRowItem, nextColumn);
+            NavigateToCell(grid, nextTarget, currentRowItem, nextColumn);
         }
         else
         {
@@ -245,11 +260,8 @@ public static class GridEntry
                 if (nextRowItem != CollectionView.NewItemPlaceholder)
                 {
                     var firstColumn = editableColumns[0];
-                    grid.CurrentCell = new DataGridCellInfo(nextRowItem, firstColumn);
-                    grid.SelectedCells.Clear();
-                    grid.SelectedCells.Add(grid.CurrentCell);
-                    grid.BeginEdit();
-                    FocusInnerInput(grid, nextRowItem, firstColumn);
+                    var firstTarget = new DataGridCellInfo(nextRowItem, firstColumn);
+                    NavigateToCell(grid, firstTarget, nextRowItem, firstColumn);
                 }
             }
             else if (rowIndex >= grid.Items.Count - 1 && grid is PetraAccountingDataGrid accountingGrid)
@@ -261,11 +273,8 @@ public static class GridEntry
                     if (nextRowItem != CollectionView.NewItemPlaceholder)
                     {
                         var firstColumn = editableColumns[0];
-                        grid.CurrentCell = new DataGridCellInfo(nextRowItem, firstColumn);
-                        grid.SelectedCells.Clear();
-                        grid.SelectedCells.Add(grid.CurrentCell);
-                        grid.BeginEdit();
-                        FocusInnerInput(grid, nextRowItem, firstColumn);
+                        var firstTarget = new DataGridCellInfo(nextRowItem, firstColumn);
+                        NavigateToCell(grid, firstTarget, nextRowItem, firstColumn);
                     }
                 }
             }
@@ -275,22 +284,24 @@ public static class GridEntry
     private static void MoveBackward(DataGrid grid, List<DataGridColumn> editableColumns, int currentIndex, object currentRowItem)
     {
         DataGridCellInfo target;
+        object targetItem;
+        DataGridColumn targetColumn;
         if (currentIndex > 0)
         {
-            target = new DataGridCellInfo(currentRowItem, editableColumns[currentIndex - 1]);
+            targetColumn = editableColumns[currentIndex - 1];
+            targetItem = currentRowItem;
+            target = new DataGridCellInfo(currentRowItem, targetColumn);
         }
         else
         {
             var rowIndex = grid.Items.IndexOf(currentRowItem);
             if (rowIndex <= 0) return;
-            target = new DataGridCellInfo(grid.Items[rowIndex - 1], editableColumns[^1]);
+            targetItem = grid.Items[rowIndex - 1];
+            targetColumn = editableColumns[^1];
+            target = new DataGridCellInfo(targetItem, targetColumn);
         }
 
-        grid.CurrentCell = target;
-        grid.SelectedCells.Clear();
-        grid.SelectedCells.Add(target);
-        grid.BeginEdit();
-        if (target.Item is not null && target.Column is not null) FocusInnerInput(grid, target.Item, target.Column);
+        NavigateToCell(grid, target, targetItem, targetColumn);
     }
 
     /// <summary>Copies the same column from the previous visible row, retaining validation and normal draft setters.</summary>

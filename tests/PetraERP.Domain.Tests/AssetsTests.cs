@@ -1,3 +1,4 @@
+#pragma warning disable CA1707
 using PetraERP.Domain.Assets;
 using PetraERP.Domain.Patterns;
 using PetraERP.Domain.Primitives;

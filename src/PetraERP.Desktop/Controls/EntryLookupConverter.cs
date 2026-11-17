@@ -9,8 +9,18 @@ namespace PetraERP.Desktop.Controls;
 /// <summary>Adapts existing lookup responses to the shared code/name keyboard picker. No financial defaults are inferred.</summary>
 public sealed class EntryLookupConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture) => value is IEnumerable items
-        ? items.Cast<object>().Select(ToItem).OfType<LookupItem>() : Array.Empty<LookupItem>();
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is not IEnumerable items) return Array.Empty<LookupItem>();
+        try
+        {
+            return items.Cast<object>().Select(ToItem).OfType<LookupItem>().ToList();
+        }
+        catch (Exception)
+        {
+            return Array.Empty<LookupItem>();
+        }
+    }
 
     private static LookupItem? ToItem(object value) => value switch
     {

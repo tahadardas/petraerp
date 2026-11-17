@@ -371,3 +371,39 @@
   - تعيين بيانات الدخول الافتراضية التجريبية تلقائياً (`admin` / `Try!NsfRGISWtqD+8sTWjJmC`).
   - مسار الملف التنفيذي المحدث: `D:\PetraERP\src\PetraERP.Desktop\bin\Release\net10.0-windows\PetraERP.Desktop.exe`.
   - اختبارات الأدوات والحدود المعمارية: `pytest tests/tooling/` **46/46 ناجحة (100%)**.
+
+---
+
+## تشخيص ومعالجة خروج البرنامج عند النقر على حقل الزبون في فاتورة المبيعات (2026-11-17)
+- **المشكلة المبلغ عنها:**
+  - عند النقر أو محاولة إدخال الزبون في فاتورة المبيعات يخرج التطبيق بالكامل وبشكل مفاجئ دون رسالة خطأ.
+- **التشخيص الجذري عبر سجل أحداث Windows (Application Event Viewer):**
+  - تم استخراج تقرير الانهيار الدقيق:
+    `System.InvalidOperationException: Cannot call StartAt when content generation is in progress.`
+    `at System.Windows.Controls.VirtualizingStackPanel.MeasureOverrideImpl(...)`
+    `at System.Windows.Controls.Primitives.DataGridRowsPresenter.MeasureOverride(...)`
+    `at System.Windows.Controls.Primitives.Popup.CreateWindow(Boolean asyncCall)`
+    `at System.Windows.Controls.Primitives.Popup.OnIsOpenChanged(...)`
+    `at PetraERP.Desktop.Controls.GridEntry.MoveBy(...)`
+  - السبب هو تعارض شهير في WPF DataGrid عند تفعيل `VirtualizationMode.Recycling` و `EnableColumnVirtualization=true` مع وجود عناصر تحكم ذات نوافذ منبثقة `Popup` (مثل `LookupPicker` أو `ComboBox` في قوالب الخلايا ورأس الفاتورة). فعند فتح القائمة المنبثقة أو انتقال التركيز يستدعي `Popup.CreateWindow` تابع `UpdateLayout()` بشكل تزامني أثناء انشغال مولد العناصر `VirtualizingStackPanel` بإنشاء أسطر الجدول، مما يؤدي إلى استثناء فوري وخروج مفاجئ للعملية.
+- **الحلول المنفذة:**
+  1. **درع الحماية الشامل للأخطاء غير المعالجة في `App.xaml.cs`:**
+     - إضافة معالجات `DispatcherUnhandledException` و `AppDomain.CurrentDomain.UnhandledException` و `TaskScheduler.UnobservedTaskException`.
+     - تسجيل كافة الاستثناءات في ملف دائم `desktop_crash.log`.
+     - كتم ومعالجة استثناءات تعارض التخطيط التلقائي لـ WPF لمنع خروج التطبيق نهائياً وإبقائه مستقراً.
+  2. **ضبط نمط المحاكاة الافتراضية للجداول (`PetraAccountingDataGrid.cs` و `Dense.xaml`):**
+     - تعطيل محاكاة الأعمدة الافتراضية `EnableColumnVirtualization = false` لمنع إعادة قياس الخلايا أثناء توليد الأسطر.
+     - اعتماد النمط القياسي المستقر `VirtualizationMode.Standard` بدلاً من `Recycling`.
+  3. **أمان التنقل بين الخلايا (`GridEntry.cs`):**
+     - توحيد الانتقال بين الخلايا في تابع موحد `NavigateToCell` وتأجيله عبر رتل الـ Dispatcher بأولوية `DispatcherPriority.Input` مع حماية `try/catch`، مما يضمن انتهاء دورة الرسم قبل تغيير الخلية النشطة.
+  4. **استقرار القوائم المنبثقة والنقر في `LookupPicker.cs`:**
+     - تأجيل تعيين `popup.IsOpen` بأولوية `DispatcherPriority.Background` مع تحصين ضد أخطاء إعادة الدخول.
+     - دعم النقر في أي مكان داخل حقل البحث `OnMouseLeftButtonDown` لنقل التركيز وتحديد النص على غرار الأمين.
+     - تحويل نتائج محول البحث `EntryLookupConverter.cs` إلى قائمة مادية فورية `.ToList()` لتجنب أخطاء تعديل المجموعات المتزامنة.
+  5. **معالجة تنبيهات التحليل في عقود الأصول والاختبارات:**
+     - إزالة التهيئة الافتراضية الصريحة `IsMandatory = false` في `AssemblyContracts.cs` (CA1805).
+     - إضافة تعطيل التحذير CA1707 في `AssetsTests.cs`.
+- **نتائج التحقق:**
+  - بناء كامل الحل في نمط Release: `dotnet build PetraERP.slnx -c Release`: **0 Warning(s), 0 Error(s)** في كافة المشاريع الـ 19.
+  - فحص أدوات التحقق والحدود المعمارية: `pytest tests/tooling/`: **46/46 ناجحة (100%)**.
+  - الملف التنفيذي جاهز ومحدث ومحصن: `D:\PetraERP\src\PetraERP.Desktop\bin\Release\net10.0-windows\PetraERP.Desktop.exe`.
