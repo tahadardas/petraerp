@@ -57,9 +57,10 @@ public static class GridEntry
             }
         }
 
-        // F2, Alt+Down and Space: open the lookup list (ComboBox and LookupPicker). Space opens only when the picker is
+        // F2, F3, Alt+Down and Space: open the lookup list (ComboBox and LookupPicker). Space opens only when the picker is
         // empty or fully selected, and never on an editable ComboBox, so typing text and numbers keeps working.
-        var openKey = e.Key == Key.F2 && Keyboard.Modifiers == ModifierKeys.None
+        var openKey = (e.Key is Key.F2 or Key.F3 && Keyboard.Modifiers == ModifierKeys.None)
+            || (e.Key == Key.Multiply && Keyboard.Modifiers == ModifierKeys.None)
             || (e.Key == Key.Down || e.Key == Key.System && e.SystemKey == Key.Down) && Keyboard.Modifiers == ModifierKeys.Alt;
         var spaceKey = e.Key == Key.Space && Keyboard.Modifiers == ModifierKeys.None;
         if (openKey || spaceKey)
@@ -107,19 +108,30 @@ public static class GridEntry
             if (!grid.IsReadOnly && grid.CurrentCell.Column is not null)
             {
                 var focused = Keyboard.FocusedElement as DependencyObject ?? e.OriginalSource as DependencyObject;
+                var cellTextBox = focused as TextBox ?? FindParent<TextBox>(focused);
+                if (cellTextBox is null && FindParent<DataGridCell>(focused) is { } editingCell)
+                {
+                    cellTextBox = FindChild<TextBox>(editingCell);
+                }
+
+                if (cellTextBox is not null && !cellTextBox.IsReadOnly && PetraMathEvaluator.TryEvaluate(cellTextBox.Text, out var calculated))
+                {
+                    cellTextBox.Text = PetraNumberFormat.ToWire(calculated);
+                    var binding = BindingOperations.GetBindingExpression(cellTextBox, TextBox.TextProperty);
+                    binding?.UpdateSource();
+                }
+
                 var picker = focused as LookupPicker ?? FindParent<LookupPicker>(focused);
                 if (picker is null && FindParent<DataGridCell>(focused) is { } targetCell)
                 {
                     picker = FindChild<LookupPicker>(targetCell);
                 }
 
-                if (picker is not null && picker.IsPopupOpen && e.Key == Key.Enter)
+                if (picker is not null && e.Key == Key.Enter)
                 {
                     e.Handled = true;
-                    if (picker.CommitHighlighted())
-                    {
-                        AdvanceToNextCell(grid, Keyboard.Modifiers == ModifierKeys.Shift ? -1 : 1);
-                    }
+                    picker.CommitHighlighted();
+                    AdvanceToNextCell(grid, Keyboard.Modifiers == ModifierKeys.Shift ? -1 : 1);
                     return;
                 }
 
@@ -183,12 +195,30 @@ public static class GridEntry
         if (targetItem == CollectionView.NewItemPlaceholder) return false;
         if (!grid.CommitEdit(DataGridEditingUnit.Cell, true)) return true; // invalid value: stay put, keep the validation visible
         var target = new DataGridCellInfo(targetItem, columns[targetColumnIndex]);
-        grid.CurrentCell = target;
-        grid.SelectedCells.Clear();
-        grid.SelectedCells.Add(target);
-        grid.BeginEdit();
-        FocusInnerInput(grid, targetItem, columns[targetColumnIndex]);
+        NavigateToCell(grid, target, targetItem, columns[targetColumnIndex]);
         return true;
+    }
+
+    private static void NavigateToCell(DataGrid grid, DataGridCellInfo target, object? focusItem, DataGridColumn? focusColumn)
+    {
+        grid.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Input, () =>
+        {
+            try
+            {
+                grid.CurrentCell = target;
+                grid.SelectedCells.Clear();
+                grid.SelectedCells.Add(target);
+                grid.BeginEdit();
+                if (focusItem is not null && focusColumn is not null)
+                {
+                    FocusInnerInput(grid, focusItem, focusColumn);
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                // Defensive guard: ignore re-entrant layout/virtualization collisions
+            }
+        });
     }
 
     private static void AdvanceToNextCell(DataGrid grid, int direction = 1)
@@ -217,11 +247,8 @@ public static class GridEntry
         {
             // Move to next editable column in the same row
             var nextColumn = editableColumns[currentIndex + 1];
-            grid.CurrentCell = new DataGridCellInfo(currentRowItem, nextColumn);
-            grid.SelectedCells.Clear();
-            grid.SelectedCells.Add(grid.CurrentCell);
-            grid.BeginEdit();
-            FocusInnerInput(grid, currentRowItem, nextColumn);
+            var nextTarget = new DataGridCellInfo(currentRowItem, nextColumn);
+            NavigateToCell(grid, nextTarget, currentRowItem, nextColumn);
         }
         else
         {
@@ -233,11 +260,8 @@ public static class GridEntry
                 if (nextRowItem != CollectionView.NewItemPlaceholder)
                 {
                     var firstColumn = editableColumns[0];
-                    grid.CurrentCell = new DataGridCellInfo(nextRowItem, firstColumn);
-                    grid.SelectedCells.Clear();
-                    grid.SelectedCells.Add(grid.CurrentCell);
-                    grid.BeginEdit();
-                    FocusInnerInput(grid, nextRowItem, firstColumn);
+                    var firstTarget = new DataGridCellInfo(nextRowItem, firstColumn);
+                    NavigateToCell(grid, firstTarget, nextRowItem, firstColumn);
                 }
             }
             else if (rowIndex >= grid.Items.Count - 1 && grid is PetraAccountingDataGrid accountingGrid)
@@ -249,10 +273,8 @@ public static class GridEntry
                     if (nextRowItem != CollectionView.NewItemPlaceholder)
                     {
                         var firstColumn = editableColumns[0];
-                        grid.CurrentCell = new DataGridCellInfo(nextRowItem, firstColumn);
-                        grid.SelectedCells.Clear();
-                        grid.SelectedCells.Add(grid.CurrentCell);
-                        grid.BeginEdit();
+                        var firstTarget = new DataGridCellInfo(nextRowItem, firstColumn);
+                        NavigateToCell(grid, firstTarget, nextRowItem, firstColumn);
                     }
                 }
             }
@@ -262,22 +284,24 @@ public static class GridEntry
     private static void MoveBackward(DataGrid grid, List<DataGridColumn> editableColumns, int currentIndex, object currentRowItem)
     {
         DataGridCellInfo target;
+        object targetItem;
+        DataGridColumn targetColumn;
         if (currentIndex > 0)
         {
-            target = new DataGridCellInfo(currentRowItem, editableColumns[currentIndex - 1]);
+            targetColumn = editableColumns[currentIndex - 1];
+            targetItem = currentRowItem;
+            target = new DataGridCellInfo(currentRowItem, targetColumn);
         }
         else
         {
             var rowIndex = grid.Items.IndexOf(currentRowItem);
             if (rowIndex <= 0) return;
-            target = new DataGridCellInfo(grid.Items[rowIndex - 1], editableColumns[^1]);
+            targetItem = grid.Items[rowIndex - 1];
+            targetColumn = editableColumns[^1];
+            target = new DataGridCellInfo(targetItem, targetColumn);
         }
 
-        grid.CurrentCell = target;
-        grid.SelectedCells.Clear();
-        grid.SelectedCells.Add(target);
-        grid.BeginEdit();
-        if (target.Item is not null && target.Column is not null) FocusInnerInput(grid, target.Item, target.Column);
+        NavigateToCell(grid, target, targetItem, targetColumn);
     }
 
     /// <summary>Copies the same column from the previous visible row, retaining validation and normal draft setters.</summary>
@@ -343,7 +367,7 @@ public static class GridEntry
                 var innerInput = FindChild<TextBox>(cell) ?? FindChild<LookupPicker>(cell) as FrameworkElement ?? cell;
                 innerInput.Focus();
                 if (innerInput is TextBox tb) tb.SelectAll();
-                else if (innerInput is LookupPicker lp) lp.Focus();
+                else if (innerInput is LookupPicker lp) lp.FocusSearch();
             }
         });
     }

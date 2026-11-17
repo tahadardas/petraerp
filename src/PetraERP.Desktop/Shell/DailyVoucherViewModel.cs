@@ -21,8 +21,10 @@ public sealed partial class DailyVoucherRow : ObservableObject
     [ObservableProperty] private decimal pay;
     [ObservableProperty] private string description = string.Empty;
     [ObservableProperty] private Guid? costCenterId;
-    public bool IsBlank => AccountId is null && Receive == 0m && Pay == 0m && string.IsNullOrWhiteSpace(Description);
+    public bool IsBlank => AccountId is null && Receive == 0m && Pay == 0m && string.IsNullOrWhiteSpace(Description) && CostCenterId is null;
+    public bool IsPristineBlank => IsBlank;
     public bool IsComplete => AccountId is not null && ((Receive > 0m && Pay == 0m) || (Pay > 0m && Receive == 0m));
+    public bool IsIncomplete => !IsBlank && !IsComplete;
 }
 
 /// <summary>
@@ -45,6 +47,7 @@ public sealed partial class DailyVoucherViewModel : PageViewModel
     [ObservableProperty] private Guid? cashAccountId;
     [ObservableProperty] private DateTime voucherDate;
     [ObservableProperty] private string currencyCode = string.Empty;
+    public ObservableCollection<string> CurrencyOptions { get; } = [];
     [ObservableProperty] private string rateText = "1";
     [ObservableProperty] private string voucherDescription = string.Empty;
     [ObservableProperty] private string previousBalance = "0";
@@ -76,10 +79,13 @@ public sealed partial class DailyVoucherViewModel : PageViewModel
         PreviousVoucherCommand = new AsyncRelayCommand(() => RunAsync(token => MoveVoucherAsync(-1, token), OperationKind.Read), () => HasContext && Idle);
         NextVoucherCommand = new AsyncRelayCommand(() => RunAsync(token => MoveVoucherAsync(1, token), OperationKind.Read), () => HasContext && Idle);
         LastVoucherCommand = new AsyncRelayCommand(() => RunAsync(token => MoveVoucherAsync(int.MaxValue, token), OperationKind.Read), () => HasContext && Idle);
+        JumpCommand = new AsyncRelayCommand<string>(target => RunAsync(token => JumpToVoucherAsync(target, token), OperationKind.Read), _ => HasContext && Idle);
+        AutoGrowCommand = new RelayCommand(() => AutoGrow(10), () => IsEditable);
+        AutoBalanceCommand = new RelayCommand(AutoBalance, () => IsEditable && !IsBalanced);
         AddRowCommand = new RelayCommand(AddRow, () => IsEditable);
         RemoveRowCommand = new RelayCommand<DailyVoucherRow>(RemoveRow, row => IsEditable && row is not null);
         Rows.CollectionChanged += (_, e) => { Hook(e); Recalculate(); };
-        AddRow();
+        EnsureRowBuffer(50);
     }
 
     protected override string RequiredPermission => "Ledger.Journals.View";
@@ -96,6 +102,9 @@ public sealed partial class DailyVoucherViewModel : PageViewModel
     public AsyncRelayCommand PreviousVoucherCommand { get; }
     public AsyncRelayCommand NextVoucherCommand { get; }
     public AsyncRelayCommand LastVoucherCommand { get; }
+    public AsyncRelayCommand<string> JumpCommand { get; }
+    public RelayCommand AutoGrowCommand { get; }
+    public RelayCommand AutoBalanceCommand { get; }
     public RelayCommand AddRowCommand { get; }
     public RelayCommand<DailyVoucherRow> RemoveRowCommand { get; }
 
@@ -113,9 +122,23 @@ public sealed partial class DailyVoucherViewModel : PageViewModel
     public decimal TotalPay => Rows.Sum(r => r.Pay);
     public string TotalReceiveText => Format(TotalReceive);
     public string TotalPayText => Format(TotalPay);
+    public decimal Difference => Math.Abs(TotalReceive - TotalPay);
+    public string DifferenceText => Format(Difference);
+    public bool IsBalanced => TotalReceive == TotalPay;
+    public int FilledRowCount => Rows.Count(r => r.IsComplete);
     /// <summary>The cash account balance before this voucher plus what it receives minus what it pays.</summary>
     public string FinalBalance => Format(ParseDecimal(PreviousBalance) + TotalReceive - TotalPay);
     public string BaseCurrencyCode => baseCurrency;
+    public string TafqeetText => ArabicTafqeet.ToWordsOrEmpty(Math.Max(TotalPay, TotalReceive), CurrencyCode);
+
+    partial void OnCurrencyCodeChanged(string value)
+    {
+        if (string.Equals(value, baseCurrency, StringComparison.OrdinalIgnoreCase))
+        {
+            RateText = "1";
+        }
+        OnPropertyChanged(nameof(TafqeetText));
+    }
 
     public void Localize() => OnPropertyChanged(nameof(StatusText));
 
@@ -125,6 +148,13 @@ public sealed partial class DailyVoucherViewModel : PageViewModel
         var currencyContext = await ledger.GetCurrencyContextAsync(CompanyId, BranchId, cancellationToken).ConfigureAwait(true);
         baseCurrency = currencyContext.BaseCurrency.Code;
         OnPropertyChanged(nameof(BaseCurrencyCode));
+        CurrencyOptions.Clear();
+        if (!string.IsNullOrEmpty(baseCurrency)) CurrencyOptions.Add(baseCurrency);
+        foreach (var cur in currencyContext.AdditionalCurrencies)
+        {
+            if (!string.IsNullOrEmpty(cur.Code) && !CurrencyOptions.Contains(cur.Code))
+                CurrencyOptions.Add(cur.Code);
+        }
         if (string.IsNullOrEmpty(CurrencyCode)) CurrencyCode = baseCurrency;
         if (parameter is OpenDailyVoucherRequest request)
         {
@@ -152,9 +182,12 @@ public sealed partial class DailyVoucherViewModel : PageViewModel
         ReverseCommand?.NotifyCanExecuteChanged();
         NewCommand?.NotifyCanExecuteChanged(); SaveCommand?.NotifyCanExecuteChanged(); PostCommand?.NotifyCanExecuteChanged();
         DeleteCommand?.NotifyCanExecuteChanged(); AddRowCommand?.NotifyCanExecuteChanged(); RemoveRowCommand?.NotifyCanExecuteChanged();
+        AutoGrowCommand?.NotifyCanExecuteChanged();
+        AutoBalanceCommand?.NotifyCanExecuteChanged();
         RefreshCommand?.NotifyCanExecuteChanged();
         FirstVoucherCommand?.NotifyCanExecuteChanged(); PreviousVoucherCommand?.NotifyCanExecuteChanged();
         NextVoucherCommand?.NotifyCanExecuteChanged(); LastVoucherCommand?.NotifyCanExecuteChanged();
+        JumpCommand?.NotifyCanExecuteChanged();
     }
 
     partial void OnCashAccountIdChanged(Guid? value) { _ = RefreshPreviousBalanceSafeAsync(); }
@@ -216,10 +249,27 @@ public sealed partial class DailyVoucherViewModel : PageViewModel
         OnPropertyChanged(nameof(IsPosted)); OnPropertyChanged(nameof(VoucherNumber)); OnPropertyChanged(nameof(JournalId)); NotifyCommands();
     }
 
+    public void EnsureRowBuffer(int targetCount = 50)
+    {
+        var limit = Math.Min(targetCount, 200);
+        while (Rows.Count < limit)
+        {
+            var row = new DailyVoucherRow();
+            Rows.Add(row);
+        }
+        if (SelectedRow is null && Rows.Count > 0) SelectedRow = Rows[0];
+    }
+
+    public void AutoGrow(int additional = 10)
+    {
+        if (!IsEditable) return;
+        EnsureRowBuffer(Rows.Count + additional);
+    }
+
     private void ResetRows()
     {
         foreach (var row in Rows.ToArray()) Rows.Remove(row);
-        AddRow();
+        EnsureRowBuffer(50);
     }
 
     private void AddRow()
@@ -232,7 +282,7 @@ public sealed partial class DailyVoucherViewModel : PageViewModel
     {
         if (row is null) return;
         Rows.Remove(row);
-        if (Rows.Count == 0) AddRow();
+        if (Rows.Count == 0) EnsureRowBuffer(50);
     }
 
     private void Hook(System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -244,6 +294,58 @@ public sealed partial class DailyVoucherViewModel : PageViewModel
     {
         OnPropertyChanged(nameof(TotalReceive)); OnPropertyChanged(nameof(TotalPay)); OnPropertyChanged(nameof(TotalReceiveText));
         OnPropertyChanged(nameof(TotalPayText)); OnPropertyChanged(nameof(FinalBalance));
+        OnPropertyChanged(nameof(Difference)); OnPropertyChanged(nameof(DifferenceText));
+        OnPropertyChanged(nameof(IsBalanced)); OnPropertyChanged(nameof(FilledRowCount));
+        OnPropertyChanged(nameof(TafqeetText));
+        AutoBalanceCommand?.NotifyCanExecuteChanged();
+    }
+
+    private async Task JumpToVoucherAsync(string? target, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(target)) return;
+        var trimmed = target.Trim();
+        var result = await ledger.SearchJournalsAsync(CompanyId, BranchId, null, null, null, trimmed, 1, 10, cancellationToken).ConfigureAwait(true);
+        if (result.Items.Count == 0) return;
+        JournalSummaryItemResponse? match = null;
+        for (var i = 0; i < result.Items.Count; i++)
+        {
+            var item = result.Items[i];
+            if (string.Equals(item.PostingSequence?.ToString(CultureInfo.InvariantCulture), trimmed, StringComparison.OrdinalIgnoreCase))
+            {
+                match = item;
+                break;
+            }
+        }
+        match ??= result.Items[0];
+        var fresh = await ledger.GetJournalAsync(CompanyId, BranchId, match.Id, cancellationToken).ConfigureAwait(true);
+        if (CashAccountId is { } cash) Display(fresh, cash);
+    }
+
+    public void AutoBalance()
+    {
+        if (!IsEditable || IsBalanced) return;
+        var diff = TotalReceive - TotalPay;
+        if (diff == 0m) return;
+
+        var target = SelectedRow ?? Rows.FirstOrDefault(r => r.IsIncomplete || r.IsPristineBlank);
+        if (target is null)
+        {
+            AutoGrow(10);
+            target = Rows.FirstOrDefault(r => r.IsPristineBlank);
+        }
+        if (target is null) return;
+
+        if (diff > 0m)
+        {
+            target.Pay = diff;
+            target.Receive = 0m;
+        }
+        else
+        {
+            target.Receive = Math.Abs(diff);
+            target.Pay = 0m;
+        }
+        Recalculate();
     }
 
     /// <summary>Shows a journal as a voucher: lines on the cash account are the cash side, every other line becomes a row.</summary>
@@ -271,7 +373,8 @@ public sealed partial class DailyVoucherViewModel : PageViewModel
                 CostCenterId = line.CostCenterId,
             });
         }
-        if (Rows.Count == 0) AddRow();
+        if (Rows.Count == 0) EnsureRowBuffer(50);
+        else if (IsEditable) EnsureRowBuffer(Math.Max(50, Rows.Count));
         StatusText = journal.StateName;
         OnPropertyChanged(nameof(IsPosted)); OnPropertyChanged(nameof(VoucherNumber)); OnPropertyChanged(nameof(JournalId)); NotifyCommands(); Recalculate();
     }
@@ -283,7 +386,12 @@ public sealed partial class DailyVoucherViewModel : PageViewModel
         if (CashAccountId is not { } cash) return Fail("D_DV_CashRequired");
         var rows = Rows.Where(r => !r.IsBlank).ToList();
         if (rows.Count == 0) return Fail("D_DV_RowsRequired");
-        if (rows.Any(r => !r.IsComplete)) return Fail("D_DV_RowIncomplete");
+        var incompleteIndex = Rows.ToList().FindIndex(r => r.IsIncomplete);
+        if (incompleteIndex >= 0)
+        {
+            ValidationMessage = string.Format(CultureInfo.CurrentCulture, Localization["D_LineRowError"], Localization["D_DV_Rows"], incompleteIndex + 1, Localization["D_DV_RowIncomplete"]);
+            return null;
+        }
         if (rows.Any(r => r.AccountId == cash)) return Fail("D_DV_CounterIsCash");
         if (!decimal.TryParse(RateText?.Trim(), NumberStyles.Number, CultureInfo.InvariantCulture, out var rate) || rate <= 0m || rate >= 100_000_000_000m)
             return Fail("D_DV_RateInvalid");

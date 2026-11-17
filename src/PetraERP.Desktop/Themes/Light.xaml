@@ -5,7 +5,7 @@
   <!-- Canonical semantic palette. -->
   <SolidColorBrush x:Key="App.Background" Color="#F3F4F6"/>
   <SolidColorBrush x:Key="Surface.Primary" Color="#FFFFFF"/>
-  <SolidColorBrush x:Key="Surface.Secondary" Color="#F8F9FA"/>
+  <SolidColorBrush x:Key="Surface.Secondary" Color="#EDF1F5"/>
   <SolidColorBrush x:Key="Surface.Recessed" Color="#EAEDF1"/>
   <SolidColorBrush x:Key="Brand.Navy" Color="#2A527E"/>
   <SolidColorBrush x:Key="Brand.NavyHover" Color="#204366"/>
@@ -15,10 +15,10 @@
   <SolidColorBrush x:Key="Text.Primary" Color="#252D35"/>
   <SolidColorBrush x:Key="Text.Secondary" Color="#5D6975"/>
   <SolidColorBrush x:Key="Text.Muted" Color="#5D6975"/>
-  <SolidColorBrush x:Key="Border.Normal" Color="#C6CDD5"/>
+  <SolidColorBrush x:Key="Border.Normal" Color="#9FAAB7"/>
   <SolidColorBrush x:Key="Border.Strong" Color="#8A95A3"/>
   <SolidColorBrush x:Key="Grid.Header" Color="#E8EDF2"/>
-  <SolidColorBrush x:Key="Grid.Alternate" Color="#F4F8FB"/>
+  <SolidColorBrush x:Key="Grid.Alternate" Color="#EAF0F6"/>
   <SolidColorBrush x:Key="Grid.Selection" Color="#C5EAFB"/>
   <SolidColorBrush x:Key="Grid.ActiveCell" Color="#1F6FA3"/>
   <SolidColorBrush x:Key="Danger" Color="#B4383D"/>
@@ -27,7 +27,7 @@
   <SolidColorBrush x:Key="Surface" Color="#F3F4F6"/>
   <SolidColorBrush x:Key="Input" Color="#FFFFFF"/>
   <SolidColorBrush x:Key="Text" Color="#252D35"/>
-  <SolidColorBrush x:Key="Border" Color="#C6CDD5"/>
+  <SolidColorBrush x:Key="Border" Color="#9FAAB7"/>
   <SolidColorBrush x:Key="Divider" Color="#D7DEE6"/>
   <SolidColorBrush x:Key="Accent" Color="#1F6FA3"/>
   <SolidColorBrush x:Key="Accent.Hover" Color="#185A86"/>

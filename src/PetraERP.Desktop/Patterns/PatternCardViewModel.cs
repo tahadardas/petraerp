@@ -52,6 +52,12 @@ public sealed partial class PatternCardViewModel : EntityCardViewModel
     [ObservableProperty] private bool draftBankEnforced;
     [ObservableProperty] private Guid? draftTransportRevenueAccountId;
     [ObservableProperty] private bool draftTransportRevenueEnforced;
+    [ObservableProperty] private Guid? draftOperatingAccountId;
+    [ObservableProperty] private bool draftOperatingAccountEnforced;
+    [ObservableProperty] private Guid? draftAssemblyExpenseAccountId;
+    [ObservableProperty] private bool draftAssemblyExpenseEnforced;
+    [ObservableProperty] private Guid? draftVarianceAccountId;
+    [ObservableProperty] private bool draftVarianceEnforced;
 
     /// <summary>Server mappings for roles this card does not edit; re-sent unchanged so saving never deletes them.</summary>
     private readonly List<PatternAccountMappingDto> preservedMappings = [];
@@ -189,6 +195,12 @@ public sealed partial class PatternCardViewModel : EntityCardViewModel
     partial void OnDraftBankEnforcedChanged(bool value) => DraftChanged();
     partial void OnDraftTransportRevenueAccountIdChanged(Guid? value) => DraftChanged();
     partial void OnDraftTransportRevenueEnforcedChanged(bool value) => DraftChanged();
+    partial void OnDraftOperatingAccountIdChanged(Guid? value) => DraftChanged();
+    partial void OnDraftOperatingAccountEnforcedChanged(bool value) => DraftChanged();
+    partial void OnDraftAssemblyExpenseAccountIdChanged(Guid? value) => DraftChanged();
+    partial void OnDraftAssemblyExpenseEnforcedChanged(bool value) => DraftChanged();
+    partial void OnDraftVarianceAccountIdChanged(Guid? value) => DraftChanged();
+    partial void OnDraftVarianceEnforcedChanged(bool value) => DraftChanged();
     partial void OnDraftDefaultCostCenterIdChanged(Guid? value) => DraftChanged();
     partial void OnDraftDefaultWarehouseChanged(string? value) => DraftChanged();
     partial void OnDraftDefaultCurrencyCodeChanged(string? value) => DraftChanged();
@@ -240,6 +252,9 @@ public sealed partial class PatternCardViewModel : EntityCardViewModel
         && (!DraftTaxEnforced || RequiredInput.Selection(DraftTaxAccountId))
         && (!DraftBankEnforced || RequiredInput.Selection(DraftBankAccountId))
         && (!DraftTransportRevenueEnforced || RequiredInput.Selection(DraftTransportRevenueAccountId))
+        && (!DraftOperatingAccountEnforced || RequiredInput.Selection(DraftOperatingAccountId))
+        && (!DraftAssemblyExpenseEnforced || RequiredInput.Selection(DraftAssemblyExpenseAccountId))
+        && (!DraftVarianceEnforced || RequiredInput.Selection(DraftVarianceAccountId))
         && (!DraftFxGainEnforced || RequiredInput.Selection(DraftFxGainAccountId))
         && (!DraftFxLossEnforced || RequiredInput.Selection(DraftFxLossAccountId));
 
@@ -397,8 +412,10 @@ public sealed partial class PatternCardViewModel : EntityCardViewModel
         DraftFxGainEnforced = DraftFxLossEnforced = false;
         DraftSalesAccountId = DraftInventoryAccountId = DraftCogsAccountId = DraftCustomerAccountId = DraftSupplierAccountId = null;
         DraftCashAccountId = DraftBankAccountId = DraftDiscountAccountId = DraftTaxAccountId = DraftTransportRevenueAccountId = null;
+        DraftOperatingAccountId = DraftAssemblyExpenseAccountId = DraftVarianceAccountId = null;
         DraftSalesEnforced = DraftInventoryEnforced = DraftCogsEnforced = DraftCustomerEnforced = DraftSupplierEnforced = false;
         DraftCashEnforced = DraftBankEnforced = DraftDiscountEnforced = DraftTaxEnforced = DraftTransportRevenueEnforced = false;
+        DraftOperatingAccountEnforced = DraftAssemblyExpenseEnforced = DraftVarianceEnforced = false;
         if (config.AccountMappings is not null)
         {
             foreach (var mapping in config.AccountMappings)
@@ -420,6 +437,9 @@ public sealed partial class PatternCardViewModel : EntityCardViewModel
                     case "TRANSPORTREVENUE": DraftTransportRevenueAccountId = accId; DraftTransportRevenueEnforced = enforced; break;
                     case "FXGAIN": DraftFxGainAccountId = accId; DraftFxGainEnforced = enforced; break;
                     case "FXLOSS": DraftFxLossAccountId = accId; DraftFxLossEnforced = enforced; break;
+                    case "OPERATINGACCOUNT" or "OPERATING" or "WORKINPROGRESS": DraftOperatingAccountId = accId; DraftOperatingAccountEnforced = enforced; break;
+                    case "ASSEMBLYEXPENSE" or "MANUFACTURINGEXPENSE": DraftAssemblyExpenseAccountId = accId; DraftAssemblyExpenseEnforced = enforced; break;
+                    case "VARIANCE" or "SETTLEMENTVARIANCE": DraftVarianceAccountId = accId; DraftVarianceEnforced = enforced; break;
                     default: preservedMappings.Add(mapping); break;
                 }
             }
@@ -478,6 +498,9 @@ public sealed partial class PatternCardViewModel : EntityCardViewModel
         Map("TransportRevenue", DraftTransportRevenueAccountId, DraftTransportRevenueEnforced);
         Map("FxGain", DraftFxGainAccountId, DraftFxGainEnforced);
         Map("FxLoss", DraftFxLossAccountId, DraftFxLossEnforced);
+        Map("OperatingAccount", DraftOperatingAccountId, DraftOperatingAccountEnforced);
+        Map("AssemblyExpense", DraftAssemblyExpenseAccountId, DraftAssemblyExpenseEnforced);
+        Map("Variance", DraftVarianceAccountId, DraftVarianceEnforced);
         mappings.AddRange(preservedMappings);
 
         return new PatternConfigurationDto

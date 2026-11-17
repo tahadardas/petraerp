@@ -20,7 +20,11 @@ public enum StockMovementKind
     TransferOut = 7,
     AdjustmentIncrease = 8,
     AdjustmentDecrease = 9,
-    InternalIssue = 10
+    InternalIssue = 10,
+    AssemblyIssue = 11,
+    AssemblyReceipt = 12,
+    DisassemblyIssue = 13,
+    DisassemblyReceipt = 14
 }
 
 public enum StockTransferStatus

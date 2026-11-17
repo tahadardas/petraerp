@@ -55,7 +55,8 @@ internal sealed class JournalEntryConfiguration : IEntityTypeConfiguration<Journ
                .HasDatabaseName("UQ_JournalEntries_PostingNumber");
 
         // State lookup for pending/draft queries
-        builder.HasIndex(r => new { r.CompanyId, r.BranchId, r.State, r.AccountingDate })
+        // PostingSequence completes the ledger's keyset order (date, sequence, id) so a page can seek instead of sort.
+        builder.HasIndex(r => new { r.CompanyId, r.BranchId, r.State, r.AccountingDate, r.PostingSequence })
                .HasDatabaseName("IX_JournalEntries_CompanyBranchStateDate");
 
         // Reversal uniqueness: one reversal entry per original

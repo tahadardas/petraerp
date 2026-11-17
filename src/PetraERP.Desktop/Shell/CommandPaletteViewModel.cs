@@ -21,6 +21,16 @@ public enum PaletteEntryKind
     Filter,
 }
 
+/// <summary>Al-Ameen 10 search scope categories for quick navigation filtering.</summary>
+public enum PaletteScope
+{
+    All = 0,
+    Operations = 1,
+    Reports = 2,
+    Cards = 3,
+    Tools = 4,
+}
+
 /// <summary>
 /// One palette row. Navigate/Action/Entity/Filter rows open a permitted route; Tab and Command rows run <see cref="Run"/>,
 /// which the shell supplies (activate a tab, toggle the theme, ...). <see cref="IsDirty"/> marks a tab with unsaved input.
@@ -41,6 +51,29 @@ public sealed partial class CommandPaletteViewModel : ObservableObject, IDisposa
 
     [ObservableProperty] private bool isOpen;
     [ObservableProperty] private PaletteEntry? selected;
+    [ObservableProperty] private PaletteScope activeScope = PaletteScope.All;
+
+    public RelayCommand<PaletteScope> SelectScopeCommand => selectScopeCommand ??= new(scope =>
+    {
+        ActiveScope = scope;
+        Rebuild();
+    });
+    private RelayCommand<PaletteScope>? selectScopeCommand;
+
+    public bool IsScopeAll => ActiveScope == PaletteScope.All;
+    public bool IsScopeOperations => ActiveScope == PaletteScope.Operations;
+    public bool IsScopeReports => ActiveScope == PaletteScope.Reports;
+    public bool IsScopeCards => ActiveScope == PaletteScope.Cards;
+    public bool IsScopeTools => ActiveScope == PaletteScope.Tools;
+
+    partial void OnActiveScopeChanged(PaletteScope value)
+    {
+        OnPropertyChanged(nameof(IsScopeAll));
+        OnPropertyChanged(nameof(IsScopeOperations));
+        OnPropertyChanged(nameof(IsScopeReports));
+        OnPropertyChanged(nameof(IsScopeCards));
+        OnPropertyChanged(nameof(IsScopeTools));
+    }
 
     public CommandPaletteViewModel(NavigationService navigation, WorkspaceViewModel workspace, ShellNavigator navigator, ILocalizationService localization)
     {
@@ -70,19 +103,38 @@ public sealed partial class CommandPaletteViewModel : ObservableObject, IDisposa
     {
         if (!CanOpen) return;
         IsOpen = true;
+        ActiveScope = PaletteScope.All;
         Rebuild();
     }
+
+    private bool MatchesScope(NavigationItem item) => ActiveScope switch
+    {
+        PaletteScope.Operations => item.Group is "accounting" or "treasury" or "sales" or "purchases",
+        PaletteScope.Reports => item.Group is "reports",
+        PaletteScope.Cards => item.Group is "parties" or "inventory",
+        PaletteScope.Tools => item.Group is "tools" or "settings" or "administration" or "currency" or "multi",
+        _ => true
+    };
+
+    private bool MatchesScope(PaletteEntry entry) => ActiveScope switch
+    {
+        PaletteScope.Operations => entry.Kind is PaletteEntryKind.Action || entry.Route is "journals" or "daily-vouchers" or "treasury-vouchers" or "sales-invoices" or "purchase-invoices",
+        PaletteScope.Reports => entry.Route is "reports" or "supplier-statement" or "customer-statement" or "account-ledger" or "general-journal",
+        PaletteScope.Cards => entry.Kind is PaletteEntryKind.Entity || entry.Route is "accounts" or "items" or "parties" or "warehouses" or "cost-centers",
+        PaletteScope.Tools => entry.Kind is PaletteEntryKind.Command || entry.Route is "preferences" or "users" or "roles" or "audit" or "currencies",
+        _ => true
+    };
 
     public void Rebuild()
     {
         var term = workspace.PaletteQuery.Trim();
         Entries.Clear();
-        foreach (var item in navigation.Items.Where(item => item.Id != "home" && (workspace.ContextReady || IsContextFree(item.Id)) && Matches(term, item.Label, item.Id)).OrderByDescending(item => workspace.IsFavorite(CommandId(item.Id))))
+        foreach (var item in navigation.Items.Where(item => item.Id != "home" && (workspace.ContextReady || IsContextFree(item.Id)) && Matches(term, item.Label, item.Id) && MatchesScope(item)).OrderByDescending(item => workspace.IsFavorite(CommandId(item.Id))))
         {
             Entries.Add(new PaletteEntry(PaletteEntryKind.Navigate, item.Id, item.Label, localization["D_NavGroup_" + item.Group], item.Glyph, item.Id, null));
         }
 
-        if (workspace.ContextReady && navigation.Allows("journals") && navigation.Has("Ledger.Journals.Manage") && Matches(term, localization["D_NewJournal"], "journal.new"))
+        if (workspace.ContextReady && navigation.Allows("journals") && navigation.Has("Ledger.Journals.Manage") && Matches(term, localization["D_NewJournal"], "journal.new") && (ActiveScope is PaletteScope.All or PaletteScope.Operations))
         {
             Entries.Add(new PaletteEntry(PaletteEntryKind.Action, "journal.new", localization["D_NewJournal"], localization["D_Journals"], "", "journals", NewJournalRequest.Instance));
         }
@@ -91,10 +143,10 @@ public sealed partial class CommandPaletteViewModel : ObservableObject, IDisposa
         {
             if (Entries.Any(existing => existing.Kind == entry.Kind && existing.Id == entry.Id)) continue;
             if (entry.Kind is PaletteEntryKind.Tab or PaletteEntryKind.Command ? entry.Run is null : !navigation.Allows(entry.Route)) continue;
-            if (Matches(term, entry.Label, entry.Detail, entry.Id)) Entries.Add(entry);
+            if (Matches(term, entry.Label, entry.Detail, entry.Id) && MatchesScope(entry)) Entries.Add(entry);
         }
 
-        if (term.Length == 0)
+        if (term.Length == 0 && (ActiveScope is PaletteScope.All or PaletteScope.Cards))
         {
             foreach (var hit in workspace.Recent)
             {
@@ -105,12 +157,15 @@ public sealed partial class CommandPaletteViewModel : ObservableObject, IDisposa
             }
         }
 
-        foreach (var hit in workspace.PaletteEntities)
+        if (ActiveScope is PaletteScope.All or PaletteScope.Cards)
         {
-            var (route, parameter, glyph) = Target(hit);
-            if (route is null) continue;
-            Entries.Add(new PaletteEntry(PaletteEntryKind.Entity, hit.Id.ToString("N"), hit.Code + " — " + hit.Name,
-                localization["UX_Category_" + hit.Category], glyph, route, parameter, hit));
+            foreach (var hit in workspace.PaletteEntities)
+            {
+                var (route, parameter, glyph) = Target(hit);
+                if (route is null) continue;
+                Entries.Add(new PaletteEntry(PaletteEntryKind.Entity, hit.Id.ToString("N"), hit.Code + " — " + hit.Name,
+                    localization["UX_Category_" + hit.Category], glyph, route, parameter, hit));
+            }
         }
 
         Selected = Entries.FirstOrDefault();

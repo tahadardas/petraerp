@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PetraERP.ApiClient;
 using PetraERP.Desktop.Connection;
+using PetraERP.Desktop.Controls;
 using PetraERP.Desktop.Sales;
 using PetraERP.Desktop.Shell;
 
@@ -33,6 +34,41 @@ public sealed partial class PurchasesViewModel
     [ObservableProperty] private string? draftNotes;
     [ObservableProperty] private string draftSellerText = string.Empty;
     [ObservableProperty] private string draftDistributorText = string.Empty;
+
+    public PartyLookupDto? SelectedSupplier => Suppliers.FirstOrDefault(s => s.Id == DraftSupplierId);
+    public bool HasSelectedSupplier => SelectedSupplier is not null;
+    public string SupplierCurrentBalanceDisplay => SelectedSupplier?.CurrentBalance is { Length: > 0 } bal ? bal : "0.00";
+    public string SupplierCreditLimitDisplay => SelectedSupplier?.CreditLimit is { Length: > 0 } lim ? lim : "0.00";
+    public string SupplierAvailableCreditDisplay => SelectedSupplier?.AvailableCredit is { Length: > 0 } av ? av : "0.00";
+    public bool IsSupplierCreditBlocked => SelectedSupplier?.IsCreditBlocked == true;
+    public bool HasSupplierCreditLimit => decimal.TryParse(SelectedSupplier?.CreditLimit, NumberStyles.Any, CultureInfo.InvariantCulture, out var limit) && limit > 0;
+
+    [ObservableProperty] private bool isInvoiceInfoOpen;
+    public RelayCommand ToggleInvoiceInfoCommand => toggleInvoiceInfoCommand ??= new(() => IsInvoiceInfoOpen = !IsInvoiceInfoOpen);
+    private RelayCommand? toggleInvoiceInfoCommand;
+
+    public string InvoiceAuditStatusDisplay => Lifecycle switch
+    {
+        DocumentLifecycle.Posted => "مرحلة ومحققة محاسبياً",
+        DocumentLifecycle.Approved => "معتمدة بانتظار الترحيل",
+        DocumentLifecycle.Reversed => "معكوسة / ملغاة",
+        _ => "مسودة قيد التحرير"
+    };
+
+    public string InvoiceJournalNumberDisplay => Current?.JournalEntryId is { } id
+        ? id.ToString()[..8].ToUpperInvariant()
+        : (Lifecycle == DocumentLifecycle.Posted ? "سند قيد آلي" : "غير مولد بعد");
+
+    public bool HasGeneratedJournal => Current?.JournalEntryId.HasValue == true;
+    public int FilledLinesCount => Lines.Count(l => !l.IsPristineBlank);
+    public string InvoiceDateUtcDisplay => Current?.InvoiceDateUtc?.LocalDateTime.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)
+        ?? (DraftDate.HasValue ? DraftDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "-");
+    public string PaymentMethodDisplay => DraftPaymentMethod switch
+    {
+        PaymentMethod.Cash => "نقداً",
+        PaymentMethod.Credit => "ذمم (آجل)",
+        _ => DraftPaymentMethod.ToString()
+    };
     [ObservableProperty] private Guid? draftCostCenterId;
 
     private static int? ParseCode(string? text) =>
@@ -167,6 +203,7 @@ public sealed partial class PurchasesViewModel
         AdditionsTotalDisplay = documentAdditions.ToString("F4", CultureInfo.InvariantCulture);
         GrandTotalDisplay = (sub - discount + tax + documentAdditions).ToString("F4", CultureInfo.InvariantCulture);
         TotalQuantityDisplay = quantity.ToString("F4", CultureInfo.InvariantCulture);
+        NotifyInvoiceInfoProperties();
     }
 
     public AsyncRelayCommand SaveCommand { get; private set; } = null!;
@@ -246,7 +283,7 @@ public sealed partial class PurchasesViewModel
                 ValidationMessage = Localization["D_DocumentPostedLocked"];
                 return;
             }
-            IsEditing = true; EnsureEntryBuffer(50); Refresh();
+            IsEditing = true; EnsureEntryBuffer(EntryOptionsHub.Current.InvoiceRows); Refresh();
             CaptureDraftBaseline();
             OnPropertyChanged(nameof(HasUnsavedChanges));
         }, () => HasContext && Idle && CanManage && (Current is null || Current.Status == PurchaseInvoiceStatus.Draft) && !IsEditing);
@@ -394,7 +431,7 @@ public sealed partial class PurchasesViewModel
         PopulateAdjustments(detail);
         if (detail.Status == PurchaseInvoiceStatus.Draft && IsEditing)
         {
-            EnsureEntryBuffer(50);
+            EnsureEntryBuffer(EntryOptionsHub.Current.InvoiceRows);
         }
         Refresh();
     }
@@ -671,6 +708,13 @@ public sealed partial class PurchasesViewModel
     }
     partial void OnDraftSupplierIdChanged(Guid? value)
     {
+        OnPropertyChanged(nameof(SelectedSupplier));
+        OnPropertyChanged(nameof(HasSelectedSupplier));
+        OnPropertyChanged(nameof(SupplierCurrentBalanceDisplay));
+        OnPropertyChanged(nameof(SupplierCreditLimitDisplay));
+        OnPropertyChanged(nameof(SupplierAvailableCreditDisplay));
+        OnPropertyChanged(nameof(IsSupplierCreditBlocked));
+        OnPropertyChanged(nameof(HasSupplierCreditLimit));
         Refresh(); _ = LoadPaymentTermsAsync(value);
         if (IsEditing && Current is null && value is { } supplierId) _ = ApplySupplierAccountCurrencyAsync(supplierId);
     }

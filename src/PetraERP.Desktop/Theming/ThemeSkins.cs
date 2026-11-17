@@ -20,6 +20,10 @@ public enum ThemeSkin
     Office2013White = 10,
     Windows7Scenic = 11,
     VisualStudio2010 = 12,
+    Ameen10Blue = 13,
+    Ameen10Purple = 14,
+    Windows11Light = 15,
+    Windows11Dark = 16,
 }
 
 /// <param name="ForceDark">Black skins always use the Dark base; the others follow the Light/Dark/System preference.</param>
@@ -43,6 +47,10 @@ public static class ThemeSkins
         [ThemeSkin.Office2013White] = new(false, "#FFFFFF", "#E6E6E6", "#2B2B2B", "#EFEFEF", "#2B579A", "#214786", "#DCE5F3", "#FFFFFF", "#F0F0F0", "#CDE6F7"),
         [ThemeSkin.Windows7Scenic] = new(false, "#4F7FB8", "#3E6A9D", "#FFFFFF", "#6E98C8", "#3C7FB1", "#2F6893", "#DCEBF6", "#F0F4FA", "#D5E3F2", "#CFE6F9"),
         [ThemeSkin.VisualStudio2010] = new(false, "#293955", "#1F2D44", "#FFFFFF", "#46587A", "#3C5A8E", "#2E4776", "#D6DFEE", "#CFD9E8", "#BCC9DE", "#FFE8A6"),
+        [ThemeSkin.Ameen10Blue] = new(false, "#1E3A8A", "#172554", "#FFFFFF", "#3B82F6", "#2563EB", "#1D4ED8", "#DBEAFE", "#F8FAFC", "#E2E8F0", "#BFDBFE"),
+        [ThemeSkin.Ameen10Purple] = new(false, "#581C87", "#3B0764", "#FFFFFF", "#7E22CE", "#7C3AED", "#6D28D9", "#EDE9FE", "#FAF5FF", "#F3E8FF", "#DDD6FE"),
+        [ThemeSkin.Windows11Light] = new(false, "#F3F3F3", "#E5E5E5", "#1F1F1F", "#FFFFFF", "#0067C0", "#005A9E", "#E0EEFF", "#F9F9F9", "#EBEBEB", "#CCE8FF"),
+        [ThemeSkin.Windows11Dark] = new(true, "#202020", "#2D2D2D", "#FFFFFF", "#383838", "#4CC2FF", "#3FA8E0", "#1C3647", null, "#2B2B2B", "#003E6B"),
     };
 
     /// <summary>Palette of a skin; null for the default Petra look (no overrides).</summary>

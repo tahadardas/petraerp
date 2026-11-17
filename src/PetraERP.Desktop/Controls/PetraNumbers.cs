@@ -54,6 +54,8 @@ public static class PetraNumberFormat
     public static event EventHandler? Changed;
 
     public static NumberDisplayMode Mode => mode;
+    internal static CultureInfo CurrentCulture => mode == NumberDisplayMode.OperatingSystem ? operatingSystemCulture : culture;
+    internal static DecimalDisplayMode CurrentDecimalMode => decimals;
 
     /// <summary>Sets the display mode and UI culture (called by the shell on language/preference change).</summary>
     public static void Configure(NumberDisplayMode displayMode, CultureInfo uiCulture, DecimalDisplayMode decimalMode = DecimalDisplayMode.Automatic)
@@ -121,6 +123,13 @@ public static class PetraNumberFormat
     public static bool TryParseInput(string? text, out decimal value)
     {
         value = 0m;
+        if (string.IsNullOrWhiteSpace(text)) return false;
+        if (PetraMathEvaluator.ContainsOperator(text) && PetraMathEvaluator.TryEvaluate(text, out var evaluated))
+        {
+            value = evaluated;
+            return true;
+        }
+
         var normalized = NormalizeInput(text);
         if (normalized.Length == 0) return false;
         var negative = normalized.StartsWith('(') && normalized.EndsWith(')');
@@ -136,10 +145,17 @@ public static class PetraNumberFormat
     }
 
     /// <summary>Converts native digits and Arabic separators to ASCII and drops grouping characters.</summary>
-    public static string NormalizeInput(string? text)
+    public static string NormalizeInput(string? text) =>
+        NormalizeInputWith(text, mode, mode == NumberDisplayMode.OperatingSystem ? operatingSystemCulture : culture, decimals);
+
+    /// <summary>
+    /// Normalizes with explicit settings and no shared state. A separator that is ambiguous under those settings (for example
+    /// "1,5" when "," groups thousands) returns an empty string: invalid input is refused, never guessed.
+    /// </summary>
+    internal static string NormalizeInputWith(string? text, NumberDisplayMode displayMode, CultureInfo uiCulture, DecimalDisplayMode decimalMode)
     {
         if (string.IsNullOrWhiteSpace(text)) return string.Empty;
-        var format = DisplayFormat(mode, mode == NumberDisplayMode.OperatingSystem ? operatingSystemCulture : culture, decimals);
+        var format = DisplayFormat(displayMode, uiCulture, decimalMode);
         var group = format.NumberGroupSeparator;
         var point = format.NumberDecimalSeparator;
         var raw = new StringBuilder(text.Length);

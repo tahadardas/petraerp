@@ -71,7 +71,9 @@ public static class DesktopComposition
         services.AddSingleton<IUserPreferenceStore>(_ => new UserPreferenceStore(Path.Combine(directory, "Preferences", endpoint)));
         services.AddSingleton<UserPreferencesService>();
         services.AddSingleton(provider => new DashboardViewModel(provider.GetRequiredService<IGeneralLedgerClient>(),
-            provider.GetRequiredService<Treasury.ICommercialPapersClient>(), provider.GetRequiredService<ILocalizationService>()));
+            provider.GetRequiredService<Treasury.ICommercialPapersClient>(), provider.GetRequiredService<ILocalizationService>(),
+            provider.GetService<Reports.IReportsClient>(), provider.GetService<ShellNavigator>()));
+        services.AddSingleton<ExecutiveDashboardViewModel>();
         services.AddSingleton<ShellDialogService>();
         services.AddSingleton<IUserConfirmation>(provider => provider.GetRequiredService<ShellDialogService>());
         services.AddSingleton<NotificationCenter>();
@@ -83,6 +85,16 @@ public static class DesktopComposition
         services.AddSingleton<DailyVoucherViewModel>(); services.AddSingleton<AccountDirectoryViewModel>(); services.AddSingleton<ItemLimitsViewModel>(); services.AddSingleton<ItemPriceToolViewModel>(); services.AddSingleton<Patterns.PatternManagerViewModel>(); services.AddSingleton<ItemDirectoryViewModel>(); services.AddSingleton<GeneralJournalViewModel>(); services.AddSingleton<AccountLedgerViewModel>(); services.AddSingleton<TrialBalanceViewModel>();
         services.AddSingleton<DocumentPatternsViewModel>(); services.AddSingleton<PartiesViewModel>(); services.AddSingleton<ItemsViewModel>();
         services.AddSingleton<Inventory.StocktakingWizardViewModel>();
+        services.AddSingleton<Inventory.AssemblyDisassemblyViewModel>();
+        services.AddSingleton<Assets.IAssetsClient, Assets.AssetsMockService>();
+        services.AddSingleton<Assets.AssetDirectoryViewModel>();
+        services.AddSingleton<Assets.FleetExpenseJournalViewModel>();
+        services.AddSingleton<Assets.FuelDispensingViewModel>();
+        services.AddSingleton<Assets.AssetCustodyViewModel>();
+        services.AddSingleton<Assets.CustomerRentalViewModel>();
+        services.AddSingleton<Assets.AssetDossierTcoViewModel>();
+        services.AddSingleton<Assets.AssetDepreciationRunViewModel>();
+        services.AddSingleton<Assets.MaintenanceWorkOrderViewModel>();
         services.AddSingleton<SalesInvoicesViewModel>();
         services.AddSingleton<Treasury.VouchersViewModel>();
         services.AddSingleton<Treasury.ChequesViewModel>();

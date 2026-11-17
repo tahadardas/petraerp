@@ -70,6 +70,7 @@ public sealed partial class InventoryOperationsViewModel : PageViewModel, ISavab
         CancelCommand = new(CancelAsync, () => IsEditing && Idle);
         SaveCommand = new(SaveAsync, () => HasContext && Idle && IsEditing && Complete());
         AddLineCommand = new(() => AddLine(new()), () => IsEditing && Idle && Lines.Count < 200);
+        AutoGrowCommand = new(() => AutoGrow(10), () => IsEditing && Idle && Lines.Count < 200);
         RemoveLineCommand = new(() => { if (SelectedLine is { } line) { line.PropertyChanged -= LineChanged; Lines.Remove(line); SelectedLine = null; NotifyCommands(); } }, () => IsEditing && Idle && SelectedLine is not null);
         PostCommand = new(() => ActAsync(false), () => !IsEditing && Current?.State == InventoryDocumentState.Draft && CanManage && Idle && !string.IsNullOrWhiteSpace(ActionReason));
         ReverseCommand = new(() => ActAsync(true), () => !IsEditing && Current?.State == InventoryDocumentState.Posted && CanManage && Idle && !string.IsNullOrWhiteSpace(ActionReason));
@@ -115,6 +116,7 @@ public sealed partial class InventoryOperationsViewModel : PageViewModel, ISavab
     public AsyncRelayCommand CancelCommand { get; }
     public AsyncRelayCommand SaveCommand { get; }
     public RelayCommand AddLineCommand { get; }
+    public RelayCommand AutoGrowCommand { get; }
     public RelayCommand RemoveLineCommand { get; }
     public AsyncRelayCommand PostCommand { get; }
     public AsyncRelayCommand ReverseCommand { get; }
@@ -206,6 +208,15 @@ public sealed partial class InventoryOperationsViewModel : PageViewModel, ISavab
         actionKey = actionFingerprint = null; OnPropertyChanged(nameof(NumberDisplay)); NotifyCommands();
     }
     private void AddLine(InventoryDraftLine line) { line.PropertyChanged += LineChanged; Lines.Add(line); NotifyCommands(); }
+    public void AutoGrow(int additional = 10)
+    {
+        if (!IsEditing || !Idle) return;
+        var limit = Math.Min(Lines.Count + additional, 200);
+        while (Lines.Count < limit)
+        {
+            AddLine(new());
+        }
+    }
     private void LineChanged(object? sender, PropertyChangedEventArgs args) => NotifyCommands();
     private bool Complete() => CanManage && Date.HasValue && WarehouseId.HasValue && !string.IsNullOrWhiteSpace(Reason) && Reason.Trim().Length <= 500
         && (!IsTransfer || TargetWarehouseId.HasValue && TargetWarehouseId != WarehouseId)
@@ -287,7 +298,7 @@ public sealed partial class InventoryOperationsViewModel : PageViewModel, ISavab
 
     protected override void NotifyCommands()
     {
-        foreach (var c in new IRelayCommand?[] { RefreshCommand, NewCommand, OpenCommand, EditCommand, CancelCommand, SaveCommand, AddLineCommand, RemoveLineCommand,
+        foreach (var c in new IRelayCommand?[] { RefreshCommand, NewCommand, OpenCommand, EditCommand, CancelCommand, SaveCommand, AddLineCommand, AutoGrowCommand, RemoveLineCommand,
             PostCommand, ReverseCommand, PreviousCommand, NextCommand, LoadMovementsCommand, SearchItemsCommand, PreviousMovementCommand, NextMovementCommand, OpenSourceCommand, OpenJournalCommand, BulkPostCommand, backToListCommand }) c?.NotifyCanExecuteChanged();
         foreach (var p in new[] { nameof(HasUnsavedChanges), nameof(CanSaveBeforeClose), nameof(CanManage), nameof(CanAnyManage), nameof(CanManagePostingBatches), nameof(IsTransfer), nameof(RequiresAccounts), nameof(IsEntryReadOnly), nameof(IsOpeningCostReadOnly), nameof(CanChangeKind), nameof(Lifecycle), nameof(DocumentStatusText), nameof(DocumentStatusKind), nameof(HasDocumentStatus), nameof(ShowDocumentList), nameof(IsCostCenterRequired) }) OnPropertyChanged(p);
     }

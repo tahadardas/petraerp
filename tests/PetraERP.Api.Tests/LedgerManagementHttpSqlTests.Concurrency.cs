@@ -103,7 +103,7 @@ public sealed partial class LedgerManagementHttpSqlTests
             var token = (await ApiSqlHost.LoginAsync(client, ApiSqlHost.AdminUser, ApiSqlHost.AdminPassword).ConfigureAwait(true)).AccessToken;
             // Enough opening stock that the benchmark exercises the real posting path instead of the negative-stock block. A long soak needs far more
             // than the default: once stock runs out every request is a cheap rejection and the run no longer tests posting.
-            var fixture = await PrepareNumberedSalesAsync(host, client, token, openingStock: "5000").ConfigureAwait(true);
+            var fixture = await PrepareNumberedSalesAsync(host, client, token, openingStock: Environment.GetEnvironmentVariable("PETRAERP_SOAK_OPENING_STOCK") ?? "5000").ConfigureAwait(true);
             var root = $"/api/v1/companies/{host.CompanyId}/branches/{host.BranchId}";
             await SetPostingModeAsync(host, client, token, root, DocumentPostingMode.ApproveAndPost).ConfigureAwait(true);
 

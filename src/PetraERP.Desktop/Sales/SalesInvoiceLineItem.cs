@@ -21,6 +21,7 @@ public sealed class SalesInvoiceLineItem : ObservableObject, IDocumentEntryRow, 
     private string taxPercentage = "0.0000";
     private string taxAmount = "0.0000";
     private string pumpCost = "0.0000";
+    private string estimatedUnitCost = "0.0000";
     private string transportCost = "0.0000";
     private string lineTotal = "0.0000";
     private Guid? costCenterId;
@@ -397,6 +398,32 @@ public sealed class SalesInvoiceLineItem : ObservableObject, IDocumentEntryRow, 
         get => displayOrder;
         set => SetProperty(ref displayOrder, value);
     }
+
+    /// <summary>Estimated unit cost for profitability calculation (Al-Ameen 10 invoice info).</summary>
+    public string EstimatedUnitCost
+    {
+        get => estimatedUnitCost;
+        set
+        {
+            if (SetProperty(ref estimatedUnitCost, value))
+            {
+                NotifyRowState();
+                NotifyChanged();
+            }
+        }
+    }
+
+    public decimal EstimatedLineCost =>
+        decimal.TryParse(Quantity, NumberStyles.Number | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var q) &&
+        decimal.TryParse(EstimatedUnitCost, NumberStyles.Number | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var c)
+            ? Math.Round(q * c, 4, MidpointRounding.AwayFromZero)
+            : 0m;
+
+    public bool IsBelowCost =>
+        decimal.TryParse(UnitPrice, NumberStyles.Number | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var p) &&
+        decimal.TryParse(EstimatedUnitCost, NumberStyles.Number | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var c) &&
+        decimal.TryParse(Quantity, NumberStyles.Number | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var q) &&
+        q > 0m && c > 0m && p < c;
 
     /// <summary>Where the unit price came from (server price list or manual); display only.</summary>
     public string PriceSource

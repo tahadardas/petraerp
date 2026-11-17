@@ -2030,7 +2030,7 @@ namespace PetraERP.Infrastructure.Persistence.AccountingMigrations
                         .HasDatabaseName("UQ_JournalEntries_PostingNumber")
                         .HasFilter("[PostingSequence] IS NOT NULL");
 
-                    b.HasIndex("CompanyId", "BranchId", "State", "AccountingDate")
+                    b.HasIndex("CompanyId", "BranchId", "State", "AccountingDate", "PostingSequence")
                         .HasDatabaseName("IX_JournalEntries_CompanyBranchStateDate");
 
                     b.ToTable("JournalEntries", "ledger", t =>
@@ -2156,6 +2156,8 @@ namespace PetraERP.Infrastructure.Persistence.AccountingMigrations
 
                     b.HasIndex("CompanyId", "AccountId", "JournalId")
                         .HasDatabaseName("IX_JournalLines_CompanyAccountJournal");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("CompanyId", "AccountId", "JournalId"), new[] { "BaseDebit", "BaseCredit" });
 
                     b.ToTable("JournalLines", "ledger", t =>
                         {

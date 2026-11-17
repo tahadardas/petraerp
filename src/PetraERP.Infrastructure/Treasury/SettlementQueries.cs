@@ -21,9 +21,13 @@ internal static class SettlementQueries
     internal sealed record LegacyLine(Guid Id, decimal Amount);
 
     internal static async Task<IReadOnlyList<SettlementInvoice>> LoadInvoicesAsync(FinancialDbContext db, Guid companyId, Guid? branchId,
-        VoucherKind kind, Guid? partyId, string? currency, DateTimeOffset? asOf, CancellationToken token, IReadOnlyCollection<Guid>? partyIds = null)
+        VoucherKind kind, Guid? partyId, string? currency, DateTimeOffset? asOf, CancellationToken token, IReadOnlyCollection<Guid>? partyIds = null,
+        Guid? documentId = null)
     {
         var end = asOf ?? DateTimeOffset.MaxValue;
+        // documentId narrows the seed set to that invoice plus its returns and reversals (everything Compose needs for it) and skips
+        // the party's open items; the arithmetic for that invoice is unchanged.
+        var hasDocument = documentId.HasValue;
         // One query set for many parties (e.g. a list page) instead of one per party.
         var hasPartySet = partyIds is not null;
         var partySet = partyIds?.ToArray() ?? [];
@@ -32,6 +36,7 @@ internal static class SettlementQueries
         {
             source = await db.SalesInvoices.AsNoTracking().Where(i => i.CompanyId == companyId && (!branchId.HasValue || i.BranchId == branchId)
                 && (!partyId.HasValue || i.CustomerId == partyId) && (!hasPartySet || partySet.Contains(i.CustomerId)) && (currency == null || i.CurrencyCode == currency)
+                && (!hasDocument || i.Id == documentId || i.ReturnOfInvoiceId == documentId || i.ReversesInvoiceId == documentId)
                 && i.PaymentMethod == (int)PaymentMethod.Credit && (i.Status == 2 || i.Status == 3) && i.JournalEntryId != null && i.InvoiceDateUtc < end
                 && db.JournalEntries.Any(j=>j.Id==i.JournalEntryId && j.CompanyId==companyId && j.BranchId==i.BranchId && (j.State==4 || j.State==5)))
                 .Select(i => new Seed(i.Id,i.CustomerId,i.BranchId,i.InvoiceNumber,i.InvoiceDateUtc,i.CurrencyCode,i.ExchangeRate,i.GrandTotal,i.JournalEntryId!.Value,i.ReturnOfInvoiceId,i.ReversesInvoiceId))
@@ -41,6 +46,7 @@ internal static class SettlementQueries
         {
             source = await db.PurchaseInvoices.AsNoTracking().Where(i => i.CompanyId == companyId && (!branchId.HasValue || i.BranchId == branchId)
                 && (!partyId.HasValue || i.SupplierId == partyId) && (!hasPartySet || partySet.Contains(i.SupplierId)) && (currency == null || i.CurrencyCode == currency)
+                && (!hasDocument || i.Id == documentId || i.ReturnOfInvoiceId == documentId || i.ReversesInvoiceId == documentId)
                 && i.PaymentMethod == (int)PaymentMethod.Credit && (i.Status == 2 || i.Status == 3) && i.JournalEntryId != null && i.InvoiceDateUtc < end
                 && db.JournalEntries.Any(j=>j.Id==i.JournalEntryId && j.CompanyId==companyId && j.BranchId==i.BranchId && (j.State==4 || j.State==5)))
                 .Select(i => new Seed(i.Id,i.SupplierId,i.BranchId,i.InvoiceNumber,i.InvoiceDateUtc,i.CurrencyCode,i.ExchangeRate,i.GrandTotal,i.JournalEntryId!.Value,i.ReturnOfInvoiceId,i.ReversesInvoiceId))
@@ -67,6 +73,7 @@ internal static class SettlementQueries
             && (a.Voucher.Status == 2 || a.Voucher.Status == 3 && a.Voucher.ReversedAtUtc >= end))
             .Select(a => new LegacyLine(a.SalesInvoiceId,a.Amount)).ToListAsync(token).ConfigureAwait(false);
         var result = Compose(kind, source, originals, controls, apps, legacy);
+        if (hasDocument) return result;
 
         // Open Items (prior year rollover, opening balances, or migration open items)
         var partyType = kind == VoucherKind.Receipt ? (byte)1 : (byte)2;

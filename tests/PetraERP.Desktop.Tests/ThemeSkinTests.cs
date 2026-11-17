@@ -20,7 +20,7 @@ public sealed class ThemeSkinTests
     [Fact]
     public void OnlyBlackSkinsForceTheDarkBase()
     {
-        var black = new[] { ThemeSkin.Office2007Black, ThemeSkin.Office2010Black };
+        var black = new[] { ThemeSkin.Office2007Black, ThemeSkin.Office2010Black, ThemeSkin.Windows11Dark };
         foreach (var skin in Enum.GetValues<ThemeSkin>())
         {
             Assert.Equal(black.Contains(skin), ThemeSkins.ForcesDark(skin));

@@ -47,6 +47,7 @@ internal static class TestPages
             null, new PetraERP.Desktop.Currencies.CurrencySettingsViewModel(currencyFixture, notifications, operation, localization),
             fxRevaluation: fxRevaluation is null ? null : new PetraERP.Desktop.Currencies.FxRevaluationViewModel(fxRevaluation, currencyFixture, chart, confirmation, navigator, operation, localization),
             postingManagement: new PetraERP.Desktop.DocumentProcessing.PostingManagementViewModel(new PostingFixture(), confirmation, operation, localization),
+            dailyVouchers: new PetraERP.Desktop.Shell.DailyVoucherViewModel(ledger, reports, operation, localization, TimeProvider.System, confirmation),
             accountDirectory: new PetraERP.Desktop.Shell.AccountDirectoryViewModel(chart, navigator, operation, localization),
             itemDirectory: new PetraERP.Desktop.Shell.ItemDirectoryViewModel(inventory, navigator, operation, localization),
             patternManager: new PetraERP.Desktop.Patterns.PatternManagerViewModel(navigator, operation, localization),

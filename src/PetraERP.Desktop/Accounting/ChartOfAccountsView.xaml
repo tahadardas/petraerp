@@ -137,6 +137,7 @@
   <!-- ========================================================================= -->
   <Border DockPanel.Dock="Top" Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Strong}" BorderThickness="1" Margin="8,6,8,6" CornerRadius="{DynamicResource Radius.Small}">
    <DockPanel LastChildFill="True" Margin="6,3">
+    <CheckBox DockPanel.Dock="Right" Content="الحسابات ذات الحركة فقط" IsChecked="{Binding OnlyWithMovements}" VerticalAlignment="Center" Margin="8,0,4,0" FontSize="11" ToolTip="إخفاء الحسابات التي ليس لها رصيد أو حركة"/>
     <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="{DynamicResource Text.Secondary}" DockPanel.Dock="Left" VerticalAlignment="Center" Margin="4,0"/>
     <TextBox Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged, Delay=150}"
              BorderThickness="0" Background="Transparent" FontSize="12" VerticalContentAlignment="Center"

@@ -19,9 +19,27 @@ public static class PatternAccountRoles
     public const string Discount = "Discount";
     public const string Tax = "Tax";
     public const string TransportRevenue = "TransportRevenue";
+    /// <summary>Al-Ameen operating account (حساب التشغيل) for assembly/disassembly operations.</summary>
+    public const string OperatingAccount = "OperatingAccount";
+    /// <summary>Operating / conversion expenses account (أجور تشغيل / مصاريف تحويل) loaded on assembled products.</summary>
+    public const string AssemblyExpense = "AssemblyExpense";
+    /// <summary>Disassembly settlement / rounding variance account (حساب فروقات التسوية والتفكيك).</summary>
+    public const string Variance = "Variance";
     /// <summary>Realized exchange gain/loss when a foreign-currency receivable is collected at a different rate.</summary>
     public const string FxGain = "FxGain";
     public const string FxLoss = "FxLoss";
+    /// <summary>Asset balance sheet account (حساب الأصل).</summary>
+    public const string AssetAccount = "AssetAccount";
+    /// <summary>Accumulated depreciation contra-asset account (حساب مجمع الاهتلاك).</summary>
+    public const string AccumulatedDepreciation = "AccumulatedDepreciation";
+    /// <summary>Depreciation expense income-statement account (حساب مصروف الاهتلاك).</summary>
+    public const string DepreciationExpense = "DepreciationExpense";
+    /// <summary>Gain or loss on disposal/sale of fixed asset (أرباح/خسائر استبعاد الأصول).</summary>
+    public const string DisposalGainLoss = "DisposalGainLoss";
+    /// <summary>Fleet and machinery maintenance and repairs expense (مصروفات صيانة وإصلاح الآليات).</summary>
+    public const string MaintenanceExpense = "MaintenanceExpense";
+    /// <summary>Fuel and lubricants operating expense (مصروفات وقود ومحروقات وزيوت).</summary>
+    public const string FuelExpense = "FuelExpense";
 
     public const string RoleUnknown = "patterns.role_unknown";
     public const string RoleNotAllowed = "patterns.role_not_allowed";
@@ -38,7 +56,16 @@ public static class PatternAccountRoles
         [Payable] = Payable, ["Supplier"] = Payable,
         [Cogs] = Cogs, ["CostOfGoods"] = Cogs,
         [Inventory] = Inventory, [Cash] = Cash, [Bank] = Bank, [Discount] = Discount, [Tax] = Tax, [TransportRevenue] = TransportRevenue,
+        [OperatingAccount] = OperatingAccount, ["Operating"] = OperatingAccount, ["WorkInProgress"] = OperatingAccount,
+        [AssemblyExpense] = AssemblyExpense, ["ManufacturingExpense"] = AssemblyExpense,
+        [Variance] = Variance, ["SettlementVariance"] = Variance,
         [FxGain] = FxGain, [FxLoss] = FxLoss,
+        [AssetAccount] = AssetAccount, ["FixedAsset"] = AssetAccount,
+        [AccumulatedDepreciation] = AccumulatedDepreciation, ["AccDep"] = AccumulatedDepreciation,
+        [DepreciationExpense] = DepreciationExpense, ["DepExpense"] = DepreciationExpense,
+        [DisposalGainLoss] = DisposalGainLoss, ["AssetGainLoss"] = DisposalGainLoss,
+        [MaintenanceExpense] = MaintenanceExpense, ["Maintenance"] = MaintenanceExpense,
+        [FuelExpense] = FuelExpense, ["Fuel"] = FuelExpense,
     };
 
     /// <summary>Roles each runnable engine resolves; operations without an engine accept none until it exists.</summary>
@@ -48,6 +75,12 @@ public static class PatternAccountRoles
         BusinessOperationKind.PurchaseInvoice => [Inventory, Payable, Cash, Tax],
         BusinessOperationKind.CashReceipt => [Cash, Bank, Receivable, FxGain, FxLoss],
         BusinessOperationKind.CashPayment => [Cash, Bank, Payable, FxGain, FxLoss],
+        BusinessOperationKind.Assembly => [Inventory, OperatingAccount, AssemblyExpense, Variance],
+        BusinessOperationKind.Disassembly => [Inventory, OperatingAccount, AssemblyExpense, Variance],
+        BusinessOperationKind.AssetDepreciation => [AssetAccount, AccumulatedDepreciation, DepreciationExpense, DisposalGainLoss],
+        BusinessOperationKind.AssetMaintenance => [MaintenanceExpense, Cash, Bank, Payable, Inventory],
+        BusinessOperationKind.AssetFuelDispensing => [FuelExpense, Inventory],
+        BusinessOperationKind.AssetCustomerRental => [Revenue, Receivable, Cash, Bank],
         _ => [],
     };
 
@@ -98,6 +131,12 @@ public static class PatternAccountRoles
         {
             BusinessOperationKind.SalesInvoice => [Revenue, Inventory, Cogs],
             BusinessOperationKind.PurchaseInvoice => [Inventory],
+            BusinessOperationKind.Assembly => [Inventory, OperatingAccount],
+            BusinessOperationKind.Disassembly => [Inventory, OperatingAccount],
+            BusinessOperationKind.AssetDepreciation => [AccumulatedDepreciation, DepreciationExpense],
+            BusinessOperationKind.AssetMaintenance => [MaintenanceExpense],
+            BusinessOperationKind.AssetFuelDispensing => [FuelExpense, Inventory],
+            BusinessOperationKind.AssetCustomerRental => [Revenue],
             _ => [],
         };
         var missing = required.Where(r => !mapped.Contains(r)).ToList();

@@ -36,6 +36,7 @@ public partial class PetraReportViewerWindow : Window, IDisposable
     private IReadOnlyList<PetraReportWorkspace> workspaces = [];
     private readonly PetraReportFilterBuilderViewModel treeFilterBuilderModel = new();
     private readonly PetraReportSummaryManager summaryManager = new();
+    private readonly ObservableCollection<PetraConditionalFormatRule> formatRules = [];
     private readonly PetraReportBrandingStore brandingStore = new();
     private PetraReportBranding? currentBranding;
     private bool ready;
@@ -49,6 +50,7 @@ public partial class PetraReportViewerWindow : Window, IDisposable
         FilterSidebar.Width = Math.Clamp(share, 260, 380);
         FieldsSidebar.Width = Math.Clamp(share, 240, 300);
         SummariesSidebar.Width = Math.Clamp(share, 250, 320);
+        ConditionalFormattingSidebar.Width = Math.Clamp(share, 260, 330);
     }
 
     public PetraReportViewerWindow(
@@ -165,11 +167,42 @@ public partial class PetraReportViewerWindow : Window, IDisposable
         FilterButton.Content = T("تصفية", "Filter");
         FieldsButton.Content = T("الحقول", "Fields");
         SummariesButton.Content = T("ملخصات", "Summaries");
+        AlternatingRowsButton.Content = T("أسطر متباينة", "Alternating rows");
         AddGroupingButton.Content = T("تجميع", "Group");
         ClearGroupingButton.Content = T("إلغاء التجميع", "Clear groups");
         FilterTitle.Text = T("شروط التصفية", "Filter conditions");
         FieldsTitle.Text = T("قائمة الحقول", "Field chooser");
         SummariesTitle.Text = T("مصمم الملخصات المخصصة", "Summary Designer");
+        ConditionalFormattingButton.Content = T("تنسيق شرطي", "Formatting");
+        ConditionalFormattingButton.ToolTip = T("تنسيق شرطي للأسطر وفق قواعد مخصصة (الأمين 10)", "Conditional formatting (Al-Ameen 10)");
+        ConditionalFormattingTitle.Text = T("التنسيق الشرطي", "Conditional Formatting");
+        FormatColumnLabel.Text = T("الحقل", "Field");
+        FormatOperatorLabel.Text = T("الشرط", "Operator");
+        FormatValueLabel.Text = T("القيمة", "Value");
+        FormatColorLabel.Text = T("نمط التمييز", "Highlight Style");
+        AddFormatRuleButton.Content = T("إضافة قاعدة", "Add Rule");
+        RemoveFormatRuleButton.Content = T("حذف", "Remove");
+        ClearFormatRulesButton.Content = T("مسح الكل", "Clear All");
+
+        FormatOperator.ItemsSource = new[]
+        {
+            new Choice<PetraFormatOperator>(PetraFormatOperator.GreaterThan, T("أكبر من (>)", "Greater than (>)")),
+            new Choice<PetraFormatOperator>(PetraFormatOperator.LessThan, T("أصغر من (<)", "Less than (<)")),
+            new Choice<PetraFormatOperator>(PetraFormatOperator.Equals, T("يساوي (=)", "Equals (=)")),
+            new Choice<PetraFormatOperator>(PetraFormatOperator.NotEquals, T("لا يساوي (!=)", "Not equals (!=)")),
+            new Choice<PetraFormatOperator>(PetraFormatOperator.Contains, T("يحتوي على", "Contains")),
+            new Choice<PetraFormatOperator>(PetraFormatOperator.Between, T("بين قيمتين", "Between")),
+        };
+        FormatOperator.SelectedIndex = 0;
+
+        FormatColor.ItemsSource = new[]
+        {
+            new Choice<PetraFormatColor>(PetraFormatColor.SoftRed, T("أحمر ناعم (تنبيه / مدين)", "Soft Red (Alert / Debit)")),
+            new Choice<PetraFormatColor>(PetraFormatColor.SoftGreen, T("أخضر ناعم (ربح / معتمد)", "Soft Green (Profit / Credit)")),
+            new Choice<PetraFormatColor>(PetraFormatColor.SoftYellow, T("أصفر ناعم (تحذير / معلق)", "Soft Yellow (Warning / Pending)")),
+            new Choice<PetraFormatColor>(PetraFormatColor.SoftBlue, T("أزرق ناعم (معلومات / مسوى)", "Soft Blue (Info / Settled)")),
+        };
+        FormatColor.SelectedIndex = 0;
         SearchGroupLabel.Text = T("بحث", "Search");
         ViewGroupLabel.Text = T("عرض", "View");
         LayoutGroupLabel.Text = T("تجميع وأقسام", "Grouping and sections");
@@ -218,6 +251,7 @@ public partial class PetraReportViewerWindow : Window, IDisposable
         ApplyFilterButton.Content = T("تطبيق", "Apply");
         ClearFiltersButton.Content = T("مسح الكل", "Clear all");
         ActiveFilters.ItemsSource = filterConditions;
+        ActiveFormatRules.ItemsSource = formatRules;
         FilterLogic.ItemsSource = new[]
         {
             new Choice<PetraReportFilterLogic>(PetraReportFilterLogic.And, "AND"),
@@ -269,6 +303,8 @@ public partial class PetraReportViewerWindow : Window, IDisposable
         GroupColumn.SelectedIndex = GroupColumn.Items.Count == 0 ? -1 : 0;
         SummaryColumn.ItemsSource = report.Columns;
         SummaryColumn.SelectedIndex = report.Columns.Count == 0 ? -1 : 0;
+        FormatColumn.ItemsSource = report.Columns;
+        FormatColumn.SelectedIndex = report.Columns.Count == 0 ? -1 : 0;
         treeFilterBuilderModel.SetAvailableColumns(report.Columns);
         filterConditions.Clear();
         ResetSearch();
@@ -482,8 +518,62 @@ public partial class PetraReportViewerWindow : Window, IDisposable
 
     private void FilterClicked(object sender, RoutedEventArgs args)
     {
+        ConditionalFormattingSidebar.Visibility = Visibility.Collapsed;
+        SummariesSidebar.Visibility = Visibility.Collapsed;
         FieldsSidebar.Visibility = Visibility.Collapsed;
         FilterSidebar.Visibility = FilterSidebar.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+        private void ConditionalFormattingClicked(object sender, RoutedEventArgs args)
+    {
+        FieldsSidebar.Visibility = Visibility.Collapsed;
+        FilterSidebar.Visibility = Visibility.Collapsed;
+        SummariesSidebar.Visibility = Visibility.Collapsed;
+        ConditionalFormattingSidebar.Visibility = ConditionalFormattingSidebar.Visibility == Visibility.Visible
+            ? Visibility.Collapsed
+            : Visibility.Visible;
+    }
+
+    private void AddFormatRuleClicked(object sender, RoutedEventArgs args)
+    {
+        if (FormatColumn.SelectedItem is not ReportColumn column ||
+            FormatOperator.SelectedValue is not PetraFormatOperator op ||
+            FormatColor.SelectedValue is not PetraFormatColor color ||
+            string.IsNullOrWhiteSpace(FormatValue1.Text)) return;
+
+        var rule = new PetraConditionalFormatRule(
+            column.Key,
+            column.Heading,
+            op,
+            FormatValue1.Text.Trim(),
+            FormatValue2.Text?.Trim() ?? string.Empty,
+            color);
+
+        formatRules.Add(rule);
+        ResultsGrid.ApplyConditionalFormatting(formatRules);
+        FormatValue1.Clear();
+        FormatValue2.Clear();
+    }
+
+    private void RemoveFormatRuleClicked(object sender, RoutedEventArgs args)
+    {
+        if (ActiveFormatRules.SelectedItem is PetraConditionalFormatRule rule)
+        {
+            formatRules.Remove(rule);
+            ResultsGrid.ApplyConditionalFormatting(formatRules);
+        }
+    }
+
+    private void ClearFormatRulesClicked(object sender, RoutedEventArgs args)
+    {
+        formatRules.Clear();
+        ResultsGrid.ClearConditionalFormatting();
+    }
+
+    private void AlternatingRowsClicked(object sender, RoutedEventArgs args)
+    {
+        var current = ReportDisplayOptionsHub.Current;
+        ReportDisplayOptionsHub.Set(current with { AlternatingRows = !current.AlternatingRows });
     }
 
     private async void FieldsClicked(object sender, RoutedEventArgs args)
@@ -679,6 +769,7 @@ public partial class PetraReportViewerWindow : Window, IDisposable
 
     private void SummariesClicked(object sender, RoutedEventArgs args)
     {
+        ConditionalFormattingSidebar.Visibility = Visibility.Collapsed;
         FieldsSidebar.Visibility = Visibility.Collapsed;
         FilterSidebar.Visibility = Visibility.Collapsed;
         SummariesSidebar.Visibility = SummariesSidebar.Visibility == Visibility.Visible

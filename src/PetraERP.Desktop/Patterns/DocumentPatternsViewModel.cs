@@ -157,6 +157,14 @@ public sealed partial class DocumentPatternsViewModel : PageViewModel, IShellPag
         {
             if (item.OperationKind is not (BusinessOperationKind.InventoryIssue or BusinessOperationKind.InventoryReceipt)) return false;
         }
+        else if (FilterTab == "assembly")
+        {
+            if (item.OperationKind is not (BusinessOperationKind.Assembly or BusinessOperationKind.Disassembly)) return false;
+        }
+        else if (FilterTab == "assets")
+        {
+            if ((int)item.OperationKind is not (12 or 13 or 14 or 15)) return false;
+        }
 
         if (string.IsNullOrWhiteSpace(Search)) return true;
 

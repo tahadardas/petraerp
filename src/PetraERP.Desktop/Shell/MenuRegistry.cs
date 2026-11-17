@@ -78,6 +78,7 @@ public static class MenuRegistry
         new("invoices", "MN_Invoice", Glyph: "", Order: 20),
         new("invoices.sales", "D_SalesInvoices", Glyph: "", ParentId: "invoices", RequiredPermission: "Sales.Invoices.View", Route: "sales-invoices", Order: 10),
         new("invoices.purchases", "D_PurchaseInvoices", Glyph: "", ParentId: "invoices", RequiredPermission: "Purchases.Invoices.View", Route: "purchase-invoices", Order: 20),
+        new("invoices.assembly", "D_AssemblyDisassembly", Glyph: "\uE74C", ParentId: "invoices", RequiredPermission: "Inventory.Movements.View", Route: "assembly-disassembly", Order: 30),
 
         // ───────── 3. سندات ─────────
         new("vouchers", "MN_Vouchers", Glyph: "", Order: 30),
@@ -123,8 +124,20 @@ public static class MenuRegistry
         new("accounts.rate-bulletin", "CUR_RateBulletin", Glyph: "", ParentId: "accounts.currencies-group", RequiredPermission: "Ledger.Accounts.View", Route: "rate-bulletin", Order: 20),
         new("accounts.fx-revaluation", "CUR_FxRevaluationWizard", Glyph: "", ParentId: "accounts.currencies-group", RequiredPermission: "Ledger.Accounts.View", Route: "fx-revaluation", Order: 30),
 
+        // ───────── 6.5. أصول (Assets) ─────────
+        new("assets", "MN_Assets", Glyph: "\uE71D", Order: 65),
+        new("assets.directory", "AST_Directory", Glyph: "\uE71D", ParentId: "assets", RequiredPermission: "Ledger.Accounts.View", Route: "assets-directory", Order: 10),
+        new("assets.expense-journal", "AST_ExpenseJournal", Glyph: "\uE8A5", ParentId: "assets", RequiredPermission: "Ledger.Journals.Manage", Route: "fleet-expenses", Order: 20),
+        new("assets.work-order", "AST_WorkOrder", Glyph: "\uE90F", ParentId: "assets", RequiredPermission: "Sales.Invoices.View", Route: "maintenance-work-order", Order: 25),
+        new("assets.fuel-voucher", "AST_FuelVoucher", Glyph: "\uE9D2", ParentId: "assets", RequiredPermission: "Inventory.Movements.View", Route: "fuel-dispensing", Order: 30),
+        new("assets.custody", "AST_Custody", Glyph: "\uE77B", ParentId: "assets", RequiredPermission: "Ledger.Accounts.View", Route: "asset-custody", Order: 40),
+        new("assets.rental", "AST_Rental", Glyph: "\uE749", ParentId: "assets", RequiredPermission: "Sales.Invoices.View", Route: "customer-rentals", Order: 50),
+        new("assets.depreciation", "AST_Depreciation", Glyph: "\uE74C", ParentId: "assets", RequiredPermission: "Ledger.Journals.Manage", Route: "asset-depreciation", Order: 60),
+        new("assets.dossier-report", "AST_DossierReport", Glyph: "\uE9D2", ParentId: "assets", RequiredPermission: "Ledger.Reports.View", Route: "asset-dossier", Order: 70),
+
         // ───────── 7. مالية ─────────
         new("financial", "MN_Finance", Glyph: "", Order: 70),
+        new("financial.dashboard", "D_ExecutiveDashboard", Glyph: "\uE9D2", ParentId: "financial", RequiredPermission: "Ledger.Reports.View", Route: "executive-dashboard", Order: 5),
         new("financial.statements", "D_FinancialStatements", Glyph: "", ParentId: "financial", RequiredPermission: "Ledger.Reports.View", Route: "financial-reports", Order: 10),
 
         // ───────── 8. مراكز ─────────
@@ -177,7 +190,7 @@ public static class MenuRegistry
         new("tools.reports-group", "D_Menu_Reports", Glyph: "", ParentId: "tools", Order: 30),
         new("tools.reports-center", "RC_Title", ParentId: "tools.reports-group", RequiredPermission: "Ledger.Reports.View", Route: "reports-center", Order: 10),
         new("tools.analytical-report", "RC_Analytical", ParentId: "tools.reports-group", RequiredPermission: "Ledger.Reports.View", Route: "analytical-report", Order: 20),
-        new("tools.preferences", "UI_Preferences", Glyph: "", ParentId: "tools", Command: "preferences", Order: 40, SeparatorBefore: true),
+        new("tools.preferences", "OPT_Title", Glyph: "", ParentId: "tools", Command: "preferences", Order: 40, SeparatorBefore: true),
         new("tools.report-options", "REP_Title", Glyph: "\uE9D2", ParentId: "tools", Command: "report-options", Order: 45),
         new("tools.language", "UX_Language", Glyph: "", ParentId: "tools", Command: "language", Order: 50),
         new("tools.theme", "D_Menu_Theme", Glyph: "", ParentId: "tools", Command: "theme", Order: 60),

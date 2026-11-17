@@ -63,10 +63,16 @@ public sealed partial class SqlSalesInvoiceService
 
     private sealed record CreditSnapshot(decimal Exposure, decimal InvoiceAmount, decimal Projected, bool RequiresAction);
 
-    private async Task<CreditSnapshot> LoadCreditSnapshotAsync(SalesInvoiceRow invoice, CancellationToken token)
+    /// <param name="invoice">The invoice; when it was loaded with its customer the card is reused instead of read again.</param>
+    /// <param name="customerInvoices">The customer's open-item composition when the caller already loaded it (same arguments as below).</param>
+    private async Task<CreditSnapshot> LoadCreditSnapshotAsync(SalesInvoiceRow invoice, CancellationToken token,
+        IReadOnlyList<SettlementInvoice>? customerInvoices = null)
     {
-        var customer = await context.Parties.AsNoTracking().SingleAsync(p => p.Id == invoice.CustomerId && p.CompanyId == invoice.CompanyId, token).ConfigureAwait(false);
-        var invoices = await SettlementQueries.LoadInvoicesAsync(context, invoice.CompanyId, null, VoucherKind.Receipt, customer.Id, null, null, token).ConfigureAwait(false);
+        var customer = invoice.Customer is { } loaded && loaded.Id == invoice.CustomerId && loaded.CompanyId == invoice.CompanyId
+            ? loaded
+            : await context.Parties.AsNoTracking().SingleAsync(p => p.Id == invoice.CustomerId && p.CompanyId == invoice.CompanyId, token).ConfigureAwait(false);
+        var invoices = customerInvoices
+            ?? await SettlementQueries.LoadInvoicesAsync(context, invoice.CompanyId, null, VoucherKind.Receipt, customer.Id, null, null, token).ConfigureAwait(false);
         var availableAdvance = await SettlementQueries.AvailableAdvanceBaseAsync(context, invoice.CompanyId, null, VoucherKind.Receipt, customer.Id, token).ConfigureAwait(false);
         decimal exposure, amount, projected;
         try

@@ -29,3 +29,9 @@ appsettings.*.local.json
 *.ldf
 *.nupkg
 *.snupkg
+*.log
+/scratch/
+PETRA_ANALYSIS_MANIFEST.txt
+PetraERP_Package_For_Analysis.bat
+TESTPROG.bat
+zip.ps1

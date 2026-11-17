@@ -117,6 +117,17 @@ public class LookupPicker : Control, IDisposable
     private void OnOpen(object sender, RoutedEventArgs e) => ToggleLookup();
     private void OnListClick(object sender, MouseButtonEventArgs e) => Commit(list?.SelectedItem as LookupItem);
 
+    protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+    {
+        base.OnMouseLeftButtonDown(e);
+        if (!IsReadOnly && text is not null && !text.IsKeyboardFocusWithin)
+        {
+            text.Focus();
+            text.SelectAll();
+            e.Handled = true;
+        }
+    }
+
     /// <summary>Moves focus into the search editor and selects its current text.</summary>
     public bool FocusSearch()
     {
@@ -160,7 +171,18 @@ public class LookupPicker : Control, IDisposable
         var filtered = LookupFilter.Filter(Source, query);
         SetValue(ResultsKey, filtered);
         if (list is not null) list.SelectedIndex = Results.Count > 0 ? 0 : -1;
-        if (popup is not null) popup.IsOpen = (Results.Count > 0 || (AsyncSearchProvider is not null && !string.IsNullOrWhiteSpace(query))) && !IsReadOnly && text?.IsKeyboardFocusWithin == true;
+        if (popup is not null)
+        {
+            var shouldOpen = (Results.Count > 0 || (AsyncSearchProvider is not null && !string.IsNullOrWhiteSpace(query))) && !IsReadOnly && text?.IsKeyboardFocusWithin == true;
+            if (popup.IsOpen != shouldOpen)
+            {
+                Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, () =>
+                {
+                    try { popup.IsOpen = shouldOpen; }
+                    catch (InvalidOperationException) { }
+                });
+            }
+        }
 
         if (AsyncSearchProvider is not null && !string.IsNullOrWhiteSpace(query))
         {
@@ -199,7 +221,11 @@ public class LookupPicker : Control, IDisposable
                 var filtered = LookupFilter.Filter(combined, query);
                 SetValue(ResultsKey, filtered);
                 if (list is not null) list.SelectedIndex = Results.Count > 0 ? 0 : -1;
-                if (popup is not null) popup.IsOpen = !IsReadOnly && text?.IsKeyboardFocusWithin == true;
+                if (popup is not null)
+                {
+                    try { popup.IsOpen = !IsReadOnly && text?.IsKeyboardFocusWithin == true; }
+                    catch (InvalidOperationException) { }
+                }
             });
         }
         catch (OperationCanceledException) { }
@@ -211,7 +237,11 @@ public class LookupPicker : Control, IDisposable
                 {
                     SetValue(HasSearchErrorKey, true);
                     SetValue(SearchErrorMessageKey, exception.Message);
-                    if (popup is not null) popup.IsOpen = !IsReadOnly && text?.IsKeyboardFocusWithin == true;
+                    if (popup is not null)
+                {
+                    try { popup.IsOpen = !IsReadOnly && text?.IsKeyboardFocusWithin == true; }
+                    catch (InvalidOperationException) { }
+                }
                 }
             });
         }
@@ -227,11 +257,23 @@ public class LookupPicker : Control, IDisposable
         }
     }
 
-    /// <summary>Commits the highlighted (or first) result.</summary>
+    /// <summary>Commits the highlighted (or first) result, or an exact match for typed text.</summary>
     public bool CommitHighlighted()
     {
         if (IsReadOnly) return false;
         var item = list?.SelectedItem as LookupItem ?? (Results.Count > 0 ? Results[0] : null);
+        if (item is null && text is not null && !string.IsNullOrWhiteSpace(text.Text))
+        {
+            var query = text.Text.Trim();
+            item = Source.FirstOrDefault(i =>
+                string.Equals(LookupText.Normalize(i.Code), LookupText.Normalize(query), StringComparison.Ordinal) ||
+                (!string.IsNullOrEmpty(i.Barcode) && string.Equals(LookupText.Normalize(i.Barcode), LookupText.Normalize(query), StringComparison.Ordinal)));
+            if (item is null)
+            {
+                var filtered = LookupFilter.Filter(Source, query, 1);
+                item = filtered.Count > 0 ? filtered[0] : null;
+            }
+        }
         if (item is null) return false;
         Commit(item);
         if (popup is not null) popup.IsOpen = false;
@@ -257,6 +299,8 @@ public class LookupPicker : Control, IDisposable
         switch (e.Key)
         {
             case Key.F2 when Keyboard.Modifiers == ModifierKeys.None:
+            case Key.F3 when Keyboard.Modifiers == ModifierKeys.None:
+            case Key.Multiply when Keyboard.Modifiers == ModifierKeys.None && CanOpenWithSpace:
             case Key.Down when Keyboard.Modifiers == ModifierKeys.Alt:
             case Key.System when e.SystemKey == Key.Down && Keyboard.Modifiers == ModifierKeys.Alt:
             case Key.Space when Keyboard.Modifiers == ModifierKeys.None && CanOpenWithSpace:
@@ -279,7 +323,7 @@ public class LookupPicker : Control, IDisposable
                 e.Handled = e.Key == Key.Enter;
                 if (e.Key == Key.Enter && GridEntry.FindParent<DataGrid>(this) is null) MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
                 break;
-            case Key.Enter or Key.Tab when popup?.IsOpen == true:
+            case Key.Enter or Key.Tab:
                 var committed = CommitHighlighted();
                 e.Handled = e.Key == Key.Enter;
                 if (committed && e.Key == Key.Enter && GridEntry.FindParent<DataGrid>(this) is null) MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));

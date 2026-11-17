@@ -87,17 +87,30 @@ public sealed class InventoryClient(DesktopSession session) : IInventoryClient
     public Task<EffectiveItemAccountMappingDto> GetEffectiveAccountMappingAsync(Guid companyId, Guid branchId, Guid itemId, CancellationToken cancellationToken) =>
         session.Api.GetEffectiveAccountMappingAsync(companyId, branchId, itemId, cancellationToken);
 
-    public Task<IReadOnlyList<UnitOfMeasureDto>> ListUnitsAsync(Guid companyId, Guid branchId, CancellationToken cancellationToken) =>
-        session.Api.ListUnitsAsync(companyId, branchId, cancellationToken);
+    // Reference data read by every invoice/voucher card on open. Cached per company/year/workspace/branch/permission set (see
+    // DesktopSession.CachedAsync); a change made through this client retires the category, and the TTL bounds changes made elsewhere.
+    internal const string UnitsCategory = "Units";
+    internal const string WarehousesCategory = "Warehouses";
 
-    public Task<UnitOfMeasureDto> CreateUnitAsync(Guid companyId, Guid branchId, CreateUnitRequest request, CancellationToken cancellationToken) =>
-        session.Api.CreateUnitAsync(companyId, branchId, request, cancellationToken);
+    public Task<IReadOnlyList<UnitOfMeasureDto>> ListUnitsAsync(Guid companyId, Guid branchId, CancellationToken cancellationToken) =>
+        session.CachedAsync(branchId, UnitsCategory, $"{companyId:N}",
+            ct => session.Api.ListUnitsAsync(companyId, branchId, ct),
+            TimeSpan.FromMinutes(10), cancellationToken);
+
+    public async Task<UnitOfMeasureDto> CreateUnitAsync(Guid companyId, Guid branchId, CreateUnitRequest request, CancellationToken cancellationToken)
+    {
+        var created = await session.Api.CreateUnitAsync(companyId, branchId, request, cancellationToken).ConfigureAwait(false);
+        session.InvalidateCached(UnitsCategory);
+        return created;
+    }
 
     public Task<IReadOnlyList<UnitConversionDto>> ListUnitConversionsAsync(Guid companyId, Guid branchId, Guid? itemId, CancellationToken cancellationToken) =>
         session.Api.ListUnitConversionsAsync(companyId, branchId, itemId, cancellationToken);
 
     public Task<IReadOnlyList<WarehouseDto>> ListWarehousesAsync(Guid companyId, Guid branchId, Guid? filterBranchId, CancellationToken cancellationToken) =>
-        session.Api.ListWarehousesAsync(companyId, branchId, filterBranchId, cancellationToken);
+        session.CachedAsync(branchId, WarehousesCategory, $"{companyId:N}:{filterBranchId:N}",
+            ct => session.Api.ListWarehousesAsync(companyId, branchId, filterBranchId, ct),
+            TimeSpan.FromMinutes(5), cancellationToken);
 
     public Task<StockMovementPageResponse> ListStockMovementsAsync(Guid companyId, Guid branchId, int page, int pageSize, Guid? warehouseId, Guid? itemId, DateTimeOffset? fromDate, DateTimeOffset? toDate, CancellationToken cancellationToken) =>
         session.Api.ListStockMovementsAsync(companyId, branchId, page, pageSize, warehouseId, itemId, fromDate, toDate, cancellationToken);

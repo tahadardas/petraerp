@@ -37,7 +37,7 @@ public sealed partial class SqlLedgerQueryService
 
         var posted = ScopedLines(scope).Where(l => PostedStates.Contains(l.Journal!.State) && included.Contains(l.AccountId));
         var watermark = cursor?.Watermark
-            ?? await ScopedLines(scope).Where(l => PostedStates.Contains(l.Journal!.State)).MaxAsync(l => (long?)l.Journal!.PostingSequence, cancellationToken).ConfigureAwait(false)
+            ?? await LatestPostingSequenceAsync(scope, cancellationToken).ConfigureAwait(false)
             ?? 0L;
         var snapshot = posted.Where(l => (l.Journal!.PostingSequence ?? 0L) <= watermark);
 
@@ -140,6 +140,17 @@ public sealed partial class SqlLedgerQueryService
             Lines = lines.AsReadOnly(), Page = query.Page.Page, PageSize = query.Page.PageSize, TotalCount = totalCount,
             IncludedAccountCount = cursor?.IncludedAccounts ?? included.Length, NextCursor = next, SnapshotPostingSequence = watermark,
         };
+    }
+
+    /// <summary>
+    /// The snapshot watermark: the highest posting sequence of a posted journal in scope. It reads the journal headers only (a posted
+    /// journal always has lines), so it no longer joins the whole line table of the company just to find one maximum.
+    /// </summary>
+    private Task<long?> LatestPostingSequenceAsync(LedgerReportScope scope, CancellationToken cancellationToken)
+    {
+        var journals = context.JournalEntries.AsNoTracking().Where(j => j.CompanyId == scope.CompanyId && PostedStates.Contains(j.State));
+        if (!scope.Consolidated) journals = journals.Where(j => j.BranchId == scope.BranchId);
+        return journals.MaxAsync(j => j.PostingSequence, cancellationToken);
     }
 
     /// <summary>Identity of the database this service reads (one fiscal year each); part of every cursor.</summary>

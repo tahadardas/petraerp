@@ -15,6 +15,8 @@ public enum BusinessOperationKind
     CashPayment = 8,
     CashJournal = 9,
     ManualJournal = 10,
+    Assembly = 11,
+    Disassembly = 12,
 }
 
 public enum PatternRevisionState

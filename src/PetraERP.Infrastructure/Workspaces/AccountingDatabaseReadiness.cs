@@ -122,6 +122,29 @@ public static class AccountingDatabaseReadiness
         }
     }
 
+    /// <summary>
+    /// The indexes the approved migrations leave behind: operations are replayed in order, so an index that a later migration drops
+    /// and creates again (to widen it) counts once, with its latest definition.
+    /// </summary>
+    private static Dictionary<string, CreateIndexOperation>.ValueCollection EffectiveIndexes(IEnumerable<MigrationOperation> operations)
+    {
+        var current = new Dictionary<string, CreateIndexOperation>(StringComparer.Ordinal);
+        foreach (var operation in operations)
+        {
+            switch (operation)
+            {
+                case CreateIndexOperation create:
+                    current[$"{create.Schema}.{create.Table}.{create.Name}"] = create;
+                    break;
+                case DropIndexOperation drop:
+                    current.Remove($"{drop.Schema}.{drop.Table}.{drop.Name}");
+                    break;
+            }
+        }
+
+        return current.Values;
+    }
+
     private static async Task ValidateApprovedMetadataAsync(AccountingDbContext context, CancellationToken cancellationToken)
     {
         if (context.Database.HasPendingModelChanges())
@@ -149,7 +172,7 @@ public static class AccountingDatabaseReadiness
             WHERE t.is_ms_shipped=0 AND t.object_id<>OBJECT_ID(N'system.__AccountingMigrationsHistory')
             """, cancellationToken, NormalizeColumn).ConfigureAwait(false);
 
-        await MatchMetadataAsync(context, "indexes", operations.OfType<CreateIndexOperation>().Select(i =>
+        await MatchMetadataAsync(context, "indexes", EffectiveIndexes(operations).Select(i =>
             $"{Table(i.Schema, i.Table)}|{i.Name}|{(i.IsUnique ? 1 : 0)}|{string.Join(',', i.Columns.Select((c, n) => c + (i.IsDescending is { Length: > 0 } && i.IsDescending[n] ? ":DESC" : i.IsDescending is { Length: 0 } ? ":DESC" : ":ASC")))}|{string.Join(',', (string[]?)i["SqlServer:Include"] ?? [])}|{SqlTokens(i.Filter, true)}|0|0"), """
             SELECT SCHEMA_NAME(t.schema_id) COLLATE DATABASE_DEFAULT+N'.'+t.name COLLATE DATABASE_DEFAULT+N'|'+i.name COLLATE DATABASE_DEFAULT+N'|'+CONVERT(nvarchar(1),i.is_unique)+N'|'+
                 COALESCE((SELECT STRING_AGG(CONVERT(nvarchar(max),c.name COLLATE DATABASE_DEFAULT+CASE WHEN ic.is_descending_key=1 THEN ':DESC' ELSE ':ASC' END),',') WITHIN GROUP(ORDER BY ic.key_ordinal)

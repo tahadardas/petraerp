@@ -13,6 +13,66 @@ public partial class App : System.Windows.Application, IDisposable
     private ServiceProvider? services;
     private DispatcherTimer? sessionTimer;
     private DesktopInstanceLease? instance;
+    private bool isShowingExceptionDialog;
+
+    public App()
+    {
+        DispatcherUnhandledException += OnDispatcherUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException += OnCurrentDomainUnhandledException;
+        TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+    }
+
+    private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        LogException("DispatcherUnhandledException", e.Exception);
+
+        // Suppress benign WPF layout re-entrancy / virtualization race conditions
+        if (e.Exception is InvalidOperationException ex && ex.Message.Contains("content generation is in progress", StringComparison.OrdinalIgnoreCase))
+        {
+            e.Handled = true;
+            return;
+        }
+
+        // Keep app alive and show at most one non-fatal notification without cascading modal dialogs
+        e.Handled = true;
+        if (!isShowingExceptionDialog)
+        {
+            isShowingExceptionDialog = true;
+            try
+            {
+                MessageBox.Show($"تنبيه: حدث خطأ غير متوقع في الواجهة ({e.Exception.Message}).\nتم تسجيل التفاصيل في ملف desktop_crash.log", "PetraERP", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            catch { }
+            finally
+            {
+                isShowingExceptionDialog = false;
+            }
+        }
+    }
+
+    private void OnCurrentDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        if (e.ExceptionObject is Exception ex)
+        {
+            LogException("AppDomainUnhandledException", ex);
+        }
+    }
+
+    private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        LogException("UnobservedTaskException", e.Exception);
+        e.SetObserved();
+    }
+
+    private static void LogException(string source, Exception ex)
+    {
+        try
+        {
+            var logPath = Path.Combine(AppContext.BaseDirectory, "desktop_crash.log");
+            File.AppendAllText(logPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{source}] {ex}\n\n");
+        }
+        catch { }
+    }
     protected override async void OnStartup(StartupEventArgs e)
     {
         PetraERP.Desktop.Controls.PetraNumberFormat.CaptureOperatingSystemCulture(System.Globalization.CultureInfo.CurrentCulture);

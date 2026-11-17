@@ -568,4 +568,138 @@ public sealed class FiftyRowEntryContractTests
         Assert.True(accounting.NumberPreviewCalls > 0);
         Assert.Equal(0, accounting.NumberGenerationCalls);
     }
+
+    [Fact]
+    public async Task DailyVoucher_Has50BlankSlots_SavesOnlyCompletedLines_ZeroPhantomRows()
+    {
+        var fixture = CreateFixture();
+        var ledger = new FakeLedgerClient();
+        var cashAccount = Guid.NewGuid();
+        var counterAccount1 = Guid.NewGuid();
+        var counterAccount2 = Guid.NewGuid();
+
+        using var shell = fixture.Create(new AdministrationFixture(), ledger: ledger);
+        shell.UserName = "admin"; shell.Password = "test";
+        await shell.LoginCommand.ExecuteAsync(null).ConfigureAwait(true);
+
+        await shell.NavigateToAsync("daily-vouchers", null).ConfigureAwait(true);
+        var vm = shell.Pages.DailyVouchers!;
+
+        // 1. Exactly 50 blank slots initialized
+        Assert.Equal(50, vm.Rows.Count);
+        Assert.All(vm.Rows, r => Assert.True(r.IsPristineBlank));
+
+        // 2. Setup Cash and complete 2 rows (1 receive, 1 pay)
+        vm.CashAccountId = cashAccount;
+        vm.Rows[0].AccountId = counterAccount1;
+        vm.Rows[0].Receive = 1500m;
+        vm.Rows[0].Pay = 0m;
+        vm.Rows[0].Description = "قبض من العميل";
+
+        vm.Rows[1].AccountId = counterAccount2;
+        vm.Rows[1].Receive = 0m;
+        vm.Rows[1].Pay = 400m;
+        vm.Rows[1].Description = "مصاريف نثرية";
+
+        Assert.True(vm.Rows[0].IsComplete);
+        Assert.True(vm.Rows[1].IsComplete);
+        Assert.Equal(1500m, vm.TotalReceive);
+        Assert.Equal(400m, vm.TotalPay);
+
+        // 3. Save draft and verify lines sent
+        Assert.True(vm.SaveCommand.CanExecute(null));
+        await vm.SaveCommand.ExecuteAsync(null).ConfigureAwait(true);
+
+        Assert.NotNull(ledger.LastCreateRequest);
+        // Each completed counter row creates 2 GL lines (1 cash line + 1 counter line) = 4 lines total
+        Assert.Equal(4, ledger.LastCreateRequest.Lines.Count);
+        Assert.All(ledger.LastCreateRequest.Lines, l => Assert.NotEqual("0.0000", l.BaseDebit == "0.0000" ? l.BaseCredit : l.BaseDebit));
+    }
+
+    [Fact]
+    public async Task DailyVoucher_AutoGrow_AllowsMoreThanFiftyRows()
+    {
+        var fixture = CreateFixture();
+        using var shell = fixture.Create(new AdministrationFixture(), ledger: new FakeLedgerClient());
+        shell.UserName = "admin"; shell.Password = "test";
+        await shell.LoginCommand.ExecuteAsync(null).ConfigureAwait(true);
+
+        await shell.NavigateToAsync("daily-vouchers", null).ConfigureAwait(true);
+        var vm = shell.Pages.DailyVouchers!;
+
+        Assert.Equal(50, vm.Rows.Count);
+        vm.AutoGrowCommand.Execute(null);
+        Assert.Equal(60, vm.Rows.Count);
+    }
+
+    [Fact]
+    public async Task DailyVoucher_HalfFilledRow_BlocksSave_AndReportsRowNumber()
+    {
+        var fixture = CreateFixture();
+        using var shell = fixture.Create(new AdministrationFixture(), ledger: new FakeLedgerClient());
+        shell.UserName = "admin"; shell.Password = "test";
+        await shell.LoginCommand.ExecuteAsync(null).ConfigureAwait(true);
+
+        await shell.NavigateToAsync("daily-vouchers", null).ConfigureAwait(true);
+        var vm = shell.Pages.DailyVouchers!;
+        vm.CashAccountId = Guid.NewGuid();
+
+        // Row 0 complete
+        vm.Rows[0].AccountId = Guid.NewGuid();
+        vm.Rows[0].Receive = 500m;
+
+        // Row 1 incomplete (account chosen, but 0 receive and 0 pay)
+        vm.Rows[1].AccountId = Guid.NewGuid();
+        vm.Rows[1].Receive = 0m;
+        vm.Rows[1].Pay = 0m;
+
+        Assert.True(vm.Rows[1].IsIncomplete);
+        var lines = vm.BuildLines();
+        Assert.Null(lines);
+        Assert.Contains("2", vm.ValidationMessage);
+        Assert.Contains("صفوف السند", vm.ValidationMessage);
+    }
+
+    [Fact]
+    public async Task TreasuryDistribution_AutoGrowCommand_GrowsLinesBeyondFifty()
+    {
+        var fixture = CreateFixture();
+        var accounting = new AccountingFixture();
+        accounting.Patterns.Add(new DocumentPatternResponse
+        {
+            Id = Guid.NewGuid(), Code = "VP", NameArabic = "سند صرف", OperationKind = BusinessOperationKind.CashPayment, IsActive = true, IsRunnable = true,
+            ActiveRevision = new PatternRevisionResponse { Id = Guid.NewGuid(), RevisionNumber = 1 }
+        });
+        using var shell = fixture.Create(new AdministrationFixture(), accounting: accounting, treasury: new TreasuryFixture());
+        shell.UserName = "admin"; shell.Password = "test";
+        await shell.LoginCommand.ExecuteAsync(null).ConfigureAwait(true);
+
+        await shell.NavigateToAsync("treasury-vouchers", null).ConfigureAwait(true);
+        var vm = shell.Pages.Vouchers!;
+        vm.NewPaymentCommand.Execute(null);
+
+        Assert.Equal(50, vm.LineRows.Count);
+        Assert.True(vm.AutoGrowCommand.CanExecute(null));
+        vm.AutoGrowCommand.Execute(null);
+        Assert.Equal(60, vm.LineRows.Count);
+    }
+
+    [Fact]
+    public async Task InventoryOperations_AutoGrowCommand_GrowsLines()
+    {
+        var fixture = CreateFixture("Inventory.Transfers.Manage", "Inventory.Documents.View", "Inventory.Documents.Manage");
+        var inventoryDocs = new InventoryDocumentsFixture();
+        using var shell = fixture.Create(new AdministrationFixture(), inventoryDocuments: inventoryDocs);
+        shell.UserName = "admin"; shell.Password = "test";
+        await shell.LoginCommand.ExecuteAsync(null).ConfigureAwait(true);
+
+        await shell.NavigateToAsync("inventory-operations", null).ConfigureAwait(true);
+        var vm = shell.Pages.InventoryOperations!;
+        await vm.NewCommand.ExecuteAsync(null).ConfigureAwait(true);
+
+        Assert.Single(vm.Lines);
+        Assert.True(vm.AutoGrowCommand.CanExecute(null));
+        vm.AutoGrowCommand.Execute(null);
+        Assert.Equal(11, vm.Lines.Count);
+    }
 }

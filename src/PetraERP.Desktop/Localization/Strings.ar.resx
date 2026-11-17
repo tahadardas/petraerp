@@ -1437,6 +1437,25 @@
   <data name="BusinessOperationKind_CashPayment" xml:space="preserve"><value>سند صرف</value></data>
   <data name="BusinessOperationKind_CashJournal" xml:space="preserve"><value>يومية صندوق</value></data>
   <data name="BusinessOperationKind_ManualJournal" xml:space="preserve"><value>قيد يومية يدوي</value></data>
+  <data name="BusinessOperationKind_Assembly" xml:space="preserve"><value>فاتورة تجميع</value></data>
+  <data name="BusinessOperationKind_Disassembly" xml:space="preserve"><value>فاتورة تفكيك</value></data>
+  <data name="D_PM_Assembly" xml:space="preserve"><value>تجميع وتفكيك</value></data>
+  <data name="D_PM_AssemblyHelp" xml:space="preserve"><value>إدارة أنماط فواتير تجميع وتفكيك المواد (تصنيع بلا تصنيع) وتحديد حساب التشغيل ومصاريف التحويل وتوزيع التكاليف.</value></data>
+  <data name="D_Role_OperatingAccount" xml:space="preserve"><value>حساب التشغيل (صناعي / وسيط)</value></data>
+  <data name="D_Role_AssemblyExpense" xml:space="preserve"><value>حساب مصاريف التشغيل / التحويل</value></data>
+  <data name="D_Role_Variance" xml:space="preserve"><value>حساب فروقات التسوية والتفكيك</value></data>
+  <data name="D_AssemblyDisassembly" xml:space="preserve"><value>فاتورة تجميع وتفكيك</value></data>
+  <data name="D_Assembly" xml:space="preserve"><value>تجميع</value></data>
+  <data name="D_Disassembly" xml:space="preserve"><value>تفكيك</value></data>
+  <data name="D_AssembledItem" xml:space="preserve"><value>المادة التجميعية</value></data>
+  <data name="D_SourceWarehouse" xml:space="preserve"><value>مستودع الإخراج</value></data>
+  <data name="D_TargetWarehouse" xml:space="preserve"><value>مستودع الإدخال</value></data>
+  <data name="D_StandardQty" xml:space="preserve"><value>الكمية المعيارية</value></data>
+  <data name="D_TotalQty" xml:space="preserve"><value>الكمية الإجمالية</value></data>
+  <data name="D_TotalMaterialCost" xml:space="preserve"><value>إجمالي تكلفة المكونات</value></data>
+  <data name="D_TotalExpenses" xml:space="preserve"><value>إجمالي مصاريف التشغيل</value></data>
+  <data name="D_UnitProducedCost" xml:space="preserve"><value>تكلفة الوحدة المنتجة</value></data>
+  <data name="D_GrandCostTotal" xml:space="preserve"><value>التكلفة الإجمالية</value></data>
   <data name="PatternNumberingScope_Company" xml:space="preserve"><value>على مستوى الشركة</value></data>
   <data name="PatternNumberingScope_Branch" xml:space="preserve"><value>على مستوى الفرع</value></data>
   <data name="PatternNumberingScope_FiscalYear" xml:space="preserve"><value>سنوي</value></data>
@@ -1636,6 +1655,7 @@
   <data name="D_Menu_Help" xml:space="preserve"><value>تعليمات</value></data>
   <data name="D_Menu_Centers" xml:space="preserve"><value>مراكز الكلفة</value></data>
   <data name="D_FinancialStatements" xml:space="preserve"><value>القوائم المالية</value></data>
+  <data name="D_ExecutiveDashboard" xml:space="preserve"><value>لوحة المؤشرات والتحليلات التنفيذية</value></data>
   <data name="D_PointOfSaleTerminal" xml:space="preserve"><value>نقطة البيع</value></data>
   <data name="D_KeyboardShortcuts" xml:space="preserve"><value>دليل الاختصارات</value></data>
   <data name="D_LinkedPurchases" xml:space="preserve"><value>مشتريات المورد والمرتجعات</value></data>
@@ -2224,6 +2244,10 @@
   <data name="UI_Skin_Office2013White" xml:space="preserve"><value>Office 2013 White</value></data>
   <data name="UI_Skin_Windows7Scenic" xml:space="preserve"><value>Windows 7 Scenic</value></data>
   <data name="UI_Skin_VisualStudio2010" xml:space="preserve"><value>Visual Studio 2010</value></data>
+  <data name="UI_Skin_Ameen10Blue" xml:space="preserve"><value>الأمين 10 الأزرق الكلاسيكي</value></data>
+  <data name="UI_Skin_Ameen10Purple" xml:space="preserve"><value>الأمين 10 الأرجواني</value></data>
+  <data name="UI_Skin_Windows11Light" xml:space="preserve"><value>Windows 11 فاتح</value></data>
+  <data name="UI_Skin_Windows11Dark" xml:space="preserve"><value>Windows 11 داكن</value></data>
   <data name="UI_Density_Standard" xml:space="preserve"><value>قياسي</value></data>
   <data name="UI_Density_Comfortable" xml:space="preserve"><value>مريح</value></data>
   <data name="UI_FilterSaved" xml:space="preserve"><value>حُفظ المرشح. افتحه من Ctrl+K.</value></data>
@@ -2838,4 +2862,15 @@
   <data name="D_LineUnitSetupMissing" xml:space="preserve">
     <value>لا توجد وحدة أساسية معرّفة لهذه المادة. عرّف وحدات المادة من بطاقتها ثم أعد الاختيار.</value>
   </data>
+  <data name="MN_Assets" xml:space="preserve"><value>الأصول والآليات</value></data>
+  <data name="AST_Directory" xml:space="preserve"><value>دليل وسجل الأصول والآليات</value></data>
+  <data name="AST_ExpenseJournal" xml:space="preserve"><value>دفتر يومية مصاريف وصيانة الآليات</value></data>
+  <data name="AST_WorkOrder" xml:space="preserve"><value>بطاقة أمر الصيانة والإصلاح (ورش العملاء)</value></data>
+  <data name="AST_FuelVoucher" xml:space="preserve"><value>سند صرف وتوزيع مازوت ووقود</value></data>
+  <data name="AST_Custody" xml:space="preserve"><value>محاضر ومذكرات العهد</value></data>
+  <data name="AST_Rental" xml:space="preserve"><value>أصول ومعدات الزبائن (تأجير/أمانة)</value></data>
+  <data name="AST_Depreciation" xml:space="preserve"><value>احتساب وإقفال الاهتلاك الدوري</value></data>
+  <data name="AST_DossierReport" xml:space="preserve"><value>ملف وتكلفة الآلية الشامل (TCO)</value></data>
+  <data name="D_PM_Assets" xml:space="preserve"><value>الأصول والآليات</value></data>
+  <data name="D_PM_AssetsHelp" xml:space="preserve"><value>أنماط إهلاك وصيانة وتشغيل أسطول الآليات والمعدات الثقيلة والعهد</value></data>
 </root>

@@ -23,10 +23,12 @@ public partial class PetraInteractiveReportGrid : UserControl
     private IReadOnlyList<IReadOnlyDictionary<string, object?>> rows = [];
     private readonly Dictionary<DataGridColumn, ReportColumn> columnDefinitions = [];
     private readonly List<string> groupingKeys = [];
+    private readonly List<PetraConditionalFormatRule> conditionalRules = [];
 
     public PetraInteractiveReportGrid()
     {
         InitializeComponent();
+        Results.LoadingRow += ResultsLoadingRow;
         // Report display options (font, row height, grid lines, alternating rows) are followed while the grid is loaded.
         Loaded += (_, _) =>
         {
@@ -348,6 +350,40 @@ public partial class PetraInteractiveReportGrid : UserControl
     {
         groupingKeys.Clear();
         BindRows();
+    }
+
+    internal IReadOnlyList<PetraConditionalFormatRule> ActiveConditionalRules => conditionalRules.AsReadOnly();
+
+    internal void ApplyConditionalFormatting(IEnumerable<PetraConditionalFormatRule> rules)
+    {
+        conditionalRules.Clear();
+        conditionalRules.AddRange(rules);
+        Results.Items.Refresh();
+    }
+
+    internal void ClearConditionalFormatting()
+    {
+        conditionalRules.Clear();
+        Results.Items.Refresh();
+    }
+
+    private void ResultsLoadingRow(object? sender, DataGridRowEventArgs e)
+    {
+        if (e.Row.Item is not IReadOnlyDictionary<string, object?> row) return;
+
+        foreach (var rule in conditionalRules)
+        {
+            var column = Document?.Columns.FirstOrDefault(c => string.Equals(c.Key, rule.ColumnKey, StringComparison.Ordinal));
+            if (column is not null && rule.Matches(row, column))
+            {
+                e.Row.Background = rule.BackgroundBrush;
+                e.Row.Foreground = rule.ForegroundBrush;
+                return;
+            }
+        }
+
+        e.Row.ClearValue(DataGridRow.BackgroundProperty);
+        e.Row.ClearValue(DataGridRow.ForegroundProperty);
     }
 
     private void BindRows()

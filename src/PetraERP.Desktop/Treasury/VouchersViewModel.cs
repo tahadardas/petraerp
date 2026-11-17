@@ -410,8 +410,11 @@ public sealed partial class VouchersViewModel : PageViewModel, ISavablePage
         CurrencyOptions.Clear();
         var settings = await currenciesTask.ConfigureAwait(true);
         baseCurrency = settings?.BaseCurrencyCode ?? string.Empty;
+        if (!string.IsNullOrEmpty(baseCurrency)) CurrencyOptions.Add(baseCurrency);
         foreach (var currency in settings?.Currencies ?? [])
-            if (currency.Code is { Length: 3 } code && currency.IsActive == true) CurrencyOptions.Add(code);
+            if (currency.Code is { Length: 3 } code && currency.IsActive == true && !CurrencyOptions.Contains(code)) CurrencyOptions.Add(code);
+        if (string.IsNullOrWhiteSpace(DraftCurrency) && CurrencyOptions.Count > 0)
+            DraftCurrency = CurrencyOptions[0];
         CostCenters.Clear();
         if (costCentersTask is not null)
             foreach (var c in (await costCentersTask.ConfigureAwait(true)).Items ?? []) CostCenters.Add(c);

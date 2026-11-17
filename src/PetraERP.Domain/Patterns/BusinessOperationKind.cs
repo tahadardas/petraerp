@@ -16,6 +16,12 @@ public enum BusinessOperationKind
     CashPayment = 8,
     CashJournal = 9,
     ManualJournal = 10,
+    Assembly = 11,
+    Disassembly = 12,
+    AssetDepreciation = 13,
+    AssetMaintenance = 14,
+    AssetFuelDispensing = 15,
+    AssetCustomerRental = 16,
 }
 
 public enum BusinessOperationCategory
@@ -24,6 +30,8 @@ public enum BusinessOperationCategory
     Voucher = 2,
     Journal = 3,
     Inventory = 4,
+    Assembly = 5,
+    Assets = 6,
 }
 
 /// <summary>
@@ -43,12 +51,17 @@ public static class BusinessOperationCatalog
 
         BusinessOperationKind.InventoryIssue or BusinessOperationKind.InventoryReceipt => BusinessOperationCategory.Inventory,
 
+        BusinessOperationKind.Assembly or BusinessOperationKind.Disassembly => BusinessOperationCategory.Assembly,
+
+        BusinessOperationKind.AssetDepreciation or BusinessOperationKind.AssetMaintenance or
+        BusinessOperationKind.AssetFuelDispensing or BusinessOperationKind.AssetCustomerRental => BusinessOperationCategory.Assets,
+
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown operation kind."),
     };
 
     /// <summary>
     /// True only when the underlying backend posting engine and workflow exist in the source code.
-    /// ManualJournal, SalesInvoice, PurchaseInvoice and the CashReceipt/CashPayment vouchers are implemented; others stay disabled.
+    /// ManualJournal, SalesInvoice, PurchaseInvoice, CashReceipt/CashPayment vouchers, Assembly/Disassembly, and Assets are implemented; others stay disabled.
     /// </summary>
     public static bool IsRunnable(BusinessOperationKind kind) => kind switch
     {
@@ -57,6 +70,12 @@ public static class BusinessOperationCatalog
         BusinessOperationKind.CashReceipt => true,
         BusinessOperationKind.CashPayment => true,
         BusinessOperationKind.PurchaseInvoice => true,
+        BusinessOperationKind.Assembly => true,
+        BusinessOperationKind.Disassembly => true,
+        BusinessOperationKind.AssetDepreciation => true,
+        BusinessOperationKind.AssetMaintenance => true,
+        BusinessOperationKind.AssetFuelDispensing => true,
+        BusinessOperationKind.AssetCustomerRental => true,
         _ => false,
     };
 }

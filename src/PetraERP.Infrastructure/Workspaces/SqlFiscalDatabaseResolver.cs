@@ -31,7 +31,26 @@ public sealed class SqlFiscalDatabaseResolver : IFiscalDatabaseResolver
             ?? throw new InvalidOperationException("ConnectionStrings:PetraERP is not configured.");
     }
 
+    // The resolver is scoped: this memo lives for ONE request/unit of work (workspace authorization and the accounting context factory both
+    // resolve the same workspace in a request, which used to cost the registry, company and branch reads twice). Only successful
+    // resolutions are kept, it is never shared across requests, users, companies or years, and a new scope always re-reads the registry.
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, ResolvedFiscalDatabase> resolvedInScope = new();
+
     public async Task<ResolvedFiscalDatabase> ResolveAsync(Guid workspaceId, CancellationToken cancellationToken = default)
+    {
+        if (resolvedInScope.TryGetValue(workspaceId, out var memo)) return memo;
+        var resolvedNow = await ResolveFromRegistryAsync(workspaceId, cancellationToken).ConfigureAwait(false);
+        resolvedInScope[workspaceId] = resolvedNow;
+        return resolvedNow;
+    }
+
+    public async Task<ResolvedFiscalDatabase> ResolveFreshAsync(Guid workspaceId, CancellationToken cancellationToken = default)
+    {
+        resolvedInScope.TryRemove(workspaceId, out _);
+        return await ResolveAsync(workspaceId, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<ResolvedFiscalDatabase> ResolveFromRegistryAsync(Guid workspaceId, CancellationToken cancellationToken)
     {
         var record = await systemContext.FiscalDatabases.AsNoTracking()
             .FirstOrDefaultAsync(db => db.Id == workspaceId, cancellationToken)

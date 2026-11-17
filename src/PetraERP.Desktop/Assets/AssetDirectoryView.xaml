@@ -1,0 +1,75 @@
+<UserControl x:Class="PetraERP.Desktop.Assets.AssetDirectoryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ux="clr-namespace:PetraERP.Desktop.Controls"
+             xmlns:ast="clr-namespace:PetraERP.Desktop.Assets"
+             Background="{DynamicResource Surface.Secondary}">
+
+    <DockPanel LastChildFill="True">
+        <!-- Top Action Bar & KPIs -->
+        <Border DockPanel.Dock="Top" Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="0,0,0,1" Padding="12,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="دليل وسجل الأصول والآليات" Style="{StaticResource Text.Title}" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                    <TextBox Width="240" Height="28" Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" Margin="0,0,10,0" ToolTip="بحث بالرمز، الاسم، اللوحة، السيريال، أو المستلم..."/>
+                    <ComboBox Width="130" Height="28" SelectedValuePath="Tag" SelectedValue="{Binding SelectedTypeFilter, Mode=TwoWay}" VerticalContentAlignment="Center">
+                        <ComboBoxItem Content="كافة الأصول" Tag="All" IsSelected="True"/>
+                        <ComboBoxItem Content="آليات ومعدات" Tag="Machinery"/>
+                        <ComboBoxItem Content="أصول متحركة وعهد" Tag="Movable"/>
+                        <ComboBoxItem Content="أصول ثابتة" Tag="Fixed"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- KPI Quick Summary Badges -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Border Background="#F1F5F9" CornerRadius="4" Padding="12,4" Margin="0,0,10,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="العدد الكلي: " Foreground="#64748B" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding TotalAssetCount}" FontWeight="Bold" Foreground="#0F172A"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Background="#F1F5F9" CornerRadius="4" Padding="12,4" Margin="0,0,10,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="تكلفة الشراء: " Foreground="#64748B" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding TotalAcquisitionCost, StringFormat={}{0:N0} ر.س}" FontWeight="Bold" Foreground="#0F172A"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Background="#ECFDF5" CornerRadius="4" Padding="12,4">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="القيمة الدفترية الحالية: " Foreground="#059669" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding TotalCurrentBookValue, StringFormat={}{0:N0} ر.س}" FontWeight="Bold" Foreground="#047857"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Style="{StaticResource Am.PrimaryActionButton}" Content="ملف وتكلفة الآلية الشامل (TCO)" Command="{Binding OpenDossierCommand}" Margin="0,0,8,0" ux:Icon.Glyph="&#xE9D2;"/>
+                    <Button Style="{StaticResource Button.Command}" Content="تحديث" Command="{Binding RefreshCommand}" ux:Icon.Glyph="&#xE72C;"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Assets Grid -->
+        <DataGrid ItemsSource="{Binding FilteredAssets}" SelectedItem="{Binding SelectedAsset, Mode=TwoWay}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single" Margin="10" Style="{StaticResource {x:Type DataGrid}}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="رمز الأصل" Binding="{Binding AssetCode}" Width="100"/>
+                <DataGridTextColumn Header="اسم الأصل / الآلية" Binding="{Binding NameArabic}" Width="220"/>
+                <DataGridTextColumn Header="التصنيف" Binding="{Binding CategoryName}" Width="140"/>
+                <DataGridTextColumn Header="رقم اللوحة / السيريال" Binding="{Binding SerialNumber}" Width="150"/>
+                <DataGridTextColumn Header="الموقع / الفرع" Binding="{Binding LocationOrBranch}" Width="160"/>
+                <DataGridTextColumn Header="المستلم / المشغّل الحالي" Binding="{Binding CurrentCustodian}" Width="160"/>
+                <DataGridTextColumn Header="تكلفة الاقتناء" Binding="{Binding AcquisitionCost, StringFormat={}{0:N2}}" Width="120"/>
+                <DataGridTextColumn Header="مجمع الاهتلاك" Binding="{Binding AccumulatedDepreciation, StringFormat={}{0:N2}}" Width="120"/>
+                <DataGridTextColumn Header="القيمة الدفترية" Binding="{Binding CurrentBookValue, StringFormat={}{0:N2}}" Width="120"/>
+                <DataGridTextColumn Header="طريقة الإهلاك" Binding="{Binding DepreciationMethod}" Width="120"/>
+                <DataGridTextColumn Header="الحالة" Binding="{Binding Status}" Width="110"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

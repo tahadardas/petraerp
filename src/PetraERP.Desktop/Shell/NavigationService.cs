@@ -54,6 +54,15 @@ public sealed class NavigationService : ObservableObject
         ("items", "inventory", "Inventory.Items.View", "D_Items", ""),
         ("units", "inventory", "Inventory.Items.View", "UNT_Title", ""),
         ("inventory-operations", "inventory", "Inventory.Movements.View", "INV_Title", ""),
+        ("assembly-disassembly", "inventory", "Inventory.Movements.View", "D_AssemblyDisassembly", "\uE74C"),
+        ("assets-directory", "assets", "Ledger.Accounts.View", "AST_Directory", "\uE71D"),
+        ("fleet-expenses", "assets", "Ledger.Journals.Manage", "AST_ExpenseJournal", "\uE8A5"),
+        ("maintenance-work-order", "assets", "Sales.Invoices.View", "AST_WorkOrder", "\uE90F"),
+        ("fuel-dispensing", "assets", "Inventory.Movements.View", "AST_FuelVoucher", "\uE9D2"),
+        ("asset-custody", "assets", "Ledger.Accounts.View", "AST_Custody", "\uE77B"),
+        ("customer-rentals", "assets", "Sales.Invoices.View", "AST_Rental", "\uE749"),
+        ("asset-depreciation", "assets", "Ledger.Journals.Manage", "AST_Depreciation", "\uE74C"),
+        ("asset-dossier", "assets", "Ledger.Reports.View", "AST_DossierReport", "\uE9D2"),
         ("stocktaking", "inventory", "Inventory.Movements.View", "INV_StocktakingWizard", ""),
         ("sales-invoices", "sales", "Sales.Invoices.View", "D_SalesInvoices", ""),
         ("treasury-vouchers", "treasury", "Treasury.Vouchers.View", "D_Vouchers", ""),
@@ -65,6 +74,7 @@ public sealed class NavigationService : ObservableObject
         ("cheques", "treasury", "Treasury.Vouchers.View", "D_CommercialPapers", ""),
         ("bank-reconciliation", "treasury", "Treasury.Vouchers.View", "BKR_Title", ""),
         ("purchase-invoices", "purchases", "Purchases.Invoices.View", "D_PurchaseInvoices", ""),
+        ("executive-dashboard", "accounting", "Ledger.Reports.View", "D_ExecutiveDashboard", "\uE9D2"),
         ("financial-reports", "accounting", "Ledger.Reports.View", "D_FinancialStatements", ""),
         ("fx-revaluation", "accounting", "Ledger.Accounts.View", "CUR_FxRevaluationWizard", ""),
         ("posting-management", "accounting", "Posting.Batches.Manage", "D_PostingManagement", "\uE8A5"),
@@ -95,7 +105,7 @@ public sealed class NavigationService : ObservableObject
     /// </summary>
     internal static readonly IReadOnlyDictionary<string, string> SubMenus = new Dictionary<string, string>(StringComparer.Ordinal)
     {
-        ["general-journal"] = "reports", ["account-ledger"] = "reports", ["trial-balance"] = "reports", ["financial-reports"] = "reports",
+        ["general-journal"] = "reports", ["account-ledger"] = "reports", ["trial-balance"] = "reports", ["financial-reports"] = "reports", ["executive-dashboard"] = "reports",
         ["fx-revaluation"] = "tools", ["posting-management"] = "tools",
         ["customer-statement"] = "reports", ["supplier-statement"] = "reports", ["party-statement"] = "reports", ["currency-balance"] = "reports",
         ["stocktaking"] = "tools", ["units"] = "tools",
@@ -131,6 +141,7 @@ public sealed class NavigationService : ObservableObject
     public IReadOnlyList<MenuEntry> PurchasesMenu => MenuFor("purchases");
     public IReadOnlyList<MenuEntry> PartiesMenu => MenuFor("parties");
     public IReadOnlyList<MenuEntry> InventoryMenu => MenuFor("inventory");
+    public IReadOnlyList<MenuEntry> AssetsMenu => MenuFor("assets");
     public IReadOnlyList<MenuEntry> MultiMenu => MenuFor("multi");
     public IReadOnlyList<MenuEntry> CurrencyMenu => MenuFor("currency");
     public IReadOnlyList<MenuEntry> ReportsMenu => MenuFor("reports");

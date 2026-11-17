@@ -1437,6 +1437,25 @@
   <data name="BusinessOperationKind_CashPayment" xml:space="preserve"><value>Cash Payment</value></data>
   <data name="BusinessOperationKind_CashJournal" xml:space="preserve"><value>Cash Journal</value></data>
   <data name="BusinessOperationKind_ManualJournal" xml:space="preserve"><value>Manual Journal</value></data>
+  <data name="BusinessOperationKind_Assembly" xml:space="preserve"><value>Assembly Invoice</value></data>
+  <data name="BusinessOperationKind_Disassembly" xml:space="preserve"><value>Disassembly Invoice</value></data>
+  <data name="D_PM_Assembly" xml:space="preserve"><value>Assembly &amp; Disassembly</value></data>
+  <data name="D_PM_AssemblyHelp" xml:space="preserve"><value>Manage patterns for material assembly and disassembly invoices (manufacturing without heavy process), operating account, and cost allocations.</value></data>
+  <data name="D_Role_OperatingAccount" xml:space="preserve"><value>Operating Account (WIP / Clearing)</value></data>
+  <data name="D_Role_AssemblyExpense" xml:space="preserve"><value>Operating / Conversion Expense Account</value></data>
+  <data name="D_Role_Variance" xml:space="preserve"><value>Disassembly Variance / Settlement Account</value></data>
+  <data name="D_AssemblyDisassembly" xml:space="preserve"><value>Assembly &amp; Disassembly</value></data>
+  <data name="D_Assembly" xml:space="preserve"><value>Assembly</value></data>
+  <data name="D_Disassembly" xml:space="preserve"><value>Disassembly</value></data>
+  <data name="D_AssembledItem" xml:space="preserve"><value>Assembled Item</value></data>
+  <data name="D_SourceWarehouse" xml:space="preserve"><value>Issue Warehouse</value></data>
+  <data name="D_TargetWarehouse" xml:space="preserve"><value>Receipt Warehouse</value></data>
+  <data name="D_StandardQty" xml:space="preserve"><value>Std Qty</value></data>
+  <data name="D_TotalQty" xml:space="preserve"><value>Total Qty</value></data>
+  <data name="D_TotalMaterialCost" xml:space="preserve"><value>Total Components Cost</value></data>
+  <data name="D_TotalExpenses" xml:space="preserve"><value>Total Operating Expenses</value></data>
+  <data name="D_UnitProducedCost" xml:space="preserve"><value>Unit Cost</value></data>
+  <data name="D_GrandCostTotal" xml:space="preserve"><value>Grand Total Cost</value></data>
   <data name="PatternNumberingScope_Company" xml:space="preserve"><value>Company-wide</value></data>
   <data name="PatternNumberingScope_Branch" xml:space="preserve"><value>Per branch</value></data>
   <data name="PatternNumberingScope_FiscalYear" xml:space="preserve"><value>Per fiscal year</value></data>
@@ -1636,6 +1655,7 @@
   <data name="D_Menu_Help" xml:space="preserve"><value>Help</value></data>
   <data name="D_Menu_Centers" xml:space="preserve"><value>Cost Centers</value></data>
   <data name="D_FinancialStatements" xml:space="preserve"><value>Financial Statements</value></data>
+  <data name="D_ExecutiveDashboard" xml:space="preserve"><value>Executive Financial Dashboard</value></data>
   <data name="D_PointOfSaleTerminal" xml:space="preserve"><value>POS Terminal</value></data>
   <data name="D_KeyboardShortcuts" xml:space="preserve"><value>Keyboard Shortcuts</value></data>
   <data name="D_LinkedPurchases" xml:space="preserve"><value>Supplier purchases and returns</value></data>
@@ -2224,6 +2244,10 @@
   <data name="UI_Skin_Office2013White" xml:space="preserve"><value>Office 2013 White</value></data>
   <data name="UI_Skin_Windows7Scenic" xml:space="preserve"><value>Windows 7 Scenic</value></data>
   <data name="UI_Skin_VisualStudio2010" xml:space="preserve"><value>Visual Studio 2010</value></data>
+  <data name="UI_Skin_Ameen10Blue" xml:space="preserve"><value>Al-Ameen 10 Royal Blue</value></data>
+  <data name="UI_Skin_Ameen10Purple" xml:space="preserve"><value>Al-Ameen 10 Violet/Purple</value></data>
+  <data name="UI_Skin_Windows11Light" xml:space="preserve"><value>Windows 11 Light</value></data>
+  <data name="UI_Skin_Windows11Dark" xml:space="preserve"><value>Windows 11 Dark</value></data>
   <data name="UI_Density_Standard" xml:space="preserve"><value>Standard</value></data>
   <data name="UI_Density_Comfortable" xml:space="preserve"><value>Comfortable</value></data>
   <data name="UI_FilterSaved" xml:space="preserve"><value>Filter saved. Open it from Ctrl+K.</value></data>
@@ -2837,5 +2861,8 @@
   </data>
   <data name="D_LineUnitSetupMissing" xml:space="preserve">
     <value>This item has no base unit. Define its units on the item card, then select it again.</value>
+  </data>
+  <data name="AST_WorkOrder" xml:space="preserve">
+    <value>Maintenance Work Order (Customer Workshops)</value>
   </data>
 </root>

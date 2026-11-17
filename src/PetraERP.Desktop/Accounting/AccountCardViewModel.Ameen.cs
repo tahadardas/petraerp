@@ -54,6 +54,43 @@ public sealed partial class AccountCardViewModel
         OnPropertyChanged(nameof(IsNatureDebit));
         OnPropertyChanged(nameof(IsNatureCredit));
         OnPropertyChanged(nameof(IsNatureBoth));
+        OnPropertyChanged(nameof(HasNatureViolation));
+        OnPropertyChanged(nameof(NatureViolationWarning));
+    }
+
+    public bool HasNatureViolation
+    {
+        get
+        {
+            if (Summary?.ClosingBalance is not { } closing ||
+                !decimal.TryParse(closing, NumberStyles.Number | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var bal) ||
+                bal == 0m)
+            {
+                return false;
+            }
+
+            return (DraftNature == 1 && bal < 0m) || (DraftNature == 2 && bal > 0m);
+        }
+    }
+
+    public string NatureViolationWarning
+    {
+        get
+        {
+            if (Summary?.ClosingBalance is not { } closing ||
+                !decimal.TryParse(closing, NumberStyles.Number | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var bal) ||
+                bal == 0m)
+            {
+                return string.Empty;
+            }
+
+            if (DraftNature == 1 && bal < 0m)
+                return "تنبيه رقابي (الأمين): رصيد الحساب دائن خلافاً لطبيعته المدينة المحددة في البطاقة (كشف رصيد)!";
+            if (DraftNature == 2 && bal > 0m)
+                return "تنبيه رقابي (الأمين): رصيد الحساب مدين خلافاً لطبيعته الدائنة المحددة في البطاقة!";
+
+            return string.Empty;
+        }
     }
 
     private void NotifyBudgetRadio()

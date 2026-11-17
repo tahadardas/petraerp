@@ -39,6 +39,8 @@ public sealed partial class DashboardViewModel : ObservableObject
     private readonly IGeneralLedgerClient? ledger;
     private readonly ICommercialPapersClient? papers;
     private readonly ILocalizationService localization;
+    private readonly Reports.IReportsClient? reports;
+    private readonly ShellNavigator? navigator;
     private ShellContext? context;
     private long generation;
 
@@ -46,9 +48,11 @@ public sealed partial class DashboardViewModel : ObservableObject
     [ObservableProperty] private string asOf = string.Empty;
     [ObservableProperty] private bool hasError;
 
-    public DashboardViewModel(IGeneralLedgerClient? ledger, ICommercialPapersClient? papers, ILocalizationService localization)
+    public DashboardViewModel(IGeneralLedgerClient? ledger, ICommercialPapersClient? papers, ILocalizationService localization,
+        Reports.IReportsClient? reports = null, ShellNavigator? navigator = null)
     {
         this.ledger = ledger; this.papers = papers; this.localization = localization;
+        this.reports = reports; this.navigator = navigator;
         RefreshCommand = new AsyncRelayCommand(() => RefreshAsync(context), () => context is not null && !IsLoading);
     }
 
@@ -63,7 +67,7 @@ public sealed partial class DashboardViewModel : ObservableObject
         context = shellContext;
         Build(shellContext);
         RefreshCommand.NotifyCanExecuteChanged();
-        if (shellContext is null || Tiles.Count == 0) { AsOf = string.Empty; return; }
+        if (shellContext is null) { AsOf = string.Empty; ClearFinancialMetrics(); return; }
         IsLoading = true; HasError = false;
         try
         {
@@ -76,6 +80,8 @@ public sealed partial class DashboardViewModel : ObservableObject
                 tile.NeedsAttention = count > 0 && tile.Id is "papers.overdue" or "papers.today";
                 HasError |= count is null;
             }
+
+            await RefreshFinancialMetricsAsync(shellContext, stamp).ConfigureAwait(true);
 
             AsOf = string.Format(localization.Culture, localization["UI_AsOf"], DateTime.Now.ToString("HH:mm", CultureInfo.InvariantCulture));
         }

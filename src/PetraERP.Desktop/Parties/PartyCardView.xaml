@@ -10,6 +10,11 @@
         <KeyBinding Key="Escape" Command="{Binding CancelCardCommand}"/>
         <KeyBinding Key="E" Modifiers="Control" Command="{Binding BeginEditCommand}"/>
         <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCardCommand}"/>
+        <KeyBinding Key="N" Modifiers="Control" Command="{Binding BeginNewCommand}"/>
+        <KeyBinding Key="Home" Modifiers="Control" Command="{Binding FirstPartyCommand}"/>
+        <KeyBinding Key="PageUp" Modifiers="Control" Command="{Binding PreviousPartyCommand}"/>
+        <KeyBinding Key="PageDown" Modifiers="Control" Command="{Binding NextPartyCommand}"/>
+        <KeyBinding Key="End" Modifiers="Control" Command="{Binding LastPartyCommand}"/>
     </UserControl.InputBindings>
     <UserControl.Resources>
         <Style x:Key="Am.Label" TargetType="TextBlock"><Setter Property="VerticalAlignment" Value="Center"/><Setter Property="Margin" Value="6,3"/></Style>

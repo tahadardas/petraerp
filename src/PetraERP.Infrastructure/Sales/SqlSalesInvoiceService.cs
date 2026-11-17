@@ -376,11 +376,14 @@ public sealed partial class SqlSalesInvoiceService : ISalesInvoiceService
             .ConfigureAwait(false);
 
         decimal? settled = null, returnedAmount = null, outstanding = null;
-        if (row.Status == (int)SalesInvoiceStatus.Posted && row.PaymentMethod == (int)PaymentMethod.Credit
+        if (!SalesDetailEnrichment.Suppressed && row.Status == (int)SalesInvoiceStatus.Posted && row.PaymentMethod == (int)PaymentMethod.Credit
             && row.ReversesInvoiceId == null && row.ReturnOfInvoiceId == null)
         {
+            // Only this invoice, its returns and its reversal are needed for its own settlement figures: the composition is per original
+            // invoice, so restricting the seed set returns the same row without composing every invoice of the customer (and without
+            // the customer's open items, which can never carry this invoice's id).
             var invoices = await PetraERP.Infrastructure.Treasury.SettlementQueries.LoadInvoicesAsync(context, companyId, branchId,
-                VoucherKind.Receipt, row.CustomerId, null, null, cancellationToken).ConfigureAwait(false);
+                VoucherKind.Receipt, row.CustomerId, null, null, cancellationToken, documentId: row.Id).ConfigureAwait(false);
             var settlement = invoices.SingleOrDefault(i => i.Id == row.Id);
             settled = settlement?.Paid ?? 0m;
             returnedAmount = settlement?.Returned ?? 0m;
@@ -388,7 +391,7 @@ public sealed partial class SqlSalesInvoiceService : ISalesInvoiceService
         }
 
         var detail = MapDetailResult(row, costCenters);
-        var credit = row.PaymentMethod == (int)PaymentMethod.Credit && row.ReturnOfInvoiceId is null && row.ReversesInvoiceId is null
+        var credit = !SalesDetailEnrichment.Suppressed && row.PaymentMethod == (int)PaymentMethod.Credit && row.ReturnOfInvoiceId is null && row.ReversesInvoiceId is null
             ? await LoadCreditSnapshotAsync(row, cancellationToken).ConfigureAwait(false) : null;
         var audit = await context.SalesCreditAudit.AsNoTracking().SingleOrDefaultAsync(a => a.InvoiceId == row.Id
             && a.CompanyId == companyId && a.BranchId == branchId, cancellationToken).ConfigureAwait(false);

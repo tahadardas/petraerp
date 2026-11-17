@@ -6,8 +6,13 @@
  <UserControl.InputBindings>
   <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCommand}"/>
   <KeyBinding Key="N" Modifiers="Control" Command="{Binding NewCommand}"/>
+  <KeyBinding Key="B" Modifiers="Control" Command="{Binding AutoBalanceCommand}"/>
   <KeyBinding Key="Insert" Command="{Binding AddRowCommand}"/>
   <KeyBinding Key="F5" Command="{Binding RefreshCommand}"/>
+  <KeyBinding Key="Home" Modifiers="Control" Command="{Binding FirstVoucherCommand}"/>
+  <KeyBinding Key="PageUp" Modifiers="Control" Command="{Binding PreviousVoucherCommand}"/>
+  <KeyBinding Key="PageDown" Modifiers="Control" Command="{Binding NextVoucherCommand}"/>
+  <KeyBinding Key="End" Modifiers="Control" Command="{Binding LastVoucherCommand}"/>
  </UserControl.InputBindings>
  <DockPanel>
   <!-- Al-Ameen Top Bar: Navigator + Secrecy Indicator -->
@@ -24,7 +29,8 @@
    </StackPanel>
    <ux:RecordNavigator RecordNumber="{Binding VoucherNumber}" StatusText="{Binding StatusText}"
                        FirstCommand="{Binding FirstVoucherCommand}" PreviousCommand="{Binding PreviousVoucherCommand}"
-                       NextCommand="{Binding NextVoucherCommand}" LastCommand="{Binding LastVoucherCommand}"/>
+                       NextCommand="{Binding NextVoucherCommand}" LastCommand="{Binding LastVoucherCommand}"
+                       JumpCommand="{Binding JumpCommand}"/>
   </DockPanel>
   <TextBlock DockPanel.Dock="Top" Text="{Binding ValidationMessage}" Foreground="{DynamicResource ErrorSurface}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="2,0,2,6"
              Visibility="{Binding ValidationMessage, Converter={StaticResource Visible}}"/>
@@ -37,7 +43,7 @@
    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,4"><TextBlock Text="{Binding Localization[D_DV_Date]}" Style="{StaticResource Text.Label}"/>
     <ux:PetraDatePicker SelectedDate="{Binding VoucherDate}" IsEnabled="{Binding IsEditable}" AutomationProperties.Name="{Binding Localization[D_DV_Date]}"/></StackPanel>
    <StackPanel Grid.Row="0" Grid.Column="4" Margin="0,0,0,4"><TextBlock Text="{Binding Localization[D_DV_Currency]}" Style="{StaticResource Text.Label}"/>
-    <TextBox FlowDirection="LeftToRight" MaxLength="3" CharacterCasing="Upper" Text="{Binding CurrencyCode, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsEditable}"
+    <ComboBox FlowDirection="LeftToRight" ItemsSource="{Binding CurrencyOptions}" SelectedItem="{Binding CurrencyCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsEditable}" IsEditable="False" Height="26"
              AutomationProperties.Name="{Binding Localization[D_DV_Currency]}"/></StackPanel>
    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,4"><TextBlock Text="{Binding Localization[D_DV_Description]}" Style="{StaticResource Text.Label}"/>
     <TextBox MaxLength="1000" Text="{Binding VoucherDescription, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsEditable}" AutomationProperties.Name="{Binding Localization[D_DV_Description]}"/></StackPanel>
@@ -53,6 +59,7 @@
     <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE710;" Content="{Binding Localization[D_DV_AddRow]}" Command="{Binding AddRowCommand}" ToolTip="Insert"/>
     <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE7C3;" Content="{Binding Localization[D_DV_New]}" Command="{Binding NewCommand}" ToolTip="Ctrl+N"/>
     <Button Style="{StaticResource Button.Command}" ux:Icon.Glyph="&#xE74E;" Content="{Binding Localization[D_DV_Save]}" Command="{Binding SaveCommand}" ToolTip="Ctrl+S"/>
+    <Button Style="{StaticResource Button.Financial}" ux:Icon.Glyph="&#xE8D4;" Content="موازنة القيد" Command="{Binding AutoBalanceCommand}" ToolTip="موازنة السند تلقائياً (Ctrl+B)"/>
     <Button Style="{StaticResource Button.Financial}" ux:Icon.Glyph="&#xE8C8;" Content="{Binding Localization[D_DV_Post]}" Command="{Binding PostCommand}" ToolTip="Ctrl+Shift+P"/>
     <Button Style="{StaticResource Button.Danger}" ux:Icon.Glyph="&#xE74D;" Content="{Binding Localization[D_DV_Delete]}" Command="{Binding DeleteCommand}"/>
     <Button Style="{StaticResource Button.Danger}" ux:Icon.Glyph="&#xE7A7;" Content="{Binding Localization[D_DV_Reverse]}" Command="{Binding ReverseCommand}" ToolTip="إنشاء قيد عكسي مرحَّل للسند المرحَّل (لا يُعدَّل الأصل)"/>
@@ -60,36 +67,59 @@
    </WrapPanel>
   </Border>
 
-  <!-- Totals: distinctive Al-Ameen blue pills (pay, receive, final cash balance). -->
+  <!-- Totals: distinctive Al-Ameen blue pills (pay, receive, final cash balance, difference, row count) + Live Tafqeet Banner. -->
   <Border DockPanel.Dock="Bottom" Background="{DynamicResource Accent.Subtle}" BorderBrush="{DynamicResource Accent}" BorderThickness="0,2,0,0" Padding="8,4" Margin="0,6,0,0">
-   <WrapPanel VerticalAlignment="Center">
-    <TextBlock Text="{Binding Localization[D_DV_Pay]}" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,6,0"/>
-    <Border Background="{DynamicResource Brand.Navy}" Padding="8,3" Margin="0,0,12,0" MinWidth="110" CornerRadius="{DynamicResource Radius.Small}">
-     <TextBlock Text="{Binding TotalPayText}" Foreground="{DynamicResource Text.OnBrand}" FlowDirection="LeftToRight" FontWeight="SemiBold"/>
+   <StackPanel>
+    <WrapPanel VerticalAlignment="Center">
+     <TextBlock Text="{Binding Localization[D_DV_Pay]}" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+     <Border Background="{DynamicResource Brand.Navy}" Padding="8,3" Margin="0,0,12,0" MinWidth="110" CornerRadius="{DynamicResource Radius.Small}">
+      <TextBlock Text="{Binding TotalPayText}" Foreground="{DynamicResource Text.OnBrand}" FlowDirection="LeftToRight" FontWeight="SemiBold"/>
+     </Border>
+     <TextBlock Text="{Binding Localization[D_DV_Receive]}" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+     <Border Background="{DynamicResource Brand.Navy}" Padding="8,3" Margin="0,0,16,0" MinWidth="110" CornerRadius="{DynamicResource Radius.Small}">
+      <TextBlock Text="{Binding TotalReceiveText}" Foreground="{DynamicResource Text.OnBrand}" FlowDirection="LeftToRight" FontWeight="SemiBold"/>
+     </Border>
+     <TextBlock Text="{Binding Localization[D_DV_FinalBalance]}" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+     <Border Background="{DynamicResource Brand.Navy}" Padding="8,3" Margin="0,0,8,0" MinWidth="130" CornerRadius="{DynamicResource Radius.Small}">
+      <TextBlock Text="{Binding FinalBalance}" Foreground="{DynamicResource Text.OnBrand}" FlowDirection="LeftToRight" FontWeight="SemiBold"/>
+     </Border>
+     <TextBlock Text="{Binding CurrencyCode}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="4,0,12,0"/>
+     <TextBlock Text="الفرق:" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="8,0,6,0"/>
+     <Border Background="{DynamicResource Error.Subtle}" Padding="8,3" Margin="0,0,12,0" MinWidth="90" CornerRadius="{DynamicResource Radius.Small}">
+      <TextBlock Text="{Binding DifferenceText}" Foreground="{DynamicResource Error}" FlowDirection="LeftToRight" FontWeight="Bold"/>
+     </Border>
+     <TextBlock Text="الأسطر المكتملة:" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="8,0,6,0"/>
+     <TextBlock Text="{Binding FilledRowCount}" FontWeight="Bold" VerticalAlignment="Center"/>
+    </WrapPanel>
+    <Border Background="{DynamicResource Surface.Sunken}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="4" Padding="8,3" Margin="0,4,0,0">
+     <DockPanel>
+      <TextBlock Text="التفقيط:" FontWeight="SemiBold" Foreground="{DynamicResource Text.Muted}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+      <TextBlock Text="{Binding TafqeetText}" Foreground="{DynamicResource Text.Primary}" FontWeight="Medium" TextWrapping="Wrap" VerticalAlignment="Center"/>
+     </DockPanel>
     </Border>
-    <TextBlock Text="{Binding Localization[D_DV_Receive]}" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,6,0"/>
-    <Border Background="{DynamicResource Brand.Navy}" Padding="8,3" Margin="0,0,16,0" MinWidth="110" CornerRadius="{DynamicResource Radius.Small}">
-     <TextBlock Text="{Binding TotalReceiveText}" Foreground="{DynamicResource Text.OnBrand}" FlowDirection="LeftToRight" FontWeight="SemiBold"/>
-    </Border>
-    <TextBlock Text="{Binding Localization[D_DV_FinalBalance]}" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,6,0"/>
-    <Border Background="{DynamicResource Brand.Navy}" Padding="8,3" Margin="0,0,8,0" MinWidth="130" CornerRadius="{DynamicResource Radius.Small}">
-     <TextBlock Text="{Binding FinalBalance}" Foreground="{DynamicResource Text.OnBrand}" FlowDirection="LeftToRight" FontWeight="SemiBold"/>
-    </Border>
-    <TextBlock Text="{Binding CurrencyCode}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="4,0,0,0"/>
-   </WrapPanel>
+   </StackPanel>
   </Border>
 
-  <ux:PetraAccountingDataGrid EntryMode="True" ux:GridRowNumbers.Enabled="True" ItemsSource="{Binding Rows}" SelectedItem="{Binding SelectedRow}" CanUserAddRows="False" SelectionUnit="CellOrRowHeader"
+  <ux:PetraAccountingDataGrid EntryMode="True" ShowRowNumbers="True" ux:GridRowNumbers.Enabled="True" ItemsSource="{Binding Rows}" SelectedItem="{Binding SelectedRow}" CanUserAddRows="False" SelectionUnit="CellOrRowHeader"
             AlternatingRowBackground="{DynamicResource Grid.Alternate}" GridLinesVisibility="All" HorizontalGridLinesBrush="{DynamicResource Divider}" VerticalGridLinesBrush="{DynamicResource Divider}"
-            CanUserSortColumns="False" IsReadOnly="{Binding IsEditable, Converter={StaticResource Show}, ConverterParameter=invert}" MinHeight="160" AutomationProperties.Name="{Binding Localization[D_DV_Rows]}">
+            CanUserSortColumns="False" IsReadOnly="{Binding IsEditable, Converter={StaticResource Show}, ConverterParameter=invert}" MinHeight="160" AutomationProperties.Name="{Binding Localization[D_DV_Rows]}"
+            AutoGrowCommand="{Binding AutoGrowCommand}">
+   <DataGrid.ContextMenu>
+    <ContextMenu>
+     <MenuItem Header="موازنة السند تلقائياً" Command="{Binding AutoBalanceCommand}" InputGestureText="Ctrl+B"/>
+     <MenuItem Header="إضافة 10 أسطر جديدة" Command="{Binding AutoGrowCommand}"/>
+     <MenuItem Header="{Binding Localization[D_DV_AddRow]}" Command="{Binding AddRowCommand}" InputGestureText="Insert"/>
+     <MenuItem Header="حذف السطر المحدد" Command="{Binding RemoveRowCommand}" CommandParameter="{Binding SelectedRow}" InputGestureText="Ctrl+Del"/>
+    </ContextMenu>
+   </DataGrid.ContextMenu>
    <DataGrid.InputBindings>
     <KeyBinding Key="Insert" Command="{Binding AddRowCommand}"/>
     <KeyBinding Key="Delete" Modifiers="Control" Command="{Binding RemoveRowCommand}" CommandParameter="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
    </DataGrid.InputBindings>
    <DataGrid.Columns>
-    <DataGridTextColumn Binding="{Binding Pay, Converter={StaticResource Number}, UpdateSourceTrigger=PropertyChanged}" Width="110" ElementStyle="{StaticResource Text.Numeric}">
+    <DataGridTextColumn Binding="{Binding Pay, Converter={StaticResource Number}, ConverterParameter='blank,zeroifempty', UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" Width="110" ElementStyle="{StaticResource Text.Numeric}">
      <DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_DV_Pay], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
-    <DataGridTextColumn Binding="{Binding Receive, Converter={StaticResource Number}, UpdateSourceTrigger=PropertyChanged}" Width="110" ElementStyle="{StaticResource Text.Numeric}">
+    <DataGridTextColumn Binding="{Binding Receive, Converter={StaticResource Number}, ConverterParameter='blank,zeroifempty', UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" Width="110" ElementStyle="{StaticResource Text.Numeric}">
      <DataGridTextColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_DV_Receive], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTextColumn.Header></DataGridTextColumn>
     <DataGridTemplateColumn Width="220">
      <DataGridTemplateColumn.Header><TextBlock Text="{Binding DataContext.Localization[D_DV_Account], RelativeSource={RelativeSource AncestorType=UserControl}}"/></DataGridTemplateColumn.Header>
