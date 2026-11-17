@@ -143,10 +143,17 @@ public static class PetraNumberFormat
     }
 
     /// <summary>Converts native digits and Arabic separators to ASCII and drops grouping characters.</summary>
-    public static string NormalizeInput(string? text)
+    public static string NormalizeInput(string? text) =>
+        NormalizeInputWith(text, mode, mode == NumberDisplayMode.OperatingSystem ? operatingSystemCulture : culture, decimals);
+
+    /// <summary>
+    /// Normalizes with explicit settings and no shared state. A separator that is ambiguous under those settings (for example
+    /// "1,5" when "," groups thousands) returns an empty string: invalid input is refused, never guessed.
+    /// </summary>
+    internal static string NormalizeInputWith(string? text, NumberDisplayMode displayMode, CultureInfo uiCulture, DecimalDisplayMode decimalMode)
     {
         if (string.IsNullOrWhiteSpace(text)) return string.Empty;
-        var format = DisplayFormat(mode, mode == NumberDisplayMode.OperatingSystem ? operatingSystemCulture : culture, decimals);
+        var format = DisplayFormat(displayMode, uiCulture, decimalMode);
         var group = format.NumberGroupSeparator;
         var point = format.NumberDecimalSeparator;
         var raw = new StringBuilder(text.Length);

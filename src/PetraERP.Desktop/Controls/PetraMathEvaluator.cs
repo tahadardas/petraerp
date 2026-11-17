@@ -5,11 +5,19 @@ namespace PetraERP.Desktop.Controls;
 
 /// <summary>
 /// Safe, deterministic arithmetic expression evaluator for inline financial math inside numeric boxes and DataGrid cells.
-/// Supports basic operations (+, -, *, /, ×, ÷), grouping parentheses, decimals, Arabic-Indic digits, and exact decimal arithmetic.
-/// Prevents zero-division, overflow, and script execution vulnerabilities.
+/// Supports +, -, *, /, ×, ÷, grouping parentheses, decimals, Arabic-Indic digits and exact decimal arithmetic.
+/// <para>
+/// Separators follow the Petra number settings, never a guess: every operand is normalized by the same rules as a plain number
+/// box (<see cref="PetraNumberFormat.NormalizeInputWith"/>), so "," is a thousands separator or a decimal comma exactly as the user
+/// configured, and an operand whose separators are ambiguous or malformed under those settings (for example "1,5" while "," groups
+/// thousands) makes the whole expression invalid instead of silently computing a different amount.
+/// </para>
+/// Prevents zero-division, overflow, runaway nesting and script execution.
 /// </summary>
 public static class PetraMathEvaluator
 {
+    private const int MaximumLength = 256;
+    private const int MaximumDepth = 32;
     private static readonly char[] MathOperators = ['+', '*', '/', '×', '÷'];
 
     /// <summary>
@@ -30,10 +38,7 @@ public static class PetraMathEvaluator
                 // Look backward for non-whitespace
                 var prev = i - 1;
                 while (prev >= 0 && char.IsWhiteSpace(trimmed[prev])) prev--;
-                if (prev >= 0 && (char.IsAsciiDigit(trimmed[prev]) || trimmed[prev] is ')' or '٠' or '١' or '٢' or '٣' or '٤' or '٥' or '٦' or '٧' or '٨' or '٩'))
-                {
-                    return true;
-                }
+                if (prev >= 0 && (IsDigit(trimmed[prev]) || trimmed[prev] == ')')) return true;
             }
         }
 
@@ -41,50 +46,85 @@ public static class PetraMathEvaluator
     }
 
     /// <summary>
-    /// Evaluates an arithmetic expression into a decimal result.
-    /// Returns false if the expression is syntactically invalid, divides by zero, or overflows.
+    /// Evaluates an arithmetic expression into a decimal result using the current Petra number settings.
+    /// Returns false if the expression is syntactically invalid, has ambiguous separators, divides by zero, or overflows.
     /// </summary>
-    public static bool TryEvaluate(string? expression, out decimal result)
+    public static bool TryEvaluate(string? expression, out decimal result) =>
+        TryEvaluateWith(expression, PetraNumberFormat.Mode, PetraNumberFormat.CurrentCulture, PetraNumberFormat.CurrentDecimalMode, out result);
+
+    /// <summary>Same as <see cref="TryEvaluate"/> with explicit settings and no shared state (previews and tests).</summary>
+    internal static bool TryEvaluateWith(string? expression, NumberDisplayMode displayMode, CultureInfo uiCulture, DecimalDisplayMode decimalMode, out decimal result)
     {
         result = 0m;
-        if (string.IsNullOrWhiteSpace(expression)) return false;
+        if (string.IsNullOrWhiteSpace(expression) || expression.Length > MaximumLength) return false;
 
-        var normalized = NormalizeExpression(expression);
+        var normalized = NormalizeExpression(expression, displayMode, uiCulture, decimalMode);
         if (normalized.Length == 0) return false;
 
         try
         {
-            var parser = new MathParser(normalized);
-            result = parser.Parse();
+            result = new MathParser(normalized).Parse();
             return true;
         }
-        catch
+        catch (Exception exception) when (exception is FormatException or OverflowException or DivideByZeroException or ArgumentException or InvalidOperationException)
         {
             return false;
         }
     }
 
-    private static string NormalizeExpression(string text)
+    private static bool IsDigit(char ch) => char.IsAsciiDigit(ch) || ch is >= '٠' and <= '٩' or >= '۰' and <= '۹';
+
+    /// <summary>Characters that can belong to ONE number: digits, both decimal separators, grouping marks and the invisible bidi controls.</summary>
+    private static bool IsNumberCharacter(char ch) =>
+        IsDigit(ch) || ch is '.' or ',' or '٫' or '٬' or ' ' or ' ' or ' ' or '؜' or '‎' or '‏';
+
+    /// <summary>
+    /// Rewrites the expression so every operand is an invariant number ("1234.5") and every operator is ASCII. Returns an empty string when
+    /// any operand is refused by the number rules (ambiguous separator, wrong group size, stray characters).
+    /// </summary>
+    private static string NormalizeExpression(string text, NumberDisplayMode displayMode, CultureInfo uiCulture, DecimalDisplayMode decimalMode)
     {
-        var sb = new StringBuilder(text.Length);
-        foreach (var ch in text)
+        var builder = new StringBuilder(text.Length);
+        var index = 0;
+        while (index < text.Length)
         {
-            if (char.IsWhiteSpace(ch) || ch is '\u061c' or '\u200e' or '\u200f') continue;
-            if (ch is >= '٠' and <= '٩') sb.Append((char)('0' + ch - '٠'));
-            else if (ch is >= '۰' and <= '۹') sb.Append((char)('0' + ch - '۰'));
-            else if (ch is '٫' or ',') sb.Append('.');
-            else if (ch is '×') sb.Append('*');
-            else if (ch is '÷') sb.Append('/');
-            else if (ch is '−') sb.Append('-');
-            else sb.Append(ch);
+            var ch = text[index];
+            if (ch is '؜' or '‎' or '‏') { index++; continue; }
+            if (IsNumberCharacter(ch) && !(ch is ' ' or ' ' or ' '))
+            {
+                // A number run: digits and separators, and spaces only when they sit between two number characters (grouping).
+                var end = index;
+                while (end < text.Length && IsNumberCharacter(text[end])) end++;
+                var run = text[index..end].TrimEnd(' ', ' ', ' ');
+                if (run.Length == 0) return string.Empty;
+                var number = PetraNumberFormat.NormalizeInputWith(run, displayMode, uiCulture, decimalMode);
+                if (number.Length == 0 || number.Contains('(') || number.Contains('-') || number.Contains('+')) return string.Empty;
+                builder.Append(number);
+                index += run.Length;
+                continue;
+            }
+
+            if (char.IsWhiteSpace(ch)) { index++; continue; }
+            switch (ch)
+            {
+                case '×': builder.Append('*'); break;
+                case '÷': builder.Append('/'); break;
+                case '−': builder.Append('-'); break;
+                case '+' or '-' or '*' or '/' or '(' or ')': builder.Append(ch); break;
+                default: return string.Empty;
+            }
+
+            index++;
         }
-        return sb.ToString();
+
+        return builder.ToString();
     }
 
     private sealed class MathParser
     {
         private readonly string text;
         private int pos;
+        private int depth;
 
         public MathParser(string text)
         {
@@ -134,50 +174,52 @@ public static class PetraMathEvaluator
         private decimal ParseFactor()
         {
             if (pos >= text.Length) throw new FormatException("Unexpected end of expression.");
-
-            // Unary + or -
-            if (text[pos] == '+')
+            if (++depth > MaximumDepth) throw new FormatException("Expression is nested too deeply.");
+            try
             {
-                pos++;
-                return ParseFactor();
-            }
-
-            if (text[pos] == '-')
-            {
-                pos++;
-                return checked(-ParseFactor());
-            }
-
-            // Parentheses
-            if (text[pos] == '(')
-            {
-                pos++;
-                var value = ParseExpression();
-                if (pos >= text.Length || text[pos] != ')')
+                // Unary + or -
+                if (text[pos] == '+')
                 {
-                    throw new FormatException("Missing closing parenthesis.");
+                    pos++;
+                    return ParseFactor();
                 }
-                pos++;
-                return value;
-            }
 
-            // Number
-            var start = pos;
-            var hasDot = false;
-            while (pos < text.Length && (char.IsAsciiDigit(text[pos]) || text[pos] == '.'))
-            {
-                if (text[pos] == '.')
+                if (text[pos] == '-')
                 {
-                    if (hasDot) throw new FormatException("Multiple decimal points in number.");
-                    hasDot = true;
+                    pos++;
+                    return checked(-ParseFactor());
                 }
-                pos++;
+
+                // Parentheses
+                if (text[pos] == '(')
+                {
+                    pos++;
+                    var value = ParseExpression();
+                    if (pos >= text.Length || text[pos] != ')') throw new FormatException("Missing closing parenthesis.");
+                    pos++;
+                    return value;
+                }
+
+                // Number: already normalized to invariant digits with at most one decimal point.
+                var start = pos;
+                var hasDot = false;
+                while (pos < text.Length && (char.IsAsciiDigit(text[pos]) || text[pos] == '.'))
+                {
+                    if (text[pos] == '.')
+                    {
+                        if (hasDot) throw new FormatException("Multiple decimal points in number.");
+                        hasDot = true;
+                    }
+                    pos++;
+                }
+
+                if (start == pos) throw new FormatException("Expected number at position " + pos);
+                return decimal.Parse(text.AsSpan(start, pos - start), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
             }
-
-            if (start == pos) throw new FormatException("Expected number at position " + pos);
-
-            var span = text.AsSpan(start, pos - start);
-            return decimal.Parse(span, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
+            finally
+            {
+                depth--;
+            }
         }
     }
 }

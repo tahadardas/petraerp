@@ -55,9 +55,17 @@ public static class ArabicTafqeet
     /// Converts a numeric amount to formal Arabic financial written text.
     /// Example: 150250.50 -> "فقط مائة وخمسون ألف ومئتان وخمسون ليرة سورية وخمسون قرشاً لا غير"
     /// </summary>
-    public static string ToWords(decimal amount, string? currency = null, string? subUnit = null)
+    public static string ToWords(decimal amount, string? currency = null, string? subUnit = null, int? fractionDigits = null)
     {
-        if (amount == 0m)
+        var digits = fractionDigits ?? CurrencyFractionDigits(currency);
+        if (digits is < 0 or > 3) throw new ArgumentOutOfRangeException(nameof(fractionDigits), "Fraction digits must be between 0 and 3.");
+
+        // Round the WHOLE amount once to the currency's minor-unit precision (away from zero, like the posted amounts), so a
+        // carry such as 1.999 -> 2.00 reaches the integral part and the fraction never reads "100" of 100.
+        var rounded = decimal.Round(amount, digits, MidpointRounding.AwayFromZero);
+        if (Math.Abs(rounded) > MaximumAmount) throw new ArgumentOutOfRangeException(nameof(amount), "Amount exceeds the supported tafqeet range.");
+
+        if (rounded == 0m)
         {
             var zeroCurrency = ResolveCurrency(currency);
             return string.IsNullOrWhiteSpace(zeroCurrency.Currency)
@@ -65,10 +73,10 @@ public static class ArabicTafqeet
                 : $"فقط صفر {zeroCurrency.Currency} لا غير";
         }
 
-        var isNegative = amount < 0m;
-        var absAmount = Math.Abs(amount);
+        var isNegative = rounded < 0m;
+        var absAmount = Math.Abs(rounded);
         var integral = (long)Math.Truncate(absAmount);
-        var fraction = (int)Math.Round((absAmount - integral) * 100m, MidpointRounding.AwayFromZero);
+        var fraction = digits == 0 ? 0 : (int)((absAmount - integral) * Pow10(digits));
 
         var (currName, subName) = ResolveCurrency(currency, subUnit);
         var sb = new StringBuilder();
@@ -99,11 +107,12 @@ public static class ArabicTafqeet
             if (!string.IsNullOrWhiteSpace(subName))
             {
                 sb.Append(' ').Append(subName);
-                if (fraction is >= 11 and <= 99) sb.Append("اً");
+                // Accusative singular (tamyiz) after 11..99 of the last two digits: "قرشاً" / "هللةً".
+                if (fraction % 100 is >= 11 and <= 99) sb.Append(subName.EndsWith('ة') ? "ً" : "اً");
             }
             else
             {
-                sb.Append(" جزءاً من مائة");
+                sb.Append(" جزءاً من ").Append(ConvertIntegerToWords(Pow10(digits)));
             }
         }
 
@@ -198,6 +207,15 @@ public static class ArabicTafqeet
 
         return string.Join(" و", parts);
     }
+
+    /// <summary>Largest supported amount: below one quadrillion (the scale table ends at trillions).</summary>
+    private const decimal MaximumAmount = 999_999_999_999_999.999m;
+
+    /// <summary>Minor-unit digits per ISO code: 3 for dinars/rials divided into 1000 (KWD, BHD, OMR, JOD), otherwise 2.</summary>
+    public static int CurrencyFractionDigits(string? currency) =>
+        currency is not null && currency.Trim().ToUpperInvariant() is "KWD" or "BHD" or "OMR" or "JOD" ? 3 : 2;
+
+    private static long Pow10(int digits) => digits switch { 0 => 1, 1 => 10, 2 => 100, _ => 1000 };
 
     private static (string Currency, string SubUnit) ResolveCurrency(string? currency, string? subUnit = null)
     {
