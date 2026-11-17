@@ -88,7 +88,8 @@ public sealed partial class SqlPurchaseInvoiceService(FinancialDbContext context
         if (r.Status == (int)PurchaseInvoiceStatus.Posted && r.PaymentMethod == (int)PaymentMethod.Credit && r.ReturnOfInvoiceId == null)
         {
             var supplierInvoices = await PetraERP.Infrastructure.Treasury.SettlementQueries.LoadInvoicesAsync(
-                context, companyId, branchId, PetraERP.Domain.Treasury.VoucherKind.Payment, r.SupplierId, null, null, cancellationToken).ConfigureAwait(false);
+                context, companyId, branchId, PetraERP.Domain.Treasury.VoucherKind.Payment, r.SupplierId, null, null, cancellationToken,
+                documentId: r.Id).ConfigureAwait(false);
             var s = supplierInvoices.SingleOrDefault(inv => inv.Id == r.Id);
             settled = s?.Paid ?? 0m;
             returnedAmt = s?.Returned ?? 0m;

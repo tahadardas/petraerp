@@ -8,6 +8,26 @@
 - Soak ترحيل 60 دقيقة: 6710/6710، حمل مختلط 150 طلبًا بلا فروق؛ دفتر الأستاذ عند مليون سطر: أول صفحة 3.9ث (هدف 1ث غير محقق).
 - القرار: NO-GO (`docs/closure/RELEASE_GO_NO_GO.md`).
 
+## المرحلة 2 — إغلاق الأداء والتكامل (فرع `work/core-completion-2026-11-17`، أساس `43413ed`)
+| # | البند | الحالة |
+|---|---|---|
+| 1 | تصحيح تعارض HANDOFF مع الكتالوج (15 NotImplemented لا 2) | منفَّذ، توثيق |
+| 2 | `ToWordsOrEmpty` يفحص الحد بعد التقريب ويُرجع فارغاً إن اختلف النص عن الرقم (أكثر من كسور العملة) | منفَّذ، **UNVERIFIED** حتى الحملة |
+| 3 | فتح الفاتورة: (أ) قراءة تسوية الفاتورة/المشتريات بمستند واحد `documentId` بدل تركيب كل فواتير الزبون/المورد، (ب) بطاقة الزبون المحمّلة تُعاد استخدامها في لقطة الائتمان، (ج) `SqlFiscalDatabaseResolver.ResolveAsync` يُحفظ لكل نطاق (scoped)، و`ResolveFreshAsync` للتهيئة، (د) تخزين المستودعات (5د) والوحدات (10د) في `DesktopSession.CachedAsync` مع إبطال عند الكتابة | منفَّذ، **UNVERIFIED** |
+| 4 | الدفتر: علامة اللقطة (watermark) من رؤوس القيود بدل ضم كل سطور الشركة؛ لا أرصدة مجمّعة جديدة (تحتاج هجرة وخطافات ترحيل ولا تُغامَر بها بلا حملة) | جزئي، **UNVERIFIED** |
+| 5 | Save-and-Process: لا تغيير في الأقفال/المراحل؛ القراءة المُثرية الأخيرة صارت أرخص بفضل 3-أ | بلا تغيير هيكلي |
+| 6 | تصنيف 21 عملية بلا مستهلك: `docs/closure/API_WITHOUT_DESKTOP_CLASSIFICATION.md` (15 إدارية/وحدات/تكامل/تفصيل، 6 بقرار مالك: البنود المفتوحة والأرصدة الافتتاحية) | منفَّذ، توثيق |
+| 7 | `WellKnownModules` (معرّفات الأصول/الموظفين/الرواتب، مرجع الترحيل `module:doc`، تسمية الصلاحيات) دون تنفيذ وحدات | منفَّذ، **UNVERIFIED** |
+
+### حالات انحدار مطلوبة للمرحلة 2
+- Tafqeet: `ToWordsOrEmpty(999999999999999.996m,"USD")` فارغ؛ `ToWordsOrEmpty(10.005m,"USD")` فارغ؛ `ToWordsOrEmpty(10.50m,"USD")` غير فارغ؛ KWD ثلاثة كسور.
+- `SettlementQueries.LoadInvoicesAsync(..., documentId)`: نتائج فاتورة مبيعات/مشتريات آجلة (مسدّدة جزئيًا، مرتجع، معكوسة) مطابقة للاستدعاء الكامل لنفس الفاتورة (Paid/Returned/Outstanding)؛ وبند مفتوح لا يظهر مع documentId.
+- GET فاتورة مبيعات آجلة بين فواتير أخرى لنفس الزبون إحداها غير متسقة: الفتح ينجح (الكتابة ما زالت تفشل كما قبل).
+- مفتاح `ResolveAsync` المتكرر في نفس النطاق يقرأ السجل مرة واحدة؛ نطاق جديد يقرأه من جديد؛ `ResolveFreshAsync` يتجاوز الذاكرة.
+- Desktop: `ListWarehousesAsync`/`ListUnitsAsync` يخبَّئان لكل (شركة/سنة/فرع/بصمة صلاحيات)؛ `CreateWarehouse/UpdateWarehouse/CreateUnit` يُبطلان؛ تبديل مساحة العمل لا يُسرّب.
+- الدفتر: علامة اللقطة تساوي أعلى PostingSequence لقيد مرحَّل/معكوس في النطاق (فرع/موحّد) وأول صفحة/المؤشر لا يتغيران.
+- قياس: `MeasureSalesInvoiceOpenReadsPerRoute` قبل (`docs/closure/bench_open_before.txt`) وبعد؛ `MeasureWarmSalesSaveAndPostLatencyAndSqlCommandCount`.
+
 ## نتائج التحقق النهائي (2026-11-17، نفّذت فعلاً)
 - `dotnet build PetraERP.slnx -c Release`: نجح بعد إصلاح خطأ ترجمة حقيقي في تعديلي (خصائص `CurrentCulture/CurrentDecimalMode` لم تكن موجودة)؛ 0 أخطاء، 0 تحذيرات.
 - اختبارات Desktop كاملة (714: 704 ناجح، 9 متخطّاة صراحةً وهي SQL E2E، 1 فاشل): الفاشل كان `KnownCurrenciesResolveProperLabels` بسبب أن التنوين في "هللةً" يُفشل `Assert.Contains` الثقافي؛ عُدّل التأكيد إلى Ordinal. أُعيدت المجموعات المتأثرة فقط (Math 14 + Tafqeet + WpfFoundation): 28/28 ناجحة.

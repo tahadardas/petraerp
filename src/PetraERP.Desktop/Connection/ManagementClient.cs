@@ -35,11 +35,19 @@ public sealed class ManagementClient(DesktopSession session) : IManagementClient
     public Task<IReadOnlyList<WarehouseDto>> ListWarehousesAsync(Guid companyId, Guid branchId, CancellationToken cancellationToken) =>
         session.Api.ListWarehousesAsync(companyId, branchId, null, cancellationToken);
 
-    public Task<WarehouseDto> CreateWarehouseAsync(Guid companyId, Guid branchId, CreateWarehouseRequest request, CancellationToken cancellationToken) =>
-        session.Api.CreateWarehouseAsync(companyId, branchId, request, cancellationToken);
+    public async Task<WarehouseDto> CreateWarehouseAsync(Guid companyId, Guid branchId, CreateWarehouseRequest request, CancellationToken cancellationToken)
+    {
+        var created = await session.Api.CreateWarehouseAsync(companyId, branchId, request, cancellationToken).ConfigureAwait(false);
+        session.InvalidateCached(InventoryClient.WarehousesCategory);
+        return created;
+    }
 
-    public Task<WarehouseDto> UpdateWarehouseAsync(Guid companyId, Guid branchId, Guid warehouseId, UpdateWarehouseRequest request, CancellationToken cancellationToken) =>
-        session.Api.UpdateWarehouseAsync(companyId, branchId, warehouseId, request, cancellationToken);
+    public async Task<WarehouseDto> UpdateWarehouseAsync(Guid companyId, Guid branchId, Guid warehouseId, UpdateWarehouseRequest request, CancellationToken cancellationToken)
+    {
+        var updated = await session.Api.UpdateWarehouseAsync(companyId, branchId, warehouseId, request, cancellationToken).ConfigureAwait(false);
+        session.InvalidateCached(InventoryClient.WarehousesCategory);
+        return updated;
+    }
 
     public Task<CompanyCurrencySettingsResponse> GetCurrencySettingsAsync(Guid companyId, Guid branchId, CancellationToken cancellationToken) =>
         session.Api.GetCompanyCurrencySettingsAsync(companyId, branchId, cancellationToken);

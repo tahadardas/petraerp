@@ -84,6 +84,17 @@ public class ArabicTafqeetTests
     }
 
     [Fact]
+    public void DisplayVariantIsEmptyWhenTheWordsWouldNotEqualTheFigure()
+    {
+        Assert.Equal(string.Empty, ArabicTafqeet.ToWordsOrEmpty(999_999_999_999_999.996m, "USD")); // rounds past the limit
+        Assert.Equal(string.Empty, ArabicTafqeet.ToWordsOrEmpty(10.005m, "USD")); // would read 10.01 beside 10.005
+        Assert.Equal(string.Empty, ArabicTafqeet.ToWordsOrEmpty(1.2345m, "KWD"));
+        Assert.NotEqual(string.Empty, ArabicTafqeet.ToWordsOrEmpty(10.50m, "USD"));
+        Assert.NotEqual(string.Empty, ArabicTafqeet.ToWordsOrEmpty(10.5000m, "USD"));
+        Assert.NotEqual(string.Empty, ArabicTafqeet.ToWordsOrEmpty(1.234m, "KWD"));
+    }
+
+    [Fact]
     public void SubUnitEndingWithTaMarbutaTakesTanweenNotAlef()
     {
         Assert.Contains("خمسون هللةً", ArabicTafqeet.ToWords(100.50m, "SAR"));
