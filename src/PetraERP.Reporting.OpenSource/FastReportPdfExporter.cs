@@ -83,12 +83,18 @@ public sealed class FastReportPdfExporter
             report.Pages.Add(page);
             var width = Units.Millimeters * (page.PaperWidth - page.LeftMargin - page.RightMargin);
             var colWidth = width / document.Columns.Count;
-            page.ReportTitle = new ReportTitleBand { Name = "TitleBand", Height = Units.Millimeters * 25, CanGrow = true };
-            page.ReportTitle.Objects.Add(Label("ReportName", document.Title, 0, 0, width, 8, 14, true));
+            page.ReportTitle = new ReportTitleBand { Name = "TitleBand", Height = Units.Millimeters * 26, CanGrow = true };
+            var titleLabel = Label("ReportName", document.Title, 0, 0, width, 8, 15, true);
+            titleLabel.TextColor = Color.FromArgb(30, 58, 138);
+            page.ReportTitle.Objects.Add(titleLabel);
             page.ReportTitle.Objects.Add(Label("ReportCompany", document.CompanyLabel, 0, 9, width, 6, 10));
             var periodLabel = Label("ReportPeriod", document.PeriodLabel + " | " + document.CurrencyCode, 0, 16, width, 7, 9);
             periodLabel.RightToLeft = false; periodLabel.HorzAlign = HorzAlign.Right;
             page.ReportTitle.Objects.Add(periodLabel);
+            var titleLine = new LineObject { Name = "TitleSep", Bounds = new RectangleF(0, 23 * Units.Millimeters, width, 0) };
+            titleLine.Border.Color = Color.FromArgb(30, 58, 138);
+            titleLine.Border.Width = 2;
+            page.ReportTitle.Objects.Add(titleLine);
             var header = new PageHeaderBand { Name = "ColumnHeadings", Height = Units.Millimeters * 9, CanGrow = true };
             page.PageHeader = header;
             var dataBand = new DataBand { Name = "RowBand", Height = Units.Millimeters * 8, DataSource = source, CanGrow = true };
@@ -99,6 +105,10 @@ public sealed class FastReportPdfExporter
                 var definition = document.Columns[col];
                 var heading = Label($"Header_{col}", definition.Heading, position, 0, colWidth, 9, 8, true);
                 heading.HorzAlign = HorzAlign.Center;
+                heading.Fill = new SolidFill(Color.FromArgb(241, 245, 249));
+                heading.Border.Lines = BorderLines.All;
+                heading.Border.Color = Color.FromArgb(203, 213, 225);
+                heading.TextColor = Color.FromArgb(30, 41, 59);
                 header.Objects.Add(heading);
                 var numeric = definition.Kind is ReportValueKind.Amount or ReportValueKind.Quantity or ReportValueKind.Integer;
                 var value = Label($"Value_{col}", $"[Rows.F{col + 1:00}]", position, 0, colWidth, 8, 8);
@@ -107,6 +117,8 @@ public sealed class FastReportPdfExporter
                 value.AllowExpressions = true;
                 value.RightToLeft = !numeric && definition.Kind != ReportValueKind.Date;
                 value.HorzAlign = numeric ? HorzAlign.Center : value.RightToLeft ? RightToLeftStart : HorzAlign.Right;
+                value.Border.Lines = BorderLines.All;
+                value.Border.Color = Color.FromArgb(226, 232, 240);
                 dataBand.Objects.Add(value);
             }
             AddSummary(page, document, width);
@@ -135,15 +147,21 @@ public sealed class FastReportPdfExporter
         if (document.Summaries.Count == 0) return;
         page.ReportSummary = new ReportSummaryBand
         {
-            Name = "AuthoritativeSummary", Height = Units.Millimeters * (10 + document.Summaries.Count * 8), CanGrow = true
+            Name = "AuthoritativeSummary", Height = Units.Millimeters * (12 + document.Summaries.Count * 9), CanGrow = true
         };
-        page.ReportSummary.Objects.Add(Label("SummaryExplanation", "مقاييس معتمدة من الخادم", 0, 0, width, 8, 9, true));
+        var title = Label("SummaryExplanation", "المجاميع والمقاييس المعتمدة من الخادم", 0, 1, width, 7, 9, true);
+        title.TextColor = Color.FromArgb(30, 58, 138);
+        page.ReportSummary.Objects.Add(title);
         for (var index = 0; index < document.Summaries.Count; index++)
         {
             var measure = document.Summaries[index];
-            page.ReportSummary.Objects.Add(Label($"Measure_{index}", measure.Label + " : " +
+            var summaryCard = Label($"Measure_{index}", measure.Label + " : " +
                 measure.Value.ToString(CultureInfo.InvariantCulture) + " " + measure.CurrencyCode,
-                0, 10 + index * 8, width, 8, 9));
+                0, 9 + index * 9, width, 8, 9, bold: true);
+            summaryCard.Fill = new SolidFill(Color.FromArgb(248, 250, 252));
+            summaryCard.Border.Lines = BorderLines.All;
+            summaryCard.Border.Color = Color.FromArgb(203, 213, 225);
+            page.ReportSummary.Objects.Add(summaryCard);
         }
     }
 

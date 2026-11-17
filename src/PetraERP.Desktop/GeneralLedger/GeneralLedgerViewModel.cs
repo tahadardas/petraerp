@@ -31,6 +31,7 @@ public sealed partial class GeneralLedgerViewModel : ObservableObject, IDisposab
     [ObservableProperty] private int page = 1;
     [ObservableProperty] private long totalCount;
     [ObservableProperty] private JournalSummaryItemResponse? selectedJournal;
+    [ObservableProperty] private JournalLineRow? selectedLine;
 
     [ObservableProperty] private bool isEditorOpen;
     [ObservableProperty] private bool isNewDraft;
@@ -101,6 +102,7 @@ public sealed partial class GeneralLedgerViewModel : ObservableObject, IDisposab
     public RelayCommand AddLineCommand { get; }
     public RelayCommand<JournalLineRow> RemoveLineCommand { get; }
     public RelayCommand AutoGrowCommand { get; }
+    public RelayCommand AutoBalanceCommand { get; }
     public AsyncRelayCommand FirstCommand { get; }
     public AsyncRelayCommand PreviousCommand { get; }
     public AsyncRelayCommand NextCommand { get; }
@@ -145,6 +147,7 @@ public sealed partial class GeneralLedgerViewModel : ObservableObject, IDisposab
         AddLineCommand = new RelayCommand(AddLine, () => !operation.IsBusy && CanEditDraft && !HasInputErrors);
         RemoveLineCommand = new RelayCommand<JournalLineRow>(RemoveLine, _ => !operation.IsBusy && CanEditDraft);
         AutoGrowCommand = new RelayCommand(() => AutoGrowLines(10), () => !operation.IsBusy && CanEditDraft);
+        AutoBalanceCommand = new RelayCommand(AutoBalance, () => !operation.IsBusy && CanEditDraft && !IsBalanced && (TotalDebit > 0 || TotalCredit > 0));
         FirstCommand = new AsyncRelayCommand(() => MoveJournalAsync(int.MinValue), () => !operation.IsBusy && CanViewJournals && Journals.Count > 0);
         PreviousCommand = new AsyncRelayCommand(() => MoveJournalAsync(-1), () => !operation.IsBusy && CanViewJournals && Journals.Count > 0);
         NextCommand = new AsyncRelayCommand(() => MoveJournalAsync(1), () => !operation.IsBusy && CanViewJournals && Journals.Count > 0);
@@ -419,6 +422,41 @@ public sealed partial class GeneralLedgerViewModel : ObservableObject, IDisposab
         EnsureEntryBuffer(Lines.Count + additional);
     }
 
+    public void AutoBalance()
+    {
+        if (!CanEditDraft || IsBalanced) return;
+        var diff = TotalDebit - TotalCredit;
+        if (diff == 0) return;
+
+        var target = SelectedLine is { IsPristineBlank: true } ? SelectedLine
+                   : (SelectedLine is { Debit: 0m, Credit: 0m } ? SelectedLine : null);
+        if (target is null)
+        {
+            var blanks = Lines.Where(l => l.IsPristineBlank).ToList();
+            if (blanks.Count == 0)
+            {
+                AutoGrowLines(10);
+                blanks = Lines.Where(l => l.IsPristineBlank).ToList();
+            }
+            target = blanks.Count > 0 ? blanks[0] : null;
+        }
+
+        if (target is null) return;
+
+        if (diff > 0)
+        {
+            target.Credit = diff;
+            target.Debit = 0m;
+        }
+        else
+        {
+            target.Debit = -diff;
+            target.Credit = 0m;
+        }
+
+        RecalculateTotals();
+    }
+
     private async Task MoveJournalAsync(int offset)
     {
         if (Journals.Count == 0) return;
@@ -542,6 +580,7 @@ public sealed partial class GeneralLedgerViewModel : ObservableObject, IDisposab
         AddLineCommand?.NotifyCanExecuteChanged();
         RemoveLineCommand?.NotifyCanExecuteChanged();
         AutoGrowCommand?.NotifyCanExecuteChanged();
+        AutoBalanceCommand?.NotifyCanExecuteChanged();
         FirstCommand?.NotifyCanExecuteChanged();
         PreviousCommand?.NotifyCanExecuteChanged();
         NextCommand?.NotifyCanExecuteChanged();

@@ -20,6 +20,7 @@ class FoundationBoundaryTests(unittest.TestCase):
             "PetraERP.Modules.Abstractions": set(),
             "PetraERP.Modules.Packaging": {"PetraERP.Modules.Abstractions"},
             "PetraERP.Modules.Host": {"PetraERP.Modules.Abstractions", "PetraERP.Modules.Packaging"},
+            "PetraERP.Modules.Sample": {"PetraERP.Modules.Abstractions"},
             # Phase 4 (ADR-0003): the API composes the server layers; the desktop reaches the
             # server only through the generated typed client, never Application/Infrastructure/SQL.
             "PetraERP.Api": {"PetraERP.Domain", "PetraERP.Application", "PetraERP.Infrastructure",

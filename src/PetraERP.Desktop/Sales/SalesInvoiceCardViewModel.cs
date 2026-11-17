@@ -114,6 +114,32 @@ public sealed partial class SalesInvoiceCardViewModel : EntityCardViewModel
     [ObservableProperty] private string totalQuantityDisplay = "0.0000";
 
     [ObservableProperty] private SalesInvoiceLineItem? selectedLine;
+    [ObservableProperty] private bool isInvoiceInfoOpen;
+    public RelayCommand ToggleInvoiceInfoCommand => toggleInvoiceInfoCommand ??= new(() => IsInvoiceInfoOpen = !IsInvoiceInfoOpen);
+    private RelayCommand? toggleInvoiceInfoCommand;
+
+    public string InvoiceAuditStatusDisplay => Lifecycle switch
+    {
+        DocumentLifecycle.Posted => "مرحلة ومحققة محاسبياً",
+        DocumentLifecycle.Approved => "معتمدة بانتظار الترحيل",
+        DocumentLifecycle.Reversed => "معكوسة / ملغاة",
+        _ => "مسودة قيد التحرير"
+    };
+
+    public string InvoiceJournalNumberDisplay => Invoice?.JournalEntryId is { } id
+        ? id.ToString()[..8].ToUpperInvariant()
+        : (Lifecycle == DocumentLifecycle.Posted ? "سند قيد آلي" : "غير مولد بعد");
+
+    public bool HasGeneratedJournal => Invoice?.JournalEntryId.HasValue == true;
+    public int FilledLinesCount => Lines.Count(l => !l.IsPristineBlank);
+    public string InvoiceDateUtcDisplay => Invoice?.InvoiceDateUtc?.LocalDateTime.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)
+        ?? (DraftInvoiceDate.HasValue ? DraftInvoiceDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "-");
+    public string PaymentMethodDisplay => DraftPaymentMethod switch
+    {
+        PaymentMethod.Cash => "نقداً",
+        PaymentMethod.Credit => "ذمم (آجل)",
+        _ => DraftPaymentMethod.ToString()
+    };
 
     // Lookups
     [ObservableProperty] private Guid? draftCustomerAccountId;
@@ -217,6 +243,7 @@ public sealed partial class SalesInvoiceCardViewModel : EntityCardViewModel
         PreviousCommand = new AsyncRelayCommand(() => MoveAsync("previous"), () => CanMove);
         NextCommand = new AsyncRelayCommand(() => MoveAsync("next"), () => CanMove);
         LastCommand = new AsyncRelayCommand(() => MoveAsync("last"), () => CanMove);
+        JumpCommand = new AsyncRelayCommand<string>(JumpToInvoiceAsync, _ => CanMove);
         AutoGrowCommand = new RelayCommand(() => AutoGrowLines(10), () => IsEditing);
     }
 
@@ -249,10 +276,28 @@ public sealed partial class SalesInvoiceCardViewModel : EntityCardViewModel
         ApplyLoadedInvoice(detail);
     });
 
+    private Task JumpToInvoiceAsync(string? target) => !CanMove || string.IsNullOrWhiteSpace(target) ? Task.CompletedTask : RunAsync(async cancellationToken =>
+    {
+        var trimmed = target.Trim();
+        var originId = InvoiceId;
+        var searchResult = await salesInvoiceClient.SearchSalesInvoicesAsync(
+            CompanyId, BranchId, 1, 10, trimmed, null, null, null, null, null, null, null, null, cancellationToken).ConfigureAwait(true);
+        if (searchResult?.Items is null || searchResult.Items.Count == 0) return;
+        var match = searchResult.Items.FirstOrDefault(i =>
+            string.Equals(i.InvoiceNumber, trimmed, StringComparison.OrdinalIgnoreCase)) ?? searchResult.Items[0];
+        if (match.Id is not { } targetId || targetId == originId) return;
+        var detail = await salesInvoiceClient.GetSalesInvoiceAsync(CompanyId, BranchId, targetId, cancellationToken).ConfigureAwait(true);
+        cancellationToken.ThrowIfCancellationRequested();
+        if (InvoiceId != originId || !IsViewMode || HasUnsavedChanges) return;
+        InvoiceId = targetId;
+        ApplyLoadedInvoice(detail);
+    });
+
     public AsyncRelayCommand FirstCommand { get; }
     public AsyncRelayCommand PreviousCommand { get; }
     public AsyncRelayCommand NextCommand { get; }
     public AsyncRelayCommand LastCommand { get; }
+    public AsyncRelayCommand<string> JumpCommand { get; }
     public RelayCommand AutoGrowCommand { get; }
 
     public bool HasInvoice => Invoice is not null;
@@ -362,7 +407,29 @@ public sealed partial class SalesInvoiceCardViewModel : EntityCardViewModel
                 DraftPaymentMethod = pm;
         }
     }
-    partial void OnDraftCustomerIdChanged(Guid? value) { DraftChanged(); RefreshPriceQuotes(); _ = LoadPaymentTermsAsync(value); RefreshFirstPayment(); UpdateCustomerAccount(situationChanged: true); }
+    public PartyLookupDto? SelectedCustomer => CustomerLookups.FirstOrDefault(c => c.Id == DraftCustomerId);
+    public bool HasSelectedCustomer => SelectedCustomer is not null;
+    public string CustomerCurrentBalanceDisplay => SelectedCustomer?.CurrentBalance ?? "0.0000";
+    public string CustomerCreditLimitDisplay => SelectedCustomer?.CreditLimit ?? "0.0000";
+    public string CustomerAvailableCreditDisplay => SelectedCustomer?.AvailableCredit ?? "0.0000";
+    public bool IsCustomerCreditBlocked => SelectedCustomer?.IsCreditBlocked == true;
+    public bool HasCustomerCreditLimit => ParseDecimal(CustomerCreditLimitDisplay) > 0m;
+
+    partial void OnDraftCustomerIdChanged(Guid? value)
+    {
+        DraftChanged();
+        RefreshPriceQuotes();
+        _ = LoadPaymentTermsAsync(value);
+        RefreshFirstPayment();
+        UpdateCustomerAccount(situationChanged: true);
+        OnPropertyChanged(nameof(SelectedCustomer));
+        OnPropertyChanged(nameof(HasSelectedCustomer));
+        OnPropertyChanged(nameof(CustomerCurrentBalanceDisplay));
+        OnPropertyChanged(nameof(CustomerCreditLimitDisplay));
+        OnPropertyChanged(nameof(CustomerAvailableCreditDisplay));
+        OnPropertyChanged(nameof(IsCustomerCreditBlocked));
+        OnPropertyChanged(nameof(HasCustomerCreditLimit));
+    }
     partial void OnDraftWarehouseIdChanged(Guid? value) { PropagateLineDefaults(); DraftChanged(); }
     partial void OnDraftCostCenterIdChanged(Guid? value) { PropagateLineDefaults(); DraftChanged(); }
 
@@ -1408,6 +1475,7 @@ public sealed partial class SalesInvoiceCardViewModel : EntityCardViewModel
         PreviousCommand?.NotifyCanExecuteChanged();
         NextCommand?.NotifyCanExecuteChanged();
         LastCommand?.NotifyCanExecuteChanged();
+        JumpCommand?.NotifyCanExecuteChanged();
         AutoGrowCommand?.NotifyCanExecuteChanged();
         NotifyCardCommands();
     }

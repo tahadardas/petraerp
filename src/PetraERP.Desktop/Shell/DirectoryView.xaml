@@ -31,6 +31,12 @@
    <Border Grid.Column="2" Style="{StaticResource Panel.Flat}">
     <ListBox x:Name="CardList" ItemsSource="{Binding Rows}" SelectedItem="{Binding SelectedRow, Mode=TwoWay}" BorderThickness="0"
              MouseDoubleClick="CardOpened" AutomationProperties.Name="{Binding RowsCaption}">
+     <ListBox.ContextMenu>
+      <ContextMenu>
+       <MenuItem Header="{Binding Localization[D_Open]}" Command="{Binding OpenCommand}" InputGestureText="Enter"/>
+       <MenuItem Header="{Binding Localization[D_Refresh]}" Command="{Binding RefreshCommand}" InputGestureText="F5"/>
+      </ContextMenu>
+     </ListBox.ContextMenu>
      <ListBox.ItemTemplate>
       <DataTemplate><TextBlock Text="{Binding Caption}" TextTrimming="CharacterEllipsis"/></DataTemplate>
      </ListBox.ItemTemplate>

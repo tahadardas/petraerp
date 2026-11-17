@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -5,12 +6,14 @@ namespace PetraERP.Desktop.Controls;
 
 /// <summary>
 /// Sticky bottom totals summary bar displaying high-contrast grand total, subtotal, discounts,
-/// taxes, additions, quantities, and settlement balances in the Al-Ameen accounting layout.
+/// taxes, additions, quantities, and settlement balances in the Al-Ameen accounting layout,
+/// accompanied by live Arabic Tafqeet text.
 /// </summary>
 public sealed class DocumentTotalsBar : Control
 {
     public static readonly DependencyProperty GrandTotalProperty = DependencyProperty.Register(
-        nameof(GrandTotal), typeof(string), typeof(DocumentTotalsBar), new PropertyMetadata("0.0000"));
+        nameof(GrandTotal), typeof(string), typeof(DocumentTotalsBar),
+        new PropertyMetadata("0.0000", OnTotalsChanged));
 
     public static readonly DependencyProperty SubTotalProperty = DependencyProperty.Register(
         nameof(SubTotal), typeof(string), typeof(DocumentTotalsBar), new PropertyMetadata("0.0000"));
@@ -28,7 +31,8 @@ public sealed class DocumentTotalsBar : Control
         nameof(AdditionsTotal), typeof(string), typeof(DocumentTotalsBar), new PropertyMetadata("0.0000"));
 
     public static readonly DependencyProperty CurrencyCodeProperty = DependencyProperty.Register(
-        nameof(CurrencyCode), typeof(string), typeof(DocumentTotalsBar), new PropertyMetadata(string.Empty));
+        nameof(CurrencyCode), typeof(string), typeof(DocumentTotalsBar),
+        new PropertyMetadata(string.Empty, OnTotalsChanged));
 
     public static readonly DependencyProperty SettledTotalProperty = DependencyProperty.Register(
         nameof(SettledTotal), typeof(string), typeof(DocumentTotalsBar), new PropertyMetadata(string.Empty));
@@ -45,9 +49,41 @@ public sealed class DocumentTotalsBar : Control
     public static readonly DependencyProperty ExtraContentProperty = DependencyProperty.Register(
         nameof(ExtraContent), typeof(object), typeof(DocumentTotalsBar));
 
+    public static readonly DependencyProperty TafqeetTextProperty = DependencyProperty.Register(
+        nameof(TafqeetText), typeof(string), typeof(DocumentTotalsBar), new PropertyMetadata(string.Empty));
+
+    public static readonly DependencyProperty ShowTafqeetProperty = DependencyProperty.Register(
+        nameof(ShowTafqeet), typeof(bool), typeof(DocumentTotalsBar), new PropertyMetadata(true));
+
     static DocumentTotalsBar()
     {
         DefaultStyleKeyProperty.OverrideMetadata(typeof(DocumentTotalsBar), new FrameworkPropertyMetadata(typeof(DocumentTotalsBar)));
+    }
+
+    public override void OnApplyTemplate()
+    {
+        base.OnApplyTemplate();
+        if (ShowTafqeet) UpdateTafqeet();
+    }
+
+    private static void OnTotalsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is DocumentTotalsBar bar && bar.ShowTafqeet)
+        {
+            bar.UpdateTafqeet();
+        }
+    }
+
+    private void UpdateTafqeet()
+    {
+        if (decimal.TryParse(GrandTotal, NumberStyles.Any, CultureInfo.InvariantCulture, out var amt))
+        {
+            SetCurrentValue(TafqeetTextProperty, ArabicTafqeet.ToWords(amt, CurrencyCode));
+        }
+        else
+        {
+            SetCurrentValue(TafqeetTextProperty, string.Empty);
+        }
     }
 
     public string GrandTotal
@@ -120,5 +156,17 @@ public sealed class DocumentTotalsBar : Control
     {
         get => GetValue(ExtraContentProperty);
         set => SetValue(ExtraContentProperty, value);
+    }
+
+    public string TafqeetText
+    {
+        get => (string)GetValue(TafqeetTextProperty);
+        set => SetValue(TafqeetTextProperty, value);
+    }
+
+    public bool ShowTafqeet
+    {
+        get => (bool)GetValue(ShowTafqeetProperty);
+        set => SetValue(ShowTafqeetProperty, value);
     }
 }

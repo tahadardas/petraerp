@@ -10,6 +10,11 @@
         <KeyBinding Key="Escape" Command="{Binding CancelCardCommand}"/>
         <KeyBinding Key="E" Modifiers="Control" Command="{Binding BeginEditCommand}"/>
         <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCardCommand}"/>
+        <KeyBinding Key="N" Modifiers="Control" Command="{Binding BeginNewCommand}"/>
+        <KeyBinding Key="Home" Modifiers="Control" Command="{Binding FirstItemCommand}"/>
+        <KeyBinding Key="PageUp" Modifiers="Control" Command="{Binding PreviousItemCommand}"/>
+        <KeyBinding Key="PageDown" Modifiers="Control" Command="{Binding NextItemCommand}"/>
+        <KeyBinding Key="End" Modifiers="Control" Command="{Binding LastItemCommand}"/>
     </UserControl.InputBindings>
     <UserControl.Resources>
         <!-- Al-Ameen item card: compact label / field rows. -->

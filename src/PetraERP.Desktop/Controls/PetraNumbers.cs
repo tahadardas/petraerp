@@ -121,6 +121,13 @@ public static class PetraNumberFormat
     public static bool TryParseInput(string? text, out decimal value)
     {
         value = 0m;
+        if (string.IsNullOrWhiteSpace(text)) return false;
+        if (PetraMathEvaluator.ContainsOperator(text) && PetraMathEvaluator.TryEvaluate(text, out var evaluated))
+        {
+            value = evaluated;
+            return true;
+        }
+
         var normalized = NormalizeInput(text);
         if (normalized.Length == 0) return false;
         var negative = normalized.StartsWith('(') && normalized.EndsWith(')');

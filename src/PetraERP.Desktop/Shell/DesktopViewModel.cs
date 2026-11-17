@@ -118,6 +118,7 @@ public sealed partial class DesktopViewModel : ObservableObject, IDisposable
         Documents.Documents.CollectionChanged += DocumentsChanged;
         NextDocumentCommand = new RelayCommand(() => Documents.Activate(Documents.Neighbor(1)));
         PreviousDocumentCommand = new RelayCommand(() => Documents.Activate(Documents.Neighbor(-1)));
+        ToggleToolbarCommand = new RelayCommand(() => IsToolbarVisible = !IsToolbarVisible);
         Operation.PropertyChanged += OperationChanged; Operation.Failed += Failed; Localization.LanguageChanged += LanguageChanged;
         Pages.Periods.CalendarChanged += CalendarChanged;
         Pages.Accounts.AccountDeleted += AccountDeleted;
@@ -221,6 +222,9 @@ public sealed partial class DesktopViewModel : ObservableObject, IDisposable
     public GeneralLedgerViewModel? ActiveJournal => Documents.Active.Content is GeneralLedgerViewModel { IsDocument: true } journal ? journal : null;
     public RelayCommand NextDocumentCommand { get; }
     public RelayCommand PreviousDocumentCommand { get; }
+    public RelayCommand ToggleToolbarCommand { get; }
+    public bool IsToolbarVisible { get => isToolbarVisible; set => SetProperty(ref isToolbarVisible, value); }
+    private bool isToolbarVisible = true;
     public string UserLabel => Profile?.UserName ?? string.Empty;
 
     public async Task InitializeAsync()

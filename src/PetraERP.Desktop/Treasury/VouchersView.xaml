@@ -9,6 +9,10 @@
   <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCommand}"/>
   <KeyBinding Key="N" Modifiers="Control" Command="{Binding NewReceiptCommand}"/>
   <KeyBinding Key="E" Modifiers="Control" Command="{Binding EditCommand}"/>
+  <KeyBinding Key="Home" Modifiers="Control" Command="{Binding FirstVoucherCommand}"/>
+  <KeyBinding Key="PageUp" Modifiers="Control" Command="{Binding PreviousVoucherCommand}"/>
+  <KeyBinding Key="PageDown" Modifiers="Control" Command="{Binding NextVoucherCommand}"/>
+  <KeyBinding Key="End" Modifiers="Control" Command="{Binding LastVoucherCommand}"/>
  </UserControl.InputBindings>
  <DockPanel>
   <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Visibility="{Binding CanUseManualNumber, Converter={StaticResource Visible}}">
@@ -302,7 +306,7 @@
           <Button Content="{Binding Localization[ARP_ClearDistribution]}" Command="{Binding ClearDistributionCommand}" Visibility="{Binding HasDistributionConflict, Converter={StaticResource Visible}}"/>
          </StackPanel>
          <TextBlock DockPanel.Dock="Top" Text="{Binding Localization[D_DistributionRequiredHelp]}" Style="{StaticResource Text.Caption}" Margin="0,0,0,6"/>
-         <ux:PetraAccountingDataGrid ux:GridRowNumbers.Enabled="True" ux:GridRowContext.Enabled="True" ux:GridEntry.Enabled="True" ItemsSource="{Binding LineRows}" SelectedItem="{Binding SelectedLine}" AutoGenerateColumns="False" CanUserAddRows="False" MinHeight="260" IsEnabled="{Binding CanEditDistribution}">
+         <ux:PetraAccountingDataGrid EntryMode="True" ShowRowNumbers="True" ux:GridRowNumbers.Enabled="True" ux:GridRowContext.Enabled="True" ux:GridEntry.Enabled="True" AutoGrowCommand="{Binding AutoGrowLinesCommand}" ItemsSource="{Binding LineRows}" SelectedItem="{Binding SelectedLine}" AutoGenerateColumns="False" CanUserAddRows="False" MinHeight="260" IsEnabled="{Binding CanEditDistribution}">
           <DataGrid.InputBindings>
            <KeyBinding Key="Insert" Command="{Binding AddLineCommand}"/>
            <KeyBinding Key="Delete" Modifiers="Control" Command="{Binding RemoveLineCommand}"/>
@@ -311,6 +315,8 @@
           <DataGrid.ContextMenu><ContextMenu>
            <MenuItem Header="{Binding Localization[D_AddLine]}" Command="{Binding AddLineCommand}"/>
            <MenuItem Header="{Binding Localization[D_RemoveLine]}" Command="{Binding RemoveLineCommand}"/>
+           <MenuItem Header="إضافة 10 أسطر جديدة" Command="{Binding AutoGrowLinesCommand}"/>
+           <Separator/>
            <MenuItem Header="{Binding Localization[ARP_CopyPrevious]}" Command="{x:Static ux:GridEntry.CopyPreviousCell}" CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
           </ContextMenu></DataGrid.ContextMenu>
           <DataGrid.Columns>

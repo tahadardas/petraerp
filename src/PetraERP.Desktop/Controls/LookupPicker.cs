@@ -227,11 +227,23 @@ public class LookupPicker : Control, IDisposable
         }
     }
 
-    /// <summary>Commits the highlighted (or first) result.</summary>
+    /// <summary>Commits the highlighted (or first) result, or an exact match for typed text.</summary>
     public bool CommitHighlighted()
     {
         if (IsReadOnly) return false;
         var item = list?.SelectedItem as LookupItem ?? (Results.Count > 0 ? Results[0] : null);
+        if (item is null && text is not null && !string.IsNullOrWhiteSpace(text.Text))
+        {
+            var query = text.Text.Trim();
+            item = Source.FirstOrDefault(i =>
+                string.Equals(LookupText.Normalize(i.Code), LookupText.Normalize(query), StringComparison.Ordinal) ||
+                (!string.IsNullOrEmpty(i.Barcode) && string.Equals(LookupText.Normalize(i.Barcode), LookupText.Normalize(query), StringComparison.Ordinal)));
+            if (item is null)
+            {
+                var filtered = LookupFilter.Filter(Source, query, 1);
+                item = filtered.Count > 0 ? filtered[0] : null;
+            }
+        }
         if (item is null) return false;
         Commit(item);
         if (popup is not null) popup.IsOpen = false;
@@ -257,6 +269,8 @@ public class LookupPicker : Control, IDisposable
         switch (e.Key)
         {
             case Key.F2 when Keyboard.Modifiers == ModifierKeys.None:
+            case Key.F3 when Keyboard.Modifiers == ModifierKeys.None:
+            case Key.Multiply when Keyboard.Modifiers == ModifierKeys.None && CanOpenWithSpace:
             case Key.Down when Keyboard.Modifiers == ModifierKeys.Alt:
             case Key.System when e.SystemKey == Key.Down && Keyboard.Modifiers == ModifierKeys.Alt:
             case Key.Space when Keyboard.Modifiers == ModifierKeys.None && CanOpenWithSpace:
@@ -279,7 +293,7 @@ public class LookupPicker : Control, IDisposable
                 e.Handled = e.Key == Key.Enter;
                 if (e.Key == Key.Enter && GridEntry.FindParent<DataGrid>(this) is null) MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
                 break;
-            case Key.Enter or Key.Tab when popup?.IsOpen == true:
+            case Key.Enter or Key.Tab:
                 var committed = CommitHighlighted();
                 e.Handled = e.Key == Key.Enter;
                 if (committed && e.Key == Key.Enter && GridEntry.FindParent<DataGrid>(this) is null) MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));

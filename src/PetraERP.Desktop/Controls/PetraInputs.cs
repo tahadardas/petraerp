@@ -57,10 +57,11 @@ public class PetraNumericBox : PetraTextBox
     public string? ErrorText => (string?)GetValue(ErrorTextProperty);
     public bool HasInputError => (bool)GetValue(HasInputErrorProperty);
 
-    /// <summary>Characters that can appear while typing a number (digits in three scripts, separators, sign, parentheses).</summary>
+    /// <summary>Characters that can appear while typing a number (digits in three scripts, separators, sign, parentheses, arithmetic operators).</summary>
     public static bool IsNumericCharacter(char ch, bool allowNegative) =>
         ch is >= '0' and <= '9' or >= '٠' and <= '٩' or >= '۰' and <= '۹' or '.' or ',' or '٫' or '٬'
-        || (allowNegative && ch is '-' or '−' or '(' or ')');
+        || (allowNegative && ch is '-' or '−')
+        || ch is '+' or '*' or '/' or '×' or '÷' or '(' or ')';
 
     protected override void OnPreviewTextInput(TextCompositionEventArgs e)
     {
@@ -74,6 +75,18 @@ public class PetraNumericBox : PetraTextBox
         ArgumentNullException.ThrowIfNull(e);
         // Space would otherwise insert a grouping blank that OnPreviewTextInput does not see.
         if (e.Key == Key.Space) e.Handled = true;
+
+        if (e.Key == Key.Enter && !IsReadOnly && PetraMathEvaluator.TryEvaluate(Text, out var calculated))
+        {
+            var wire = PetraNumberFormat.ToWire(calculated);
+            if (!string.Equals(wire, Text, StringComparison.Ordinal))
+            {
+                SetCurrentValue(TextProperty, wire);
+                SelectAll();
+                e.Handled = true;
+            }
+        }
+
         base.OnPreviewKeyDown(e);
     }
 
@@ -85,6 +98,13 @@ public class PetraNumericBox : PetraTextBox
 
     protected override void OnLostKeyboardFocus(KeyboardFocusChangedEventArgs e)
     {
+        // If the box contains an unevaluated math expression, resolve it first
+        if (!IsReadOnly && PetraMathEvaluator.TryEvaluate(Text, out var calculated))
+        {
+            var wire = PetraNumberFormat.ToWire(calculated);
+            if (!string.Equals(wire, Text, StringComparison.Ordinal)) SetCurrentValue(TextProperty, wire);
+        }
+
         // Normalize only valid input (native digits to ASCII, grouping removed). Invalid text stays as typed.
         if (!IsReadOnly && Validate() is null && PetraNumberFormat.TryParseInput(Text, out var value))
         {
@@ -98,6 +118,13 @@ public class PetraNumericBox : PetraTextBox
     private void OnPaste(object sender, DataObjectPastingEventArgs e)
     {
         if (e.DataObject.GetData(DataFormats.UnicodeText) is not string pasted) return;
+        if (PetraMathEvaluator.TryEvaluate(pasted, out var calculated))
+        {
+            var mathData = new DataObject();
+            mathData.SetData(DataFormats.UnicodeText, PetraNumberFormat.ToWire(calculated));
+            e.DataObject = mathData;
+            return;
+        }
         var normalized = PetraNumberFormat.NormalizeInput(pasted);
         if (normalized.Any(ch => !IsNumericCharacter(ch, AllowNegative))) { e.CancelCommand(); return; }
         var data = new DataObject(); data.SetData(DataFormats.UnicodeText, normalized);
@@ -156,12 +183,39 @@ public sealed class PetraDatePicker : DatePicker
     protected override void OnPreviewKeyDown(KeyEventArgs e)
     {
         ArgumentNullException.ThrowIfNull(e);
-        if (Keyboard.Modifiers == ModifierKeys.None && !IsDropDownOpen && Step(e.Key) is { } step)
+        if (Keyboard.Modifiers == ModifierKeys.None && !IsDropDownOpen)
         {
-            var current = SelectedDate ?? DateTime.Today;
-            var next = step.Months != 0 ? current.AddMonths(step.Months) : current.AddDays(step.Days);
-            if (IsSelectable(next)) SetCurrentValue(SelectedDateProperty, next);
-            e.Handled = true;
+            if (e.Key is Key.T)
+            {
+                var today = DateTime.Today;
+                if (IsSelectable(today)) SetCurrentValue(SelectedDateProperty, today);
+                e.Handled = true;
+                return;
+            }
+
+            if (e.Key is Key.Y)
+            {
+                var yesterday = DateTime.Today.AddDays(-1);
+                if (IsSelectable(yesterday)) SetCurrentValue(SelectedDateProperty, yesterday);
+                e.Handled = true;
+                return;
+            }
+
+            if (e.Key is Key.F4)
+            {
+                IsDropDownOpen = !IsDropDownOpen;
+                e.Handled = true;
+                return;
+            }
+
+            if (Step(e.Key) is { } step)
+            {
+                var current = SelectedDate ?? DateTime.Today;
+                var next = step.Months != 0 ? current.AddMonths(step.Months) : current.AddDays(step.Days);
+                if (IsSelectable(next)) SetCurrentValue(SelectedDateProperty, next);
+                e.Handled = true;
+                return;
+            }
         }
 
         base.OnPreviewKeyDown(e);
@@ -169,8 +223,8 @@ public sealed class PetraDatePicker : DatePicker
 
     private static (int Days, int Months)? Step(Key key) => key switch
     {
-        Key.Up => (1, 0),
-        Key.Down => (-1, 0),
+        Key.Up or Key.Add or Key.OemPlus => (1, 0),
+        Key.Down or Key.Subtract or Key.OemMinus => (-1, 0),
         Key.PageUp => (0, 1),
         Key.PageDown => (0, -1),
         _ => null,

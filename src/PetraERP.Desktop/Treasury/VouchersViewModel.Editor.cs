@@ -116,6 +116,7 @@ public sealed partial class VouchersViewModel
     public RelayCommand AddLineCommand { get; private set; } = null!;
     public RelayCommand RemoveLineCommand { get; private set; } = null!;
     public RelayCommand AutoGrowLinesCommand { get; private set; } = null!;
+    public RelayCommand AutoGrowCommand => AutoGrowLinesCommand;
     public AsyncRelayCommand FirstVoucherCommand { get; private set; } = null!;
     public AsyncRelayCommand PreviousVoucherCommand { get; private set; } = null!;
     public AsyncRelayCommand NextVoucherCommand { get; private set; } = null!;

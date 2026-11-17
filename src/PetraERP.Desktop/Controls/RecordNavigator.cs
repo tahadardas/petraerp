@@ -25,6 +25,9 @@ public sealed class RecordNavigator : Control
     public static readonly DependencyProperty SearchCommandProperty = DependencyProperty.Register(
         nameof(SearchCommand), typeof(ICommand), typeof(RecordNavigator));
 
+    public static readonly DependencyProperty JumpCommandProperty = DependencyProperty.Register(
+        nameof(JumpCommand), typeof(ICommand), typeof(RecordNavigator));
+
     public static readonly DependencyProperty RecordNumberProperty = DependencyProperty.Register(
         nameof(RecordNumber), typeof(object), typeof(RecordNavigator));
 
@@ -40,6 +43,58 @@ public sealed class RecordNavigator : Control
     static RecordNavigator()
     {
         DefaultStyleKeyProperty.OverrideMetadata(typeof(RecordNavigator), new FrameworkPropertyMetadata(typeof(RecordNavigator)));
+    }
+
+    private TextBox? recordInput;
+
+    public override void OnApplyTemplate()
+    {
+        base.OnApplyTemplate();
+        if (recordInput is not null)
+        {
+            recordInput.KeyDown -= OnInputKeyDown;
+            recordInput.LostFocus -= OnInputLostFocus;
+        }
+
+        recordInput = GetTemplateChild("PART_RecordInput") as TextBox;
+        if (recordInput is not null)
+        {
+            recordInput.KeyDown += OnInputKeyDown;
+            recordInput.LostFocus += OnInputLostFocus;
+            recordInput.IsReadOnly = JumpCommand is null || IsReadOnly;
+        }
+    }
+
+    private void OnInputKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            e.Handled = true;
+            if (JumpCommand is not null && recordInput is not null)
+            {
+                var text = recordInput.Text.Trim();
+                if (JumpCommand.CanExecute(text))
+                {
+                    JumpCommand.Execute(text);
+                }
+            }
+        }
+        else if (e.Key == Key.Escape)
+        {
+            if (recordInput is not null)
+            {
+                recordInput.Text = RecordNumber?.ToString() ?? string.Empty;
+                e.Handled = true;
+            }
+        }
+    }
+
+    private void OnInputLostFocus(object sender, RoutedEventArgs e)
+    {
+        if (recordInput is not null && recordInput.Text != (RecordNumber?.ToString() ?? string.Empty))
+        {
+            recordInput.Text = RecordNumber?.ToString() ?? string.Empty;
+        }
     }
 
     public ICommand? FirstCommand
@@ -70,6 +125,12 @@ public sealed class RecordNavigator : Control
     {
         get => (ICommand?)GetValue(SearchCommandProperty);
         set => SetValue(SearchCommandProperty, value);
+    }
+
+    public ICommand? JumpCommand
+    {
+        get => (ICommand?)GetValue(JumpCommandProperty);
+        set => SetValue(JumpCommandProperty, value);
     }
 
     public object? RecordNumber

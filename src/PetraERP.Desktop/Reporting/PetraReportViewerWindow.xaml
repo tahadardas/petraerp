@@ -78,6 +78,8 @@
     <Button x:Name="FilterButton" Click="FilterClicked" ToolBar.OverflowMode="Never"/>
     <Button x:Name="FieldsButton" Click="FieldsClicked" ToolBar.OverflowMode="AsNeeded"/>
     <Button x:Name="SummariesButton" Click="SummariesClicked" ToolBar.OverflowMode="AsNeeded"/>
+    <Button x:Name="ConditionalFormattingButton" Click="ConditionalFormattingClicked" ToolBar.OverflowMode="AsNeeded"/>
+     <Button x:Name="AlternatingRowsButton" Click="AlternatingRowsClicked" ToolBar.OverflowMode="AsNeeded"/>
    </ToolBar>
    <ToolBar Band="1" Background="Transparent" ToolBarTray.IsLocked="True">
     <TextBlock x:Name="LayoutGroupLabel" Style="{StaticResource ToolGroupLabel}"/>
@@ -246,6 +248,63 @@
         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
         <Button x:Name="RemoveSummaryButton" Click="RemoveSummaryClicked" Margin="0,0,4,0"/>
         <Button x:Name="ClearSummariesButton" Grid.Column="1" Click="ClearSummariesClicked"/>
+       </Grid>
+      </Grid>
+     </Border>
+     <Border x:Name="ConditionalFormattingSidebar" Grid.Column="1" Width="330" Visibility="Collapsed" Background="{DynamicResource Surface.Secondary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1,0,0,0" Padding="12">
+      <Grid>
+       <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="Auto"/>
+       </Grid.RowDefinitions>
+       <DockPanel Grid.Row="0" Margin="0,0,0,8">
+        <Button DockPanel.Dock="Right" Content="×" Click="ConditionalFormattingClicked" Style="{StaticResource SidebarClose}"/>
+        <TextBlock x:Name="ConditionalFormattingTitle" Style="{StaticResource SidebarTitle}" VerticalAlignment="Center"/>
+       </DockPanel>
+
+       <!-- Column & Operator -->
+       <Grid Grid.Row="1" Margin="0,0,0,7">
+        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+        <StackPanel>
+         <TextBlock x:Name="FormatColumnLabel" Style="{StaticResource SidebarFieldLabel}"/>
+         <ComboBox x:Name="FormatColumn" DisplayMemberPath="Heading" SelectedValuePath="Key" AutomationProperties.Name="حقل التنسيق / Formatting column"/>
+        </StackPanel>
+        <StackPanel Grid.Column="2">
+         <TextBlock x:Name="FormatOperatorLabel" Style="{StaticResource SidebarFieldLabel}"/>
+         <ComboBox x:Name="FormatOperator" DisplayMemberPath="Label" SelectedValuePath="Value" AutomationProperties.Name="شرط التنسيق / Formatting operator"/>
+        </StackPanel>
+       </Grid>
+
+       <!-- Values -->
+       <TextBlock x:Name="FormatValueLabel" Grid.Row="2" Style="{StaticResource SidebarFieldLabel}"/>
+       <Grid Grid.Row="3" Margin="0,0,0,7">
+        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+        <TextBox x:Name="FormatValue1" AutomationProperties.Name="قيمة التنسيق الأولى / First formatting value"/>
+        <TextBox x:Name="FormatValue2" Grid.Column="2" AutomationProperties.Name="قيمة التنسيق الثانية / Second formatting value"/>
+       </Grid>
+
+       <!-- Style / Color -->
+       <TextBlock x:Name="FormatColorLabel" Grid.Row="4" Style="{StaticResource SidebarFieldLabel}"/>
+       <Grid Grid.Row="5" Margin="0,0,0,8">
+        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <ComboBox x:Name="FormatColor" DisplayMemberPath="Label" SelectedValuePath="Value" AutomationProperties.Name="لون التمييز / Highlight style"/>
+        <Button x:Name="AddFormatRuleButton" Grid.Column="1" Click="AddFormatRuleClicked" Margin="6,0,0,0" Padding="8,3" Background="{DynamicResource Brand.Navy}" Foreground="{DynamicResource Text.OnBrand}"/>
+       </Grid>
+
+       <!-- Rules List -->
+       <ListBox x:Name="ActiveFormatRules" Grid.Row="6" DisplayMemberPath="DisplayText" BorderThickness="0" Margin="0,0,0,8" AutomationProperties.Name="قواعد التنسيق النشطة / Active formatting rules"/>
+
+       <!-- Action Buttons -->
+       <Grid Grid.Row="7">
+        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+        <Button x:Name="RemoveFormatRuleButton" Click="RemoveFormatRuleClicked" Margin="0,0,4,0"/>
+        <Button x:Name="ClearFormatRulesButton" Grid.Column="1" Click="ClearFormatRulesClicked"/>
        </Grid>
       </Grid>
      </Border>

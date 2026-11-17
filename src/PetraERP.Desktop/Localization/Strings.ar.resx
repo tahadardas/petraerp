@@ -2224,6 +2224,10 @@
   <data name="UI_Skin_Office2013White" xml:space="preserve"><value>Office 2013 White</value></data>
   <data name="UI_Skin_Windows7Scenic" xml:space="preserve"><value>Windows 7 Scenic</value></data>
   <data name="UI_Skin_VisualStudio2010" xml:space="preserve"><value>Visual Studio 2010</value></data>
+  <data name="UI_Skin_Ameen10Blue" xml:space="preserve"><value>الأمين 10 الأزرق الكلاسيكي</value></data>
+  <data name="UI_Skin_Ameen10Purple" xml:space="preserve"><value>الأمين 10 الأرجواني</value></data>
+  <data name="UI_Skin_Windows11Light" xml:space="preserve"><value>Windows 11 فاتح</value></data>
+  <data name="UI_Skin_Windows11Dark" xml:space="preserve"><value>Windows 11 داكن</value></data>
   <data name="UI_Density_Standard" xml:space="preserve"><value>قياسي</value></data>
   <data name="UI_Density_Comfortable" xml:space="preserve"><value>مريح</value></data>
   <data name="UI_FilterSaved" xml:space="preserve"><value>حُفظ المرشح. افتحه من Ctrl+K.</value></data>

@@ -63,6 +63,26 @@
                AutomationProperties.Name="{Binding Localization[D_SearchPlaceholder]}" PreviewKeyDown="PaletteKeyDown"/>
      </DockPanel>
      <Border DockPanel.Dock="Top" Height="1" Background="{DynamicResource Divider}"/>
+     <!-- Al-Ameen 10 Quick Search Scope Filter Tabs -->
+     <Border DockPanel.Dock="Top" Background="{DynamicResource Surface.Secondary}" Padding="8,4" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Divider}">
+      <WrapPanel Orientation="Horizontal">
+       <Button Style="{StaticResource Button.Subtle}" Margin="2,0" Padding="8,2" FontSize="11" Content="الكل" Command="{Binding Palette.SelectScopeCommand}">
+        <Button.CommandParameter><shell:PaletteScope>All</shell:PaletteScope></Button.CommandParameter>
+       </Button>
+       <Button Style="{StaticResource Button.Subtle}" Margin="2,0" Padding="8,2" FontSize="11" Content="سندات وعمليات" Command="{Binding Palette.SelectScopeCommand}">
+        <Button.CommandParameter><shell:PaletteScope>Operations</shell:PaletteScope></Button.CommandParameter>
+       </Button>
+       <Button Style="{StaticResource Button.Subtle}" Margin="2,0" Padding="8,2" FontSize="11" Content="تقارير" Command="{Binding Palette.SelectScopeCommand}">
+        <Button.CommandParameter><shell:PaletteScope>Reports</shell:PaletteScope></Button.CommandParameter>
+       </Button>
+       <Button Style="{StaticResource Button.Subtle}" Margin="2,0" Padding="8,2" FontSize="11" Content="بطاقات ودلائل" Command="{Binding Palette.SelectScopeCommand}">
+        <Button.CommandParameter><shell:PaletteScope>Cards</shell:PaletteScope></Button.CommandParameter>
+       </Button>
+       <Button Style="{StaticResource Button.Subtle}" Margin="2,0" Padding="8,2" FontSize="11" Content="أدوات وإعدادات" Command="{Binding Palette.SelectScopeCommand}">
+        <Button.CommandParameter><shell:PaletteScope>Tools</shell:PaletteScope></Button.CommandParameter>
+       </Button>
+      </WrapPanel>
+     </Border>
      <TextBlock DockPanel.Dock="Bottom" Text="{Binding Localization[D_PaletteHelp]}" Style="{StaticResource Text.Caption}" Margin="12,6"/>
      <ListBox x:Name="PaletteList" PreviewKeyDown="PaletteKeyDown" ItemsSource="{Binding Palette.Entries}" SelectedItem="{Binding Palette.Selected}" Margin="4" MouseDoubleClick="PaletteInvoked" AutomationProperties.Name="{Binding Localization[D_Palette]}">
       <ListBox.ItemTemplate><DataTemplate><DockPanel Margin="4,3">

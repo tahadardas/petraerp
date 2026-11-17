@@ -14,8 +14,8 @@ public static class DesktopShortcutRouter
     {
         if (!shell.IsAuthenticated || shell.Dialogs?.Current is not null) return false;
 
-        // Ctrl+K: Palette
-        if (modifiers == ModifierKeys.Control && key == Key.K)
+        // Ctrl+K or Ctrl+Q: Palette / Quick Search (Al-Ameen 10)
+        if (modifiers == ModifierKeys.Control && key is Key.K or Key.Q)
         {
             if (shell.Palette.IsOpen) shell.Palette.IsOpen = false;
             else

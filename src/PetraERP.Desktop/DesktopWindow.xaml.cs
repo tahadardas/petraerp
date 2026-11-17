@@ -182,6 +182,7 @@ public partial class DesktopWindow : Window
         }
         if (Model.Palette.IsOpen) return false;
         if (key == Key.Escape && modifiers == ModifierKeys.None && Model.Notifications.IsPanelOpen) { Model.Notifications.IsPanelOpen = false; return true; }
+        if (key == Key.F12 && modifiers == ModifierKeys.None) { Model.ToggleToolbarCommand.Execute(null); return true; }
         // Workspace tabs: Ctrl+Tab / Ctrl+Shift+Tab cycle, Ctrl+W or Ctrl+F4 closes the active document (with confirmation when dirty).
         if (key == Key.Tab && modifiers == ModifierKeys.Control) { Model.NextDocumentCommand.Execute(null); return true; }
         if (key == Key.Tab && modifiers == (ModifierKeys.Control | ModifierKeys.Shift)) { Model.PreviousDocumentCommand.Execute(null); return true; }

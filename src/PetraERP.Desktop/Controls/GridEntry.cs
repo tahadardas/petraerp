@@ -57,9 +57,10 @@ public static class GridEntry
             }
         }
 
-        // F2, Alt+Down and Space: open the lookup list (ComboBox and LookupPicker). Space opens only when the picker is
+        // F2, F3, Alt+Down and Space: open the lookup list (ComboBox and LookupPicker). Space opens only when the picker is
         // empty or fully selected, and never on an editable ComboBox, so typing text and numbers keeps working.
-        var openKey = e.Key == Key.F2 && Keyboard.Modifiers == ModifierKeys.None
+        var openKey = (e.Key is Key.F2 or Key.F3 && Keyboard.Modifiers == ModifierKeys.None)
+            || (e.Key == Key.Multiply && Keyboard.Modifiers == ModifierKeys.None)
             || (e.Key == Key.Down || e.Key == Key.System && e.SystemKey == Key.Down) && Keyboard.Modifiers == ModifierKeys.Alt;
         var spaceKey = e.Key == Key.Space && Keyboard.Modifiers == ModifierKeys.None;
         if (openKey || spaceKey)
@@ -107,19 +108,30 @@ public static class GridEntry
             if (!grid.IsReadOnly && grid.CurrentCell.Column is not null)
             {
                 var focused = Keyboard.FocusedElement as DependencyObject ?? e.OriginalSource as DependencyObject;
+                var cellTextBox = focused as TextBox ?? FindParent<TextBox>(focused);
+                if (cellTextBox is null && FindParent<DataGridCell>(focused) is { } editingCell)
+                {
+                    cellTextBox = FindChild<TextBox>(editingCell);
+                }
+
+                if (cellTextBox is not null && !cellTextBox.IsReadOnly && PetraMathEvaluator.TryEvaluate(cellTextBox.Text, out var calculated))
+                {
+                    cellTextBox.Text = PetraNumberFormat.ToWire(calculated);
+                    var binding = BindingOperations.GetBindingExpression(cellTextBox, TextBox.TextProperty);
+                    binding?.UpdateSource();
+                }
+
                 var picker = focused as LookupPicker ?? FindParent<LookupPicker>(focused);
                 if (picker is null && FindParent<DataGridCell>(focused) is { } targetCell)
                 {
                     picker = FindChild<LookupPicker>(targetCell);
                 }
 
-                if (picker is not null && picker.IsPopupOpen && e.Key == Key.Enter)
+                if (picker is not null && e.Key == Key.Enter)
                 {
                     e.Handled = true;
-                    if (picker.CommitHighlighted())
-                    {
-                        AdvanceToNextCell(grid, Keyboard.Modifiers == ModifierKeys.Shift ? -1 : 1);
-                    }
+                    picker.CommitHighlighted();
+                    AdvanceToNextCell(grid, Keyboard.Modifiers == ModifierKeys.Shift ? -1 : 1);
                     return;
                 }
 
@@ -253,6 +265,7 @@ public static class GridEntry
                         grid.SelectedCells.Clear();
                         grid.SelectedCells.Add(grid.CurrentCell);
                         grid.BeginEdit();
+                        FocusInnerInput(grid, nextRowItem, firstColumn);
                     }
                 }
             }
@@ -343,7 +356,7 @@ public static class GridEntry
                 var innerInput = FindChild<TextBox>(cell) ?? FindChild<LookupPicker>(cell) as FrameworkElement ?? cell;
                 innerInput.Focus();
                 if (innerInput is TextBox tb) tb.SelectAll();
-                else if (innerInput is LookupPicker lp) lp.Focus();
+                else if (innerInput is LookupPicker lp) lp.FocusSearch();
             }
         });
     }

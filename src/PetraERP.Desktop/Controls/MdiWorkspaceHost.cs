@@ -64,14 +64,15 @@ public sealed class MdiChildWindow : Border
         Focusable = false;
         SnapsToDevicePixels = true;
         BorderThickness = new Thickness(1);
+        CornerRadius = new CornerRadius(8);
         SetResourceReference(BackgroundProperty, "Surface");
+        titleBar.CornerRadius = new CornerRadius(7, 7, 0, 0);
+        body.CornerRadius = new CornerRadius(0, 0, 7, 7);
+        Effect = new System.Windows.Media.Effects.DropShadowEffect { BlurRadius = 18, ShadowDepth = 3, Opacity = 0.20, Color = System.Windows.Media.Color.FromRgb(11, 18, 32) };
 
-        minimizeButton = CreateButton("", localization["D_MinimizeActive"], () => MinimizeRequested?.Invoke(this, EventArgs.Empty));
-        maximizeButton = CreateButton("", localization["UX_Maximize"], () => MaximizeToggleRequested?.Invoke(this, EventArgs.Empty));
-        closeButton = CreateButton("", localization["D_CloseTab"], () => CloseRequested?.Invoke(this, EventArgs.Empty));
-        buttons.Children.Add(minimizeButton);
-        buttons.Children.Add(maximizeButton);
-        buttons.Children.Add(closeButton);
+        minimizeButton = CreateButton("", localization["D_MinimizeActive"], isClose: false, () => MinimizeRequested?.Invoke(this, EventArgs.Empty));
+        maximizeButton = CreateButton("", localization["UX_Maximize"], isClose: false, () => MaximizeToggleRequested?.Invoke(this, EventArgs.Empty));
+        closeButton = CreateButton("", localization["D_CloseTab"], isClose: true, () => CloseRequested?.Invoke(this, EventArgs.Empty));
 
         glyphText.SetResourceReference(StyleProperty, "Text.Icon");
         glyphText.Text = document.Glyph;
@@ -160,6 +161,23 @@ public sealed class MdiChildWindow : Border
         glyphText.HorizontalAlignment = rtl ? HorizontalAlignment.Right : HorizontalAlignment.Left;
         titleText.Margin = rtl ? new Thickness(4, 0, 30, 0) : new Thickness(30, 0, 4, 0);
         if (glyphText.Visibility != Visibility.Visible) titleText.Margin = new Thickness(8, 0, 8, 0);
+
+        // Position buttons so Close is always at the outer window corner:
+        // RTL (buttons on the left): [Close][Maximize][Minimize]
+        // LTR (buttons on the right): [Minimize][Maximize][Close]
+        buttons.Children.Clear();
+        if (rtl)
+        {
+            buttons.Children.Add(closeButton);
+            buttons.Children.Add(maximizeButton);
+            buttons.Children.Add(minimizeButton);
+        }
+        else
+        {
+            buttons.Children.Add(minimizeButton);
+            buttons.Children.Add(maximizeButton);
+            buttons.Children.Add(closeButton);
+        }
     }
 
     /// <summary>Stops observing the document and releases its view, so the content is rendered nowhere else than the next host.</summary>
@@ -203,6 +221,30 @@ public sealed class MdiChildWindow : Border
         maximizeButton.ToolTip = tip;
         AutomationProperties.SetName(maximizeButton, tip);
         minimizeButton.Visibility = state == MdiWindowState.Minimized ? Visibility.Collapsed : Visibility.Visible;
+
+        if (state == MdiWindowState.Maximized)
+        {
+            CornerRadius = new CornerRadius(0);
+            BorderThickness = new Thickness(0);
+            Effect = null;
+            titleBar.CornerRadius = new CornerRadius(0);
+            body.CornerRadius = new CornerRadius(0);
+        }
+        else if (state == MdiWindowState.Minimized)
+        {
+            CornerRadius = new CornerRadius(6);
+            BorderThickness = new Thickness(1);
+            Effect = new System.Windows.Media.Effects.DropShadowEffect { BlurRadius = 8, ShadowDepth = 1, Opacity = 0.15, Color = System.Windows.Media.Color.FromRgb(11, 18, 32) };
+            titleBar.CornerRadius = new CornerRadius(5);
+        }
+        else
+        {
+            CornerRadius = new CornerRadius(8);
+            BorderThickness = new Thickness(1);
+            Effect = new System.Windows.Media.Effects.DropShadowEffect { BlurRadius = 18, ShadowDepth = 3, Opacity = 0.20, Color = System.Windows.Media.Color.FromRgb(11, 18, 32) };
+            titleBar.CornerRadius = new CornerRadius(7, 7, 0, 0);
+            body.CornerRadius = new CornerRadius(0, 0, 7, 7);
+        }
     }
 
     private void ApplyActiveVisual()
@@ -216,7 +258,7 @@ public sealed class MdiChildWindow : Border
         titleText.FontWeight = isActiveWindow ? FontWeights.SemiBold : FontWeights.Normal;
     }
 
-    private static Button CreateButton(string glyph, string tip, Action click)
+    private Button CreateButton(string glyph, string tip, bool isClose, Action click)
     {
         var button = new Button { Content = glyph, ToolTip = tip, Focusable = false };
         button.SetResourceReference(StyleProperty, "Button.Icon");
@@ -226,6 +268,19 @@ public sealed class MdiChildWindow : Border
         button.FontSize = 11;
         AutomationProperties.SetName(button, tip);
         button.Click += (_, _) => click();
+        if (isClose)
+        {
+            button.MouseEnter += (_, _) =>
+            {
+                button.SetResourceReference(Control.BackgroundProperty, "Error");
+                button.SetResourceReference(Control.ForegroundProperty, "Text.OnAccent");
+            };
+            button.MouseLeave += (_, _) =>
+            {
+                button.Background = System.Windows.Media.Brushes.Transparent;
+                button.SetResourceReference(Control.ForegroundProperty, isActiveWindow ? "Text.OnAccent" : "Text");
+            };
+        }
         return button;
     }
 
