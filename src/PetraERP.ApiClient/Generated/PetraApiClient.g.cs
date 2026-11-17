@@ -48153,6 +48153,12 @@ namespace PetraERP.ApiClient
         [System.Runtime.Serialization.EnumMember(Value = @"ManualJournal")]
         ManualJournal = 9,
 
+        [System.Runtime.Serialization.EnumMember(Value = @"Assembly")]
+        Assembly = 10,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Disassembly")]
+        Disassembly = 11,
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]

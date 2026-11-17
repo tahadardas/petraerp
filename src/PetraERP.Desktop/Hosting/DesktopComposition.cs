@@ -83,6 +83,7 @@ public static class DesktopComposition
         services.AddSingleton<DailyVoucherViewModel>(); services.AddSingleton<AccountDirectoryViewModel>(); services.AddSingleton<ItemLimitsViewModel>(); services.AddSingleton<ItemPriceToolViewModel>(); services.AddSingleton<Patterns.PatternManagerViewModel>(); services.AddSingleton<ItemDirectoryViewModel>(); services.AddSingleton<GeneralJournalViewModel>(); services.AddSingleton<AccountLedgerViewModel>(); services.AddSingleton<TrialBalanceViewModel>();
         services.AddSingleton<DocumentPatternsViewModel>(); services.AddSingleton<PartiesViewModel>(); services.AddSingleton<ItemsViewModel>();
         services.AddSingleton<Inventory.StocktakingWizardViewModel>();
+        services.AddSingleton<Inventory.AssemblyDisassemblyViewModel>();
         services.AddSingleton<SalesInvoicesViewModel>();
         services.AddSingleton<Treasury.VouchersViewModel>();
         services.AddSingleton<Treasury.ChequesViewModel>();

@@ -1437,6 +1437,25 @@
   <data name="BusinessOperationKind_CashPayment" xml:space="preserve"><value>سند صرف</value></data>
   <data name="BusinessOperationKind_CashJournal" xml:space="preserve"><value>يومية صندوق</value></data>
   <data name="BusinessOperationKind_ManualJournal" xml:space="preserve"><value>قيد يومية يدوي</value></data>
+  <data name="BusinessOperationKind_Assembly" xml:space="preserve"><value>فاتورة تجميع</value></data>
+  <data name="BusinessOperationKind_Disassembly" xml:space="preserve"><value>فاتورة تفكيك</value></data>
+  <data name="D_PM_Assembly" xml:space="preserve"><value>تجميع وتفكيك</value></data>
+  <data name="D_PM_AssemblyHelp" xml:space="preserve"><value>إدارة أنماط فواتير تجميع وتفكيك المواد (تصنيع بلا تصنيع) وتحديد حساب التشغيل ومصاريف التحويل وتوزيع التكاليف.</value></data>
+  <data name="D_Role_OperatingAccount" xml:space="preserve"><value>حساب التشغيل (صناعي / وسيط)</value></data>
+  <data name="D_Role_AssemblyExpense" xml:space="preserve"><value>حساب مصاريف التشغيل / التحويل</value></data>
+  <data name="D_Role_Variance" xml:space="preserve"><value>حساب فروقات التسوية والتفكيك</value></data>
+  <data name="D_AssemblyDisassembly" xml:space="preserve"><value>فاتورة تجميع وتفكيك</value></data>
+  <data name="D_Assembly" xml:space="preserve"><value>تجميع</value></data>
+  <data name="D_Disassembly" xml:space="preserve"><value>تفكيك</value></data>
+  <data name="D_AssembledItem" xml:space="preserve"><value>المادة التجميعية</value></data>
+  <data name="D_SourceWarehouse" xml:space="preserve"><value>مستودع الإخراج</value></data>
+  <data name="D_TargetWarehouse" xml:space="preserve"><value>مستودع الإدخال</value></data>
+  <data name="D_StandardQty" xml:space="preserve"><value>الكمية المعيارية</value></data>
+  <data name="D_TotalQty" xml:space="preserve"><value>الكمية الإجمالية</value></data>
+  <data name="D_TotalMaterialCost" xml:space="preserve"><value>إجمالي تكلفة المكونات</value></data>
+  <data name="D_TotalExpenses" xml:space="preserve"><value>إجمالي مصاريف التشغيل</value></data>
+  <data name="D_UnitProducedCost" xml:space="preserve"><value>تكلفة الوحدة المنتجة</value></data>
+  <data name="D_GrandCostTotal" xml:space="preserve"><value>التكلفة الإجمالية</value></data>
   <data name="PatternNumberingScope_Company" xml:space="preserve"><value>على مستوى الشركة</value></data>
   <data name="PatternNumberingScope_Branch" xml:space="preserve"><value>على مستوى الفرع</value></data>
   <data name="PatternNumberingScope_FiscalYear" xml:space="preserve"><value>سنوي</value></data>

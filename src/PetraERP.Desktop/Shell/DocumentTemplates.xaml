@@ -50,6 +50,7 @@
  <DataTemplate DataType="{x:Type parties:PartyCardViewModel}"><parties:PartyCardView/></DataTemplate>
  <DataTemplate DataType="{x:Type inv:ItemsViewModel}"><inv:ItemsView/></DataTemplate>
  <DataTemplate DataType="{x:Type inv:InventoryOperationsViewModel}"><inv:InventoryOperationsView/></DataTemplate>
+ <DataTemplate DataType="{x:Type inv:AssemblyDisassemblyViewModel}"><inv:AssemblyDisassemblyView/></DataTemplate>
  <DataTemplate DataType="{x:Type inv:StocktakingWizardViewModel}"><inv:StocktakingWizardView/></DataTemplate>
  <DataTemplate DataType="{x:Type inv:UnitsViewModel}"><inv:UnitsView/></DataTemplate>
  <DataTemplate DataType="{x:Type inv:ItemCardViewModel}"><inv:ItemCardView/></DataTemplate>

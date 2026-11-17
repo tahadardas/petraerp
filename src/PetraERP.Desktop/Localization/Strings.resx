@@ -1437,6 +1437,25 @@
   <data name="BusinessOperationKind_CashPayment" xml:space="preserve"><value>Cash Payment</value></data>
   <data name="BusinessOperationKind_CashJournal" xml:space="preserve"><value>Cash Journal</value></data>
   <data name="BusinessOperationKind_ManualJournal" xml:space="preserve"><value>Manual Journal</value></data>
+  <data name="BusinessOperationKind_Assembly" xml:space="preserve"><value>Assembly Invoice</value></data>
+  <data name="BusinessOperationKind_Disassembly" xml:space="preserve"><value>Disassembly Invoice</value></data>
+  <data name="D_PM_Assembly" xml:space="preserve"><value>Assembly &amp; Disassembly</value></data>
+  <data name="D_PM_AssemblyHelp" xml:space="preserve"><value>Manage patterns for material assembly and disassembly invoices (manufacturing without heavy process), operating account, and cost allocations.</value></data>
+  <data name="D_Role_OperatingAccount" xml:space="preserve"><value>Operating Account (WIP / Clearing)</value></data>
+  <data name="D_Role_AssemblyExpense" xml:space="preserve"><value>Operating / Conversion Expense Account</value></data>
+  <data name="D_Role_Variance" xml:space="preserve"><value>Disassembly Variance / Settlement Account</value></data>
+  <data name="D_AssemblyDisassembly" xml:space="preserve"><value>Assembly &amp; Disassembly</value></data>
+  <data name="D_Assembly" xml:space="preserve"><value>Assembly</value></data>
+  <data name="D_Disassembly" xml:space="preserve"><value>Disassembly</value></data>
+  <data name="D_AssembledItem" xml:space="preserve"><value>Assembled Item</value></data>
+  <data name="D_SourceWarehouse" xml:space="preserve"><value>Issue Warehouse</value></data>
+  <data name="D_TargetWarehouse" xml:space="preserve"><value>Receipt Warehouse</value></data>
+  <data name="D_StandardQty" xml:space="preserve"><value>Std Qty</value></data>
+  <data name="D_TotalQty" xml:space="preserve"><value>Total Qty</value></data>
+  <data name="D_TotalMaterialCost" xml:space="preserve"><value>Total Components Cost</value></data>
+  <data name="D_TotalExpenses" xml:space="preserve"><value>Total Operating Expenses</value></data>
+  <data name="D_UnitProducedCost" xml:space="preserve"><value>Unit Cost</value></data>
+  <data name="D_GrandCostTotal" xml:space="preserve"><value>Grand Total Cost</value></data>
   <data name="PatternNumberingScope_Company" xml:space="preserve"><value>Company-wide</value></data>
   <data name="PatternNumberingScope_Branch" xml:space="preserve"><value>Per branch</value></data>
   <data name="PatternNumberingScope_FiscalYear" xml:space="preserve"><value>Per fiscal year</value></data>

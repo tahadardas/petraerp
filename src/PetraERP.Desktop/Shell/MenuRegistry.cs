@@ -78,6 +78,7 @@ public static class MenuRegistry
         new("invoices", "MN_Invoice", Glyph: "", Order: 20),
         new("invoices.sales", "D_SalesInvoices", Glyph: "", ParentId: "invoices", RequiredPermission: "Sales.Invoices.View", Route: "sales-invoices", Order: 10),
         new("invoices.purchases", "D_PurchaseInvoices", Glyph: "", ParentId: "invoices", RequiredPermission: "Purchases.Invoices.View", Route: "purchase-invoices", Order: 20),
+        new("invoices.assembly", "D_AssemblyDisassembly", Glyph: "\uE74C", ParentId: "invoices", RequiredPermission: "Inventory.Movements.View", Route: "assembly-disassembly", Order: 30),
 
         // ───────── 3. سندات ─────────
         new("vouchers", "MN_Vouchers", Glyph: "", Order: 30),

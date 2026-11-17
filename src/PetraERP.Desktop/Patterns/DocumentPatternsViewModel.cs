@@ -157,6 +157,10 @@ public sealed partial class DocumentPatternsViewModel : PageViewModel, IShellPag
         {
             if (item.OperationKind is not (BusinessOperationKind.InventoryIssue or BusinessOperationKind.InventoryReceipt)) return false;
         }
+        else if (FilterTab == "assembly")
+        {
+            if (item.OperationKind is not (BusinessOperationKind.Assembly or BusinessOperationKind.Disassembly)) return false;
+        }
 
         if (string.IsNullOrWhiteSpace(Search)) return true;
 

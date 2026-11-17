@@ -19,6 +19,12 @@ public static class PatternAccountRoles
     public const string Discount = "Discount";
     public const string Tax = "Tax";
     public const string TransportRevenue = "TransportRevenue";
+    /// <summary>Al-Ameen operating account (حساب التشغيل) for assembly/disassembly operations.</summary>
+    public const string OperatingAccount = "OperatingAccount";
+    /// <summary>Operating / conversion expenses account (أجور تشغيل / مصاريف تحويل) loaded on assembled products.</summary>
+    public const string AssemblyExpense = "AssemblyExpense";
+    /// <summary>Disassembly settlement / rounding variance account (حساب فروقات التسوية والتفكيك).</summary>
+    public const string Variance = "Variance";
     /// <summary>Realized exchange gain/loss when a foreign-currency receivable is collected at a different rate.</summary>
     public const string FxGain = "FxGain";
     public const string FxLoss = "FxLoss";
@@ -38,6 +44,9 @@ public static class PatternAccountRoles
         [Payable] = Payable, ["Supplier"] = Payable,
         [Cogs] = Cogs, ["CostOfGoods"] = Cogs,
         [Inventory] = Inventory, [Cash] = Cash, [Bank] = Bank, [Discount] = Discount, [Tax] = Tax, [TransportRevenue] = TransportRevenue,
+        [OperatingAccount] = OperatingAccount, ["Operating"] = OperatingAccount, ["WorkInProgress"] = OperatingAccount,
+        [AssemblyExpense] = AssemblyExpense, ["ManufacturingExpense"] = AssemblyExpense,
+        [Variance] = Variance, ["SettlementVariance"] = Variance,
         [FxGain] = FxGain, [FxLoss] = FxLoss,
     };
 
@@ -48,6 +57,8 @@ public static class PatternAccountRoles
         BusinessOperationKind.PurchaseInvoice => [Inventory, Payable, Cash, Tax],
         BusinessOperationKind.CashReceipt => [Cash, Bank, Receivable, FxGain, FxLoss],
         BusinessOperationKind.CashPayment => [Cash, Bank, Payable, FxGain, FxLoss],
+        BusinessOperationKind.Assembly => [Inventory, OperatingAccount, AssemblyExpense, Variance],
+        BusinessOperationKind.Disassembly => [Inventory, OperatingAccount, AssemblyExpense, Variance],
         _ => [],
     };
 
@@ -98,6 +109,8 @@ public static class PatternAccountRoles
         {
             BusinessOperationKind.SalesInvoice => [Revenue, Inventory, Cogs],
             BusinessOperationKind.PurchaseInvoice => [Inventory],
+            BusinessOperationKind.Assembly => [Inventory, OperatingAccount],
+            BusinessOperationKind.Disassembly => [Inventory, OperatingAccount],
             _ => [],
         };
         var missing = required.Where(r => !mapped.Contains(r)).ToList();

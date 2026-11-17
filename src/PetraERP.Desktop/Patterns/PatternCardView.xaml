@@ -148,6 +148,9 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
                         <!-- Sales Account -->
@@ -209,6 +212,21 @@
                         <TextBlock Grid.Row="11" Grid.Column="0" Style="{StaticResource Text.Label}" VerticalAlignment="Center"><TextBlock.Text><MultiBinding Converter="{StaticResource RequiredCaption}"><Binding Path="Localization[CUR_FxLoss]"/><Binding Path="DraftFxLossEnforced"/></MultiBinding></TextBlock.Text></TextBlock>
                         <ux:LookupPicker Grid.Row="11" Grid.Column="1" Margin="4,3" ItemsSource="{Binding AccountLookups}" SelectedId="{Binding DraftFxLossAccountId, Mode=TwoWay}" IsReadOnly="{Binding IsViewMode}" IsArabic="{Binding Localization.IsRightToLeft}"/>
                         <CheckBox Grid.Row="11" Grid.Column="2" Margin="8,3" Content="{Binding Localization[D_Enforced]}" IsChecked="{Binding DraftFxLossEnforced}" IsEnabled="{Binding IsEditing}" VerticalAlignment="Center"/>
+
+                        <!-- Operating Account (حساب التشغيل) -->
+                        <TextBlock Grid.Row="12" Grid.Column="0" Style="{StaticResource Text.Label}" VerticalAlignment="Center"><TextBlock.Text><MultiBinding Converter="{StaticResource RequiredCaption}"><Binding Path="Localization[D_Role_OperatingAccount]"/><Binding Path="DraftOperatingAccountEnforced"/></MultiBinding></TextBlock.Text></TextBlock>
+                        <ux:LookupPicker Grid.Row="12" Grid.Column="1" Margin="4,3" ItemsSource="{Binding AccountLookups}" SelectedId="{Binding DraftOperatingAccountId, Mode=TwoWay}" IsReadOnly="{Binding IsViewMode}" IsArabic="{Binding Localization.IsRightToLeft}"/>
+                        <CheckBox Grid.Row="12" Grid.Column="2" Margin="8,3" Content="{Binding Localization[D_Enforced]}" IsChecked="{Binding DraftOperatingAccountEnforced}" IsEnabled="{Binding IsEditing}" VerticalAlignment="Center"/>
+
+                        <!-- Assembly / Conversion Expense Account (مصاريف تشغيل وتحويل) -->
+                        <TextBlock Grid.Row="13" Grid.Column="0" Style="{StaticResource Text.Label}" VerticalAlignment="Center"><TextBlock.Text><MultiBinding Converter="{StaticResource RequiredCaption}"><Binding Path="Localization[D_Role_AssemblyExpense]"/><Binding Path="DraftAssemblyExpenseEnforced"/></MultiBinding></TextBlock.Text></TextBlock>
+                        <ux:LookupPicker Grid.Row="13" Grid.Column="1" Margin="4,3" ItemsSource="{Binding AccountLookups}" SelectedId="{Binding DraftAssemblyExpenseAccountId, Mode=TwoWay}" IsReadOnly="{Binding IsViewMode}" IsArabic="{Binding Localization.IsRightToLeft}"/>
+                        <CheckBox Grid.Row="13" Grid.Column="2" Margin="8,3" Content="{Binding Localization[D_Enforced]}" IsChecked="{Binding DraftAssemblyExpenseEnforced}" IsEnabled="{Binding IsEditing}" VerticalAlignment="Center"/>
+
+                        <!-- Disassembly Variance / Settlement Account (فروقات التسوية والتفكيك) -->
+                        <TextBlock Grid.Row="14" Grid.Column="0" Style="{StaticResource Text.Label}" VerticalAlignment="Center"><TextBlock.Text><MultiBinding Converter="{StaticResource RequiredCaption}"><Binding Path="Localization[D_Role_Variance]"/><Binding Path="DraftVarianceEnforced"/></MultiBinding></TextBlock.Text></TextBlock>
+                        <ux:LookupPicker Grid.Row="14" Grid.Column="1" Margin="4,3" ItemsSource="{Binding AccountLookups}" SelectedId="{Binding DraftVarianceAccountId, Mode=TwoWay}" IsReadOnly="{Binding IsViewMode}" IsArabic="{Binding Localization.IsRightToLeft}"/>
+                        <CheckBox Grid.Row="14" Grid.Column="2" Margin="8,3" Content="{Binding Localization[D_Enforced]}" IsChecked="{Binding DraftVarianceEnforced}" IsEnabled="{Binding IsEditing}" VerticalAlignment="Center"/>
                     </Grid>
                 </ScrollViewer>
             </TabItem>

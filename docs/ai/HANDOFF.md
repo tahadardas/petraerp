@@ -99,3 +99,32 @@
 - 50 مستخدمًا عبر LAN فعلية، واستعادة النسخة على خادم آخر (لا تُنفَّذ من بيئة التطوير الحالية).
 - أول صفحة دفتر عند مليون سطر تحتاج أرصدة مُجمَّعة لبلوغ ثانية.
 - 21 عملية API بلا مستدعٍ في Desktop (`docs/closure/API_WITHOUT_DESKTOP_SURFACE.md`).
+
+---
+
+## موديول التجميع والتفكيك وربطه بإدارة الأنماط (2026-11-17، تماثل الأمين 10)
+- **المفهوم والتصميم:** تطبيق دورة "تصنيع بلا تصنيع" (Manufacturing without heavy manufacturing module) مع فواتير التجميع والتفكيك.
+- **توسيع النطاق والعقود (Domain & Contracts):**
+  - إضافة `Assembly = 11, Disassembly = 12` إلى `BusinessOperationKind`.
+  - إضافة `Assembly = 5` إلى `BusinessOperationCategory` وتصنيفها كـ `Runnable` في كتالوج العمليات.
+  - دعم الأدوار المحاسبية الخاصة بالتجميع في `PatternAccountRoles`:
+    - `OperatingAccount`: حساب التشغيل (وسيط التصنيع).
+    - `AssemblyExpense`: حساب مصاريف التشغيل والتحويل (أجور، كهرباء، استهلاك).
+    - `Variance`: حساب فروقات التسوية والتفكيك.
+  - شروط النشر للنمط: يلزم وجود `Inventory` و `OperatingAccount`.
+  - إضافة حركات المخزون: `AssemblyIssue = 11, AssemblyReceipt = 12, DisassemblyIssue = 13, DisassemblyReceipt = 14`.
+  - إنشاء عقود العمليات `AssemblyContracts.cs`: `AssemblyDocumentDto`, `AssemblyDocumentLineDto`, `AssemblyDocumentExpenseDto`.
+- **الربط مع إدارة الأنماط (Pattern Management):**
+  - إضافة عائلة "تجميع وتفكيك" (`assembly`) في `PatternManagerViewModel` وفي واجهة إدارة الأنماط ونافذة `DocumentPatternsView`.
+  - تحديث `PatternCardViewModel` و `PatternCardView` لدعم وربط حسابات التشغيل ومصاريف التحويل وفروقات التفكيك.
+- **واجهة فاتورة التجميع والتفكيك (`AssemblyDisassemblyView` & `AssemblyDisassemblyViewModel`):**
+  - شريط الأنماط السريع والأزرار المباشرة لأنماط التجميع والتفكيك النشطة.
+  - زر إدارة الأنماط المباشر (`ManagePatternsCommand`) ينقل المستخدم إلى إدارة أنماط التجميع.
+  - تفريع المكونات التلقائي (BOM Explosion) واختصار `F6` مع قواعد المواد المرنة والإجبارية والبدائل.
+  - تحميل مصاريف التشغيل على تكلفة المنتج التجميعي التام آلياً.
+  - آلية توزيع تكلفة التفكيك بنسب معيارية أو مخصصة.
+  - تفقيط عربي فوري للتكلفة الإجمالية عبر `ArabicTafqeet`.
+  - تسجيل الصفحة في `DesktopComposition`, `ShellPages`, `NavigationService` و `MenuRegistry` تحت قائمة الفواتير والمستودعات.
+- **الاختبارات:**
+  - `AssemblyDisassemblyTests.cs`: فحص احتساب المكونات، تحميل مصاريف التشغيل، توزيع التفكيك، والتفقيط.
+  - `PatternDomainTests.cs`: فحص مطابقة قواعد النمط، الصلاحيات، وحساب التشغيل.

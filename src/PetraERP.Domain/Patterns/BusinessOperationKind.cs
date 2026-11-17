@@ -16,6 +16,8 @@ public enum BusinessOperationKind
     CashPayment = 8,
     CashJournal = 9,
     ManualJournal = 10,
+    Assembly = 11,
+    Disassembly = 12,
 }
 
 public enum BusinessOperationCategory
@@ -24,6 +26,7 @@ public enum BusinessOperationCategory
     Voucher = 2,
     Journal = 3,
     Inventory = 4,
+    Assembly = 5,
 }
 
 /// <summary>
@@ -43,12 +46,14 @@ public static class BusinessOperationCatalog
 
         BusinessOperationKind.InventoryIssue or BusinessOperationKind.InventoryReceipt => BusinessOperationCategory.Inventory,
 
+        BusinessOperationKind.Assembly or BusinessOperationKind.Disassembly => BusinessOperationCategory.Assembly,
+
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown operation kind."),
     };
 
     /// <summary>
     /// True only when the underlying backend posting engine and workflow exist in the source code.
-    /// ManualJournal, SalesInvoice, PurchaseInvoice and the CashReceipt/CashPayment vouchers are implemented; others stay disabled.
+    /// ManualJournal, SalesInvoice, PurchaseInvoice, CashReceipt/CashPayment vouchers, and Assembly/Disassembly are implemented; others stay disabled.
     /// </summary>
     public static bool IsRunnable(BusinessOperationKind kind) => kind switch
     {
@@ -57,6 +62,8 @@ public static class BusinessOperationCatalog
         BusinessOperationKind.CashReceipt => true,
         BusinessOperationKind.CashPayment => true,
         BusinessOperationKind.PurchaseInvoice => true,
+        BusinessOperationKind.Assembly => true,
+        BusinessOperationKind.Disassembly => true,
         _ => false,
     };
 }

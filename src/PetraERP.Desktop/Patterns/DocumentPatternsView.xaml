@@ -25,7 +25,8 @@
      <RadioButton Content="{Binding Localization[D_Invoices]}" IsChecked="{Binding FilterTab, Converter={StaticResource Equal}, ConverterParameter=invoices, Mode=TwoWay}" Style="{StaticResource {x:Type ToggleButton}}" Padding="12,4" Margin="0,0,4,0"/>
      <RadioButton Content="{Binding Localization[D_Vouchers]}" IsChecked="{Binding FilterTab, Converter={StaticResource Equal}, ConverterParameter=vouchers, Mode=TwoWay}" Style="{StaticResource {x:Type ToggleButton}}" Padding="12,4" Margin="0,0,4,0"/>
      <RadioButton Content="{Binding Localization[D_PM_Cash]}" IsChecked="{Binding FilterTab, Converter={StaticResource Equal}, ConverterParameter=cash, Mode=TwoWay}" Style="{StaticResource {x:Type ToggleButton}}" Padding="12,4" Margin="0,0,4,0"/>
-     <RadioButton Content="{Binding Localization[D_PM_Inventory]}" IsChecked="{Binding FilterTab, Converter={StaticResource Equal}, ConverterParameter=inventory, Mode=TwoWay}" Style="{StaticResource {x:Type ToggleButton}}" Padding="12,4"/>
+     <RadioButton Content="{Binding Localization[D_PM_Inventory]}" IsChecked="{Binding FilterTab, Converter={StaticResource Equal}, ConverterParameter=inventory, Mode=TwoWay}" Style="{StaticResource {x:Type ToggleButton}}" Padding="12,4" Margin="0,0,4,0"/>
+     <RadioButton Content="{Binding Localization[D_PM_Assembly]}" IsChecked="{Binding FilterTab, Converter={StaticResource Equal}, ConverterParameter=assembly, Mode=TwoWay}" Style="{StaticResource {x:Type ToggleButton}}" Padding="12,4"/>
     </StackPanel>
 
     <ux:PetraSearchBox Placeholder="{Binding Localization[D_Search]}" x:Name="SearchBox" Text="{Binding Search, UpdateSourceTrigger=PropertyChanged, Delay=150}" Width="220" Margin="0,0,12,0" ToolTip="Ctrl+F" AutomationProperties.Name="{Binding Localization[D_Search]}"/>

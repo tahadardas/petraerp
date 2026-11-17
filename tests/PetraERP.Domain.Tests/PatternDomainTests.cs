@@ -18,11 +18,15 @@ public sealed class PatternDomainTests
         Assert.True(BusinessOperationCatalog.IsRunnable(BusinessOperationKind.CashReceipt));
         Assert.True(BusinessOperationCatalog.IsRunnable(BusinessOperationKind.CashPayment));
         Assert.False(BusinessOperationCatalog.IsRunnable(BusinessOperationKind.CashJournal));
+        Assert.True(BusinessOperationCatalog.IsRunnable(BusinessOperationKind.Assembly));
+        Assert.True(BusinessOperationCatalog.IsRunnable(BusinessOperationKind.Disassembly));
 
         Assert.Equal(BusinessOperationCategory.Invoice, BusinessOperationCatalog.CategoryOf(BusinessOperationKind.SalesInvoice));
         Assert.Equal(BusinessOperationCategory.Voucher, BusinessOperationCatalog.CategoryOf(BusinessOperationKind.CashReceipt));
         Assert.Equal(BusinessOperationCategory.Journal, BusinessOperationCatalog.CategoryOf(BusinessOperationKind.ManualJournal));
         Assert.Equal(BusinessOperationCategory.Inventory, BusinessOperationCatalog.CategoryOf(BusinessOperationKind.InventoryIssue));
+        Assert.Equal(BusinessOperationCategory.Assembly, BusinessOperationCatalog.CategoryOf(BusinessOperationKind.Assembly));
+        Assert.Equal(BusinessOperationCategory.Assembly, BusinessOperationCatalog.CategoryOf(BusinessOperationKind.Disassembly));
     }
 
     [Fact]
@@ -146,5 +150,47 @@ public sealed class PatternDomainTests
         var ex2 = Assert.Throws<InvalidOperationException>(() =>
             PostingRuleResolver.Resolve("Receivable", unmappedConfig));
         Assert.Equal(RuleViolation.PatternAccountUnresolved, RuleViolation.CodeOf(ex2));
+    }
+
+    [Fact]
+    public void AssemblyAndDisassemblyPatternRules()
+    {
+        // 1. Roles allowed
+        var allowedAssembly = PatternAccountRoles.AllowedFor(BusinessOperationKind.Assembly);
+        Assert.Contains(PatternAccountRoles.Inventory, allowedAssembly);
+        Assert.Contains(PatternAccountRoles.OperatingAccount, allowedAssembly);
+        Assert.Contains(PatternAccountRoles.AssemblyExpense, allowedAssembly);
+        Assert.Contains(PatternAccountRoles.Variance, allowedAssembly);
+
+        var allowedDisassembly = PatternAccountRoles.AllowedFor(BusinessOperationKind.Disassembly);
+        Assert.Contains(PatternAccountRoles.Inventory, allowedDisassembly);
+        Assert.Contains(PatternAccountRoles.OperatingAccount, allowedDisassembly);
+        Assert.Contains(PatternAccountRoles.AssemblyExpense, allowedDisassembly);
+        Assert.Contains(PatternAccountRoles.Variance, allowedDisassembly);
+
+        // 2. Publish requires Inventory and OperatingAccount
+        var validConfig = new PatternConfiguration
+        {
+            AccountMappings =
+            [
+                new PatternAccountMapping { Role = PatternAccountRoles.Inventory, AccountId = Guid.NewGuid() },
+                new PatternAccountMapping { Role = PatternAccountRoles.OperatingAccount, AccountId = Guid.NewGuid() }
+            ]
+        };
+        // Should not throw
+        PatternAccountRoles.RequireForPublish(BusinessOperationKind.Assembly, validConfig);
+        PatternAccountRoles.RequireForPublish(BusinessOperationKind.Disassembly, validConfig);
+
+        // Missing OperatingAccount must fail
+        var missingOperatingConfig = new PatternConfiguration
+        {
+            AccountMappings =
+            [
+                new PatternAccountMapping { Role = PatternAccountRoles.Inventory, AccountId = Guid.NewGuid() }
+            ]
+        };
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            PatternAccountRoles.RequireForPublish(BusinessOperationKind.Assembly, missingOperatingConfig));
+        Assert.Equal(PatternAccountRoles.RoleMissing, RuleViolation.CodeOf(ex));
     }
 }

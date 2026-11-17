@@ -54,6 +54,7 @@ public sealed class NavigationService : ObservableObject
         ("items", "inventory", "Inventory.Items.View", "D_Items", ""),
         ("units", "inventory", "Inventory.Items.View", "UNT_Title", ""),
         ("inventory-operations", "inventory", "Inventory.Movements.View", "INV_Title", ""),
+        ("assembly-disassembly", "inventory", "Inventory.Movements.View", "D_AssemblyDisassembly", "\uE74C"),
         ("stocktaking", "inventory", "Inventory.Movements.View", "INV_StocktakingWizard", ""),
         ("sales-invoices", "sales", "Sales.Invoices.View", "D_SalesInvoices", ""),
         ("treasury-vouchers", "treasury", "Treasury.Vouchers.View", "D_Vouchers", ""),

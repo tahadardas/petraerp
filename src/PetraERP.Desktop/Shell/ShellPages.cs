@@ -38,8 +38,10 @@ public sealed class ShellPages
         Management.ManagementPages? management = null,
         DailyVoucherViewModel? dailyVouchers = null,
         AccountDirectoryViewModel? accountDirectory = null, ItemDirectoryViewModel? itemDirectory = null,
-        Patterns.PatternManagerViewModel? patternManager = null, ItemLimitsViewModel? itemLimits = null, ItemPriceToolViewModel? itemPriceTool = null)
+        Patterns.PatternManagerViewModel? patternManager = null, ItemLimitsViewModel? itemLimits = null, ItemPriceToolViewModel? itemPriceTool = null,
+        Inventory.AssemblyDisassemblyViewModel? assemblyDisassembly = null)
     {
+        AssemblyDisassembly = assemblyDisassembly;
         DailyVouchers = dailyVouchers; PatternManager = patternManager; ItemLimits = itemLimits; ItemPriceTool = itemPriceTool; AccountDirectory = accountDirectory; ItemDirectory = itemDirectory;
         Management = management;
         Administration = administration; Journals = journals; Accounts = accounts; CostCenters = costCenters; Periods = periods;
@@ -62,6 +64,7 @@ public sealed class ShellPages
     }
 
     public DailyVoucherViewModel? DailyVouchers { get; }
+    public Inventory.AssemblyDisassemblyViewModel? AssemblyDisassembly { get; }
     public AccountDirectoryViewModel? AccountDirectory { get; }
     public Patterns.PatternManagerViewModel? PatternManager { get; }
     public ItemLimitsViewModel? ItemLimits { get; }
@@ -120,6 +123,7 @@ public sealed class ShellPages
         .. (ItemLimits is null ? Array.Empty<IShellPage>() : [ItemLimits]),
         .. (ItemPriceTool is null ? Array.Empty<IShellPage>() : [ItemPriceTool]),
         .. (Purchases is null ? Array.Empty<IShellPage>() : [Purchases]), .. (InventoryOperations is null ? Array.Empty<IShellPage>() : [InventoryOperations]),
+        .. (AssemblyDisassembly is null ? Array.Empty<IShellPage>() : [AssemblyDisassembly]),
         .. (Stocktaking is null ? Array.Empty<IShellPage>() : [Stocktaking]),
         .. (CommercialReports is null ? Array.Empty<IShellPage>() : [CommercialReports]), .. (CurrencySettings is null ? Array.Empty<IShellPage>() : [CurrencySettings]),
         .. (Units is null ? Array.Empty<IShellPage>() : [Units]), .. (FxRevaluation is null ? Array.Empty<IShellPage>() : [FxRevaluation]),
@@ -149,6 +153,7 @@ public sealed class ShellPages
         "parties" => Parties,
         "items" => Items,
         "inventory-operations" => InventoryOperations,
+        "assembly-disassembly" => AssemblyDisassembly,
         "stocktaking" => Stocktaking,
         "financial-reports" => CommercialReports,
         "currencies" => CurrencySettings,
@@ -204,7 +209,7 @@ public sealed class ShellPages
         Vouchers?.Localize();
         DailyVouchers?.Localize(); AccountDirectory?.Localize(); ItemDirectory?.Localize(); PatternManager?.Localize(); ItemLimits?.Localize(); ItemPriceTool?.Localize();
         Cheques?.Localize();
-        InventoryOperations?.Localize(); CurrencySettings?.Localize(); Units?.Localize(); FxRevaluation?.Localize();
+        InventoryOperations?.Localize(); AssemblyDisassembly?.Localize(); CurrencySettings?.Localize(); Units?.Localize(); FxRevaluation?.Localize();
         OpeningBalances?.Localize(); Reconciliation?.Localize(); FiscalYearRollover?.Localize(); Backups?.Localize(); AlAmeenImport?.Localize();
         PostingManagement?.Localize();
     }
