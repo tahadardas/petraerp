@@ -1,19 +1,25 @@
 # PetraERP engineering contract
 
 The current project is PetraERP, an Arabic/English commercial accounting ERP.
-The user's attached PetraERP specification supersedes the earlier Medical ID
-project instructions. See `docs/requirements/PROJECT_SPECIFICATION.txt` for the
-supplied specification. Its final text is truncated after `PHASE 13 / Re`;
-do not invent the missing requirements.
+The owner's PetraERP specification supersedes the earlier Medical ID project
+instructions. Its text is truncated after `PHASE 13 / Re` and is no longer kept
+in this repository (the former `docs/requirements/` and `docs/ROADMAP.md` paths
+were removed); ask the owner for it instead of guessing, and do not invent the
+missing requirements. The current plan, evidence and decisions live in
+`docs/closure/` (start at `00_CURRENT_STATE.md` and `RELEASE_GO_NO_GO.md`), the
+gate checklist is `docs/PetraERP_EXECUTION_GATES_CHECKLIST.csv`, and the UX
+direction is under `docs/UX_AUDIT/`, `docs/UX_REDESIGN/` and `docs/AlAmeen10-UI/`.
 
 - Application stack: C#, stable .NET 10 LTS, ASP.NET Core, EF Core, SQL Server
   2025, WPF with MVVM. Python is used only for repository evidence tooling.
 - The API is a primary product interface for Android, web, WPF and authorized
-  integrations. Apply ADR-0002: versioned OpenAPI contracts, decimal strings,
-  server-authoritative accounting and central LAN deployment. Build and test
-  each implemented slice; do not describe API design as implemented endpoints.
-- Follow `docs/ROADMAP.md` sequentially, one phase at a time. Analyze legacy
-  data before writing ERP business logic. Clearly label incomplete gates.
+  integrations. Apply the ADR-0002 rules (the ADR file itself is not in this
+  snapshot): versioned OpenAPI contracts, decimal strings, server-authoritative
+  accounting and central LAN deployment. Build and test each implemented slice;
+  do not describe API design as implemented endpoints.
+- Follow the gate order of `docs/PetraERP_EXECUTION_GATES_CHECKLIST.csv`, one
+  gate at a time. Analyze legacy data before writing ERP business logic.
+  Clearly label incomplete gates.
 - Everything inside `legacy-data/` is read-only evidence. Never rewrite,
   delete, normalize, execute its SQL, upload it, or include it in Git/releases.
   Write analysis outputs only outside that directory.
@@ -39,19 +45,28 @@ do not invent the missing requirements.
 
 ## Cross-agent handoff
 
-- During the owner's current sequential prompts 01–12 series, read
-  `docs/ai/SEQUENTIAL_EXECUTION_RULES.md` with HANDOFF. The explicit owner rule
-  defers all builds/tests/SQL/UI/performance execution and new test cases until
-  prompt 12; prompts 01–11 use static source review only. This takes precedence
-  over intermediate verification instructions above. Keep changes
-  `UNVERIFIED UNTIL FINAL TESTS` and refresh `docs/implementation/API_UI_PARITY_MATRIX.md`.
+- Execution policy while the owner's batch is open ("Batch Implementation, then
+  one Final Verification"): do not build, run tests, SQL integration or
+  benchmarks after each edit; do not add new tests while implementing, record
+  the needed cases in `docs/ai/HANDOFF.md` and add the regression tests in the
+  final verification phase; do static reviews while working; commit in small
+  reversible steps on a work branch; run ONE final campaign (Release build,
+  needed tests, integration, performance); after a failure fix the cause and
+  rerun only the failed group. Everything changed before that campaign is
+  `UNVERIFIED`. Financial changes are not merged into the approved branch
+  until the final verification passes. Outside an open batch the usual rule
+  applies: build and test each slice.
 - Read `docs/ai/HANDOFF.md` before continuing implementation, then inspect the
   current source and Git state. The handoff is the canonical continuation entry
-  point, not a substitute for fresh evidence. Older phase reports are historical.
+  point, not a substitute for fresh evidence. `docs/closure/` holds the dated
+  evidence; older reports are historical.
 - Update `docs/ai/HANDOFF.md` after every task with exact commands/results,
   changed files, remaining blockers and the next bounded task. Reconcile
-  `docs/FEATURE_MATRIX.md`, the active phase status and `PROJECT_PROGRESS_AR.md`
-  whenever their implementation claims change.
+  `docs/closure/RELEASE_GO_NO_GO.md` and the gate checklist whenever an
+  implementation claim changes. (The former `docs/FEATURE_MATRIX.md`,
+  `PROJECT_PROGRESS_AR.md` and `docs/implementation/` files no longer exist;
+  do not recreate them as a second source of truth.)
 - Preserve failing gates and distinguish source presence, executed verification
   and usable workflows. Never claim recovery from Git without actual history,
-  or Phase-4 completion while Desktop/session workflows remain missing.
+  or completion of any phase while its Desktop/session workflows are missing.
+  Do not create duplicate screens over existing ones.
