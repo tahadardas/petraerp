@@ -158,7 +158,10 @@ public sealed partial class ChequesViewModel : PageViewModel
         StartBounceChequeCommand.NotifyCanExecuteChanged();
         StartEndorseChequeCommand.NotifyCanExecuteChanged();
         StartCancelChequeCommand.NotifyCanExecuteChanged();
+        NotifyAuditCommands();
     }
+
+    partial void OnNewAmountChanged(string value) => RefreshTafqeet();
 
     partial void OnNewCurrencyCodeChanged(string value)
     {
@@ -166,6 +169,7 @@ public sealed partial class ChequesViewModel : PageViewModel
         lastAutoRate = null;
         if (IsRegistering && NewExchangeRate.Length > 0) NewExchangeRate = string.Empty;
         RefreshNewRate();
+        RefreshTafqeet();
     }
 
     partial void OnNewIssueDateChanged(DateTime value) => RefreshNewRate();
@@ -277,8 +281,7 @@ public sealed partial class ChequesViewModel : PageViewModel
                 string.IsNullOrWhiteSpace(SearchQuery) ? null : SearchQuery,
                 cancellationToken).ConfigureAwait(true);
 
-            Papers.Clear();
-            foreach (var item in result.Items) Papers.Add(item);
+            UpdatePortfolioResults(result.Items);
 
             var alertsResult = await client.GetAlertsAsync(CompanyId, BranchId, 7, cancellationToken).ConfigureAwait(true);
             Alerts = alertsResult;
