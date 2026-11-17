@@ -2862,4 +2862,7 @@
   <data name="D_LineUnitSetupMissing" xml:space="preserve">
     <value>This item has no base unit. Define its units on the item card, then select it again.</value>
   </data>
+  <data name="AST_WorkOrder" xml:space="preserve">
+    <value>Maintenance Work Order (Customer Workshops)</value>
+  </data>
 </root>

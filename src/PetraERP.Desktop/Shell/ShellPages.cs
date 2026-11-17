@@ -47,12 +47,14 @@ public sealed class ShellPages
         Assets.CustomerRentalViewModel? customerRentals = null,
         Assets.AssetDossierTcoViewModel? assetDossier = null,
         Assets.AssetDepreciationRunViewModel? assetDepreciation = null,
+        Assets.MaintenanceWorkOrderViewModel? maintenanceWorkOrder = null,
         ExecutiveDashboardViewModel? executiveDashboard = null)
     {
         ExecutiveDashboard = executiveDashboard;
         AssemblyDisassembly = assemblyDisassembly;
         AssetDirectory = assetDirectory; FleetExpenses = fleetExpenses; FuelDispensing = fuelDispensing;
         AssetCustody = assetCustody; CustomerRentals = customerRentals; AssetDossier = assetDossier; AssetDepreciation = assetDepreciation;
+        MaintenanceWorkOrder = maintenanceWorkOrder;
         DailyVouchers = dailyVouchers; PatternManager = patternManager; ItemLimits = itemLimits; ItemPriceTool = itemPriceTool; AccountDirectory = accountDirectory; ItemDirectory = itemDirectory;
         Management = management;
         Administration = administration; Journals = journals; Accounts = accounts; CostCenters = costCenters; Periods = periods;
@@ -83,6 +85,7 @@ public sealed class ShellPages
     public Assets.CustomerRentalViewModel? CustomerRentals { get; }
     public Assets.AssetDossierTcoViewModel? AssetDossier { get; }
     public Assets.AssetDepreciationRunViewModel? AssetDepreciation { get; }
+    public Assets.MaintenanceWorkOrderViewModel? MaintenanceWorkOrder { get; }
     public AccountDirectoryViewModel? AccountDirectory { get; }
     public Patterns.PatternManagerViewModel? PatternManager { get; }
     public ItemLimitsViewModel? ItemLimits { get; }
@@ -150,6 +153,7 @@ public sealed class ShellPages
         .. (CustomerRentals is null ? Array.Empty<IShellPage>() : [CustomerRentals]),
         .. (AssetDossier is null ? Array.Empty<IShellPage>() : [AssetDossier]),
         .. (AssetDepreciation is null ? Array.Empty<IShellPage>() : [AssetDepreciation]),
+        .. (MaintenanceWorkOrder is null ? Array.Empty<IShellPage>() : [MaintenanceWorkOrder]),
         .. (Stocktaking is null ? Array.Empty<IShellPage>() : [Stocktaking]),
         .. (CommercialReports is null ? Array.Empty<IShellPage>() : [CommercialReports]), .. (CurrencySettings is null ? Array.Empty<IShellPage>() : [CurrencySettings]),
         .. (Units is null ? Array.Empty<IShellPage>() : [Units]), .. (FxRevaluation is null ? Array.Empty<IShellPage>() : [FxRevaluation]),
@@ -188,6 +192,7 @@ public sealed class ShellPages
         "customer-rentals" => CustomerRentals,
         "asset-depreciation" => AssetDepreciation,
         "asset-dossier" => AssetDossier,
+        "maintenance-work-order" => MaintenanceWorkOrder,
         "stocktaking" => Stocktaking,
         "executive-dashboard" => ExecutiveDashboard,
         "financial-reports" => CommercialReports,

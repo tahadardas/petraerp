@@ -57,6 +57,7 @@ public sealed class NavigationService : ObservableObject
         ("assembly-disassembly", "inventory", "Inventory.Movements.View", "D_AssemblyDisassembly", "\uE74C"),
         ("assets-directory", "assets", "Ledger.Accounts.View", "AST_Directory", "\uE71D"),
         ("fleet-expenses", "assets", "Ledger.Journals.Manage", "AST_ExpenseJournal", "\uE8A5"),
+        ("maintenance-work-order", "assets", "Sales.Invoices.View", "AST_WorkOrder", "\uE90F"),
         ("fuel-dispensing", "assets", "Inventory.Movements.View", "AST_FuelVoucher", "\uE9D2"),
         ("asset-custody", "assets", "Ledger.Accounts.View", "AST_Custody", "\uE77B"),
         ("customer-rentals", "assets", "Sales.Invoices.View", "AST_Rental", "\uE749"),

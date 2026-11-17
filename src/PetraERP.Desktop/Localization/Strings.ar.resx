@@ -2865,6 +2865,7 @@
   <data name="MN_Assets" xml:space="preserve"><value>الأصول والآليات</value></data>
   <data name="AST_Directory" xml:space="preserve"><value>دليل وسجل الأصول والآليات</value></data>
   <data name="AST_ExpenseJournal" xml:space="preserve"><value>دفتر يومية مصاريف وصيانة الآليات</value></data>
+  <data name="AST_WorkOrder" xml:space="preserve"><value>بطاقة أمر الصيانة والإصلاح (ورش العملاء)</value></data>
   <data name="AST_FuelVoucher" xml:space="preserve"><value>سند صرف وتوزيع مازوت ووقود</value></data>
   <data name="AST_Custody" xml:space="preserve"><value>محاضر ومذكرات العهد</value></data>
   <data name="AST_Rental" xml:space="preserve"><value>أصول ومعدات الزبائن (تأجير/أمانة)</value></data>

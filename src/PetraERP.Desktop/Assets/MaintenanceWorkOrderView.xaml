@@ -1,0 +1,362 @@
+<UserControl x:Class="PetraERP.Desktop.Assets.MaintenanceWorkOrderView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ux="clr-namespace:PetraERP.Desktop.Controls"
+             xmlns:ast="clr-namespace:PetraERP.Desktop.Assets"
+             Background="{DynamicResource Surface.Secondary}">
+
+    <UserControl.InputBindings>
+        <KeyBinding Key="N" Modifiers="Control" Command="{Binding NewOrderCommand}"/>
+        <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveOrderCommand}"/>
+        <KeyBinding Key="P" Modifiers="Control" Command="{Binding PrintTicketCommand}"/>
+    </UserControl.InputBindings>
+
+    <DockPanel LastChildFill="True">
+        <!-- 1. Top Title & Command Action Bar -->
+        <Border DockPanel.Dock="Top" Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="0,0,0,1" Padding="12,10">
+            <DockPanel LastChildFill="True">
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+                    <TextBlock Text="مركز صيانة وخدمة العملاء (بطاقة أمر الصيانة والإصلاح)" Style="{StaticResource Text.Title}" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                    <ux:StatusBadge Text="ورش العملاء والمعدات الخارجية" Kind="Success" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+                    <Button Style="{StaticResource Button.Command}" Content="أمر جديد (Ctrl+N)" Command="{Binding NewOrderCommand}" Margin="0,0,6,0" ux:Icon.Glyph="&#xE710;"/>
+                    <Button Style="{StaticResource Am.PrimaryActionButton}" Content="حفظ أمر الصيانة (Ctrl+S)" Command="{Binding SaveOrderCommand}" Margin="0,0,6,0" ux:Icon.Glyph="&#xE74E;"/>
+                    <Button Style="{StaticResource Button.Command}" Content="طباعة بطاقة الاستلام (Ctrl+P)" Command="{Binding PrintTicketCommand}" Margin="0,0,6,0" ux:Icon.Glyph="&#xE749;"/>
+                    <Button Style="{StaticResource Am.PrimaryActionButton}" Content="تسليم الجهاز وفوترة نهائية" Command="{Binding DeliverAndInvoiceCommand}" Margin="0,0,6,0" ux:Icon.Glyph="&#xE8A5;" Background="#059669"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- 2. Main Work Area: Master-Detail Split Grid -->
+        <Grid Margin="8">
+            <Grid.ColumnDefinitions>
+                <!-- Right Master List (320px) -->
+                <ColumnDefinition Width="320"/>
+                <!-- Splitter -->
+                <ColumnDefinition Width="8"/>
+                <!-- Left Detail Form (*) -->
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Column 0: Work Orders Directory & Navigation List -->
+            <Border Grid.Column="0" Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1" CornerRadius="6" Padding="8">
+                <DockPanel LastChildFill="True">
+                    <!-- Search & Filter Controls -->
+                    <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <TextBlock Text="سجل أوامر الصيانة والورشة" FontWeight="Bold" Margin="0,0,0,6"/>
+                        <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Height="28" VerticalContentAlignment="Center" Margin="0,0,0,6" ToolTip="بحث برقم الأمر، العميل، الماركة، أو السيريال..."/>
+                        <ComboBox SelectedValue="{Binding StatusFilter, Mode=TwoWay}" Height="28" VerticalContentAlignment="Center">
+                            <ComboBoxItem Content="-- كافة الحالات --" IsSelected="True"/>
+                            <ComboBoxItem Content="مستلم" Tag="Received"/>
+                            <ComboBoxItem Content="قيد الفحص والتشخيص" Tag="UnderInspection"/>
+                            <ComboBoxItem Content="قيد الإصلاح الفني" Tag="InRepair"/>
+                            <ComboBoxItem Content="جاهز للتسليم" Tag="ReadyForDelivery"/>
+                            <ComboBoxItem Content="تم التسليم والفوترة" Tag="DeliveredAndInvoiced"/>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- Work Orders DataGrid List -->
+                    <DataGrid ItemsSource="{Binding FilteredOrders}" SelectedItem="{Binding SelectedOrderInList}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single" Style="{StaticResource {x:Type DataGrid}}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="رقم الأمر" Binding="{Binding OrderNumber}" Width="110"/>
+                            <DataGridTextColumn Header="الزبون" Binding="{Binding CustomerName}" Width="*"/>
+                            <DataGridTextColumn Header="المعدة / الآلية" Binding="{Binding Brand}" Width="80"/>
+                            <DataGridTemplateColumn Header="الحالة" Width="90">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="3" Padding="4,2" Background="#F1F5F9" HorizontalAlignment="Center">
+                                            <TextBlock Text="{Binding Status}" FontSize="11" FontWeight="SemiBold"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </Border>
+
+            <!-- GridSplitter -->
+            <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Background="Transparent"/>
+
+            <!-- Column 2: Active Work Order Details & Tabs -->
+            <DockPanel Grid.Column="2" LastChildFill="True">
+                <!-- Status & Workflow Quick Status Bar -->
+                <Border DockPanel.Dock="Top" Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1" CornerRadius="6" Padding="12,8" Margin="0,0,0,8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Order Identity -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+                            <TextBlock Text="أمر رقم: " Style="{StaticResource Text.Label}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding OrderNumber}" FontWeight="Bold" FontSize="14" Foreground="#1E3A8A" VerticalAlignment="Center"/>
+                            <TextBlock Text=" | تاريخ: " Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                            <TextBlock Text="{Binding OrderDate, StringFormat={}{0:yyyy/MM/dd}}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- Workflow Quick Badges -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+                            <Border Background="#DBEAFE" CornerRadius="4" Padding="8,4" Margin="0,0,8,0">
+                                <TextBlock Text="{Binding Status}" Foreground="#1E40AF" FontWeight="Bold" FontSize="12"/>
+                            </Border>
+                            <Border Background="#FEF3C7" CornerRadius="4" Padding="8,4" Margin="0,0,8,0">
+                                <TextBlock Text="{Binding Warranty}" Foreground="#92400E" FontWeight="SemiBold" FontSize="11"/>
+                            </Border>
+                            <Border Background="#FEE2E2" CornerRadius="4" Padding="8,4">
+                                <TextBlock Text="{Binding Priority}" Foreground="#991B1B" FontWeight="SemiBold" FontSize="11"/>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Invoicing Stamp if Delivered -->
+                        <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="رقم الفاتورة: " Style="{StaticResource Text.Label}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding InvoiceNumber, TargetNullValue='-- غير مفوتر --'}" FontWeight="Bold" Foreground="#047857" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Financial KPI Summary Footer -->
+                <Border DockPanel.Dock="Bottom" Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="0,8,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="1.2*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- 1. Parts Total -->
+                        <StackPanel Grid.Column="0" Margin="4,0">
+                            <TextBlock Text="قطع الغيار (العميل):" Style="{StaticResource Text.Label}" FontSize="11"/>
+                            <TextBlock Text="{Binding PartsCustomerTotal, StringFormat={}{0:N0} ل.س}" FontWeight="Bold" FontSize="13" Foreground="#0F172A"/>
+                        </StackPanel>
+
+                        <!-- 2. Labor Total -->
+                        <StackPanel Grid.Column="1" Margin="4,0">
+                            <TextBlock Text="أجور اليد والخدمات:" Style="{StaticResource Text.Label}" FontSize="11"/>
+                            <TextBlock Text="{Binding LaborCustomerTotal, StringFormat={}{0:N0} ل.س}" FontWeight="Bold" FontSize="13" Foreground="#0F172A"/>
+                        </StackPanel>
+
+                        <!-- 3. Discount -->
+                        <StackPanel Grid.Column="2" Margin="4,0">
+                            <TextBlock Text="مبلغ الخصم:" Style="{StaticResource Text.Label}" FontSize="11"/>
+                            <TextBox Text="{Binding DiscountAmount, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:N0}}" Height="24" VerticalContentAlignment="Center" Width="100" HorizontalAlignment="Left"/>
+                        </StackPanel>
+
+                        <!-- 4. Company Warranty Cost -->
+                        <StackPanel Grid.Column="3" Margin="4,0">
+                            <TextBlock Text="تكلفة كفالة الشركة:" Style="{StaticResource Text.Label}" FontSize="11" Foreground="#DC2626"/>
+                            <TextBlock Text="{Binding CompanyWarrantyCost, StringFormat={}{0:N0} ل.س}" FontWeight="Bold" FontSize="12" Foreground="#DC2626"/>
+                        </StackPanel>
+
+                        <!-- 5. Net Customer Due -->
+                        <Border Grid.Column="4" Background="#ECFDF5" BorderBrush="#10B981" BorderThickness="1" CornerRadius="4" Padding="10,6">
+                            <DockPanel LastChildFill="True">
+                                <TextBlock DockPanel.Dock="Top" Text="الصافي المطلوب من العميل:" FontSize="11" Foreground="#047857" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding NetCustomerTotal, StringFormat={}{0:N0} ل.س}" FontSize="18" FontWeight="Bold" Foreground="#047857" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                            </DockPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Center: Tabbed Detail Area -->
+                <TabControl Background="{DynamicResource Surface.Primary}" BorderBrush="{DynamicResource Border.Normal}">
+                    <!-- Tab 1: بيانات العميل والمعدة والتشخيص -->
+                    <TabItem Header="بيانات العميل والمعدة والعطل">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="12">
+                                <!-- Customer Info Card -->
+                                <TextBlock Text="معلومات العميل والاتصال" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,0,0,8"/>
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0" Text="اسم العميل *:" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBox Grid.Column="1" Text="{Binding CustomerName, UpdateSourceTrigger=PropertyChanged}" Height="28" VerticalContentAlignment="Center" Margin="0,0,12,0"/>
+
+                                    <TextBlock Grid.Column="2" Text="رقم الهاتف:" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBox Grid.Column="3" Text="{Binding CustomerPhone}" Height="28" VerticalContentAlignment="Center" Margin="0,0,12,0"/>
+
+                                    <TextBlock Grid.Column="4" Text="العنوان / المدينة:" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBox Grid.Column="5" Text="{Binding CustomerAddress}" Height="28" VerticalContentAlignment="Center"/>
+                                </Grid>
+
+                                <!-- Equipment / Vehicle Info Card -->
+                                <TextBlock Text="مواصفات الآلية / المعدة / الجهاز المستلم" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,0,0,8"/>
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="8"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Row 0 -->
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="نوع المعدة *:" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding EquipmentType, UpdateSourceTrigger=PropertyChanged}" Height="28" VerticalContentAlignment="Center" Margin="0,0,12,0"/>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="الماركة / الصانع:" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBox Grid.Row="0" Grid.Column="3" Text="{Binding Brand}" Height="28" VerticalContentAlignment="Center" Margin="0,0,12,0"/>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="4" Text="الموديل / الطراز:" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBox Grid.Row="0" Grid.Column="5" Text="{Binding Model}" Height="28" VerticalContentAlignment="Center"/>
+
+                                    <!-- Row 2 -->
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="سيريال / شاسيه:" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding SerialNumberOrChassis}" Height="28" VerticalContentAlignment="Center" Margin="0,0,12,0"/>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="اللوحة / الرمز:" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBox Grid.Row="2" Grid.Column="3" Text="{Binding PlateOrDeviceNumber}" Height="28" VerticalContentAlignment="Center" Margin="0,0,12,0"/>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="4" Text="قراءة العداد (كم/ساعة):" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBox Grid.Row="2" Grid.Column="5" Text="{Binding MeterReading, StringFormat={}{0:N0}}" Height="28" VerticalContentAlignment="Center"/>
+                                </Grid>
+
+                                <!-- Accessories & Visual Condition -->
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0" Text="الملحقات المستلمة:" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBox Grid.Column="1" Text="{Binding ReceivedAccessories}" Height="28" VerticalContentAlignment="Center" Margin="0,0,12,0"/>
+
+                                    <TextBlock Grid.Column="2" Text="معاينة الهيكل الخارجي:" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBox Grid.Column="3" Text="{Binding VisualCondition}" Height="28" VerticalContentAlignment="Center"/>
+                                </Grid>
+
+                                <!-- Issue & Diagnosis Card -->
+                                <TextBlock Text="تقرير العطل والتشخيص الفني" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,0,0,8"/>
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="8"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="شكوى العميل (العطل):" Style="{StaticResource Text.Label}" Margin="0,6,8,0"/>
+                                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding CustomerReportedIssue}" Height="48" AcceptsReturn="True" TextWrapping="Wrap" Margin="0,0,12,0"/>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="التشخيص الفني الأولي:" Style="{StaticResource Text.Label}" Margin="0,6,8,0"/>
+                                    <TextBox Grid.Row="0" Grid.Column="3" Text="{Binding TechnicalDiagnosis}" Height="48" AcceptsReturn="True" TextWrapping="Wrap"/>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="الفني المكلف بالصيانة:" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding AvailableTechnicians}" SelectedItem="{Binding AssignedTechnician}" Height="28" VerticalContentAlignment="Center" Margin="0,0,12,0"/>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="ملاحظات المشرف:" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBox Grid.Row="2" Grid.Column="3" Text="{Binding SupervisorNotes}" Height="28" VerticalContentAlignment="Center"/>
+                                </Grid>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
+
+                    <!-- Tab 2: قطع الغيار المستهلكة -->
+                    <TabItem Header="قطع الغيار المستهلكة (المستودع)">
+                        <DockPanel LastChildFill="True">
+                            <!-- Quick Add Part Bar -->
+                            <Border DockPanel.Dock="Top" Background="#F8FAFC" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="0,0,0,1" Padding="10,8">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="اختر قطعة الغيار من المستودع:" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <ComboBox Width="300" Height="28" ItemsSource="{Binding AvailableSpareParts}" SelectedItem="{Binding SelectedSparePart}" DisplayMemberPath="ItemName" VerticalContentAlignment="Center" Margin="0,0,12,0"/>
+
+                                    <TextBlock Text="الكمية:" Style="{StaticResource Text.Label}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBox Width="70" Height="28" Text="{Binding NewPartQuantity}" VerticalContentAlignment="Center" Margin="0,0,12,0"/>
+
+                                    <CheckBox Content="مشمولة بالكفالة (0 ل.س على العميل)" IsChecked="{Binding NewPartWarranty}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+
+                                    <Button Style="{StaticResource Button.Command}" Content="إضافة قطعة الغيار" Command="{Binding AddPartCommand}" ux:Icon.Glyph="&#xE710;"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Spare Parts Grid -->
+                            <DataGrid ItemsSource="{Binding PartsList}" AutoGenerateColumns="False" CanUserAddRows="False" Margin="6" Style="{StaticResource {x:Type DataGrid}}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="رمز المادة" Binding="{Binding ItemCode}" Width="120" IsReadOnly="True"/>
+                                    <DataGridTextColumn Header="اسم قطعة الغيار" Binding="{Binding ItemName}" Width="*" IsReadOnly="True"/>
+                                    <DataGridTextColumn Header="المستودع" Binding="{Binding WarehouseName}" Width="180" IsReadOnly="True"/>
+                                    <DataGridTextColumn Header="الكمية" Binding="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}" Width="70"/>
+                                    <DataGridTextColumn Header="سعر البيع" Binding="{Binding UnitPrice, StringFormat={}{0:N0}}" Width="90"/>
+                                    <DataGridCheckBoxColumn Header="مشمول بالكفالة" Binding="{Binding IsCoveredByWarranty, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
+                                    <DataGridTextColumn Header="الإجمالي على العميل" Binding="{Binding CustomerTotal, StringFormat={}{0:N0} ل.س}" Width="130" IsReadOnly="True"/>
+                                    <DataGridTextColumn Header="ملاحظات" Binding="{Binding Notes}" Width="140"/>
+                                    <DataGridTemplateColumn Header="حذف" Width="60">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Content="✕" Foreground="#DC2626" Background="Transparent" BorderThickness="0" FontWeight="Bold" Command="{Binding DataContext.RemovePartCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </TabItem>
+
+                    <!-- Tab 3: أجور اليد والخدمات وعمولات الفنيين -->
+                    <TabItem Header="أجور اليد والخدمات وعمولات الفنيين">
+                        <DockPanel LastChildFill="True">
+                            <!-- Quick Add Labor Bar -->
+                            <Border DockPanel.Dock="Top" Background="#F8FAFC" BorderBrush="{DynamicResource Border.Normal}" BorderThickness="0,0,0,1" Padding="10,8">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button Style="{StaticResource Button.Command}" Content="إضافة خدمة / أجور يد فني" Command="{Binding AddLaborCommand}" ux:Icon.Glyph="&#xE710;" Margin="0,0,16,0"/>
+                                    <TextBlock Text="عمولات الفنيين تحتسب تلقائياً وترحّل لحساب كل فني" Foreground="#64748B" FontSize="11" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Labor Grid -->
+                            <DataGrid ItemsSource="{Binding LaborList}" AutoGenerateColumns="False" CanUserAddRows="False" Margin="6" Style="{StaticResource {x:Type DataGrid}}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="رمز الخدمة" Binding="{Binding ServiceCode}" Width="110"/>
+                                    <DataGridTextColumn Header="وصف الخدمة / العمل الفني" Binding="{Binding ServiceName}" Width="*"/>
+                                    <DataGridTextColumn Header="الفني المنفذ" Binding="{Binding TechnicianName}" Width="180"/>
+                                    <DataGridTextColumn Header="الساعات" Binding="{Binding LaborHours, UpdateSourceTrigger=PropertyChanged}" Width="70"/>
+                                    <DataGridTextColumn Header="أجر الساعة" Binding="{Binding HourlyRate, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:N0}}" Width="85"/>
+                                    <DataGridTextColumn Header="إجمالي الأجر" Binding="{Binding LaborAmount, StringFormat={}{0:N0}}" Width="95" IsReadOnly="True"/>
+                                    <DataGridTextColumn Header="عمولة الفني %" Binding="{Binding TechnicianCommissionRate, UpdateSourceTrigger=PropertyChanged}" Width="90"/>
+                                    <DataGridTextColumn Header="مبلغ العمولة" Binding="{Binding TechnicianCommissionAmount, StringFormat={}{0:N0}}" Width="95" IsReadOnly="True"/>
+                                    <DataGridCheckBoxColumn Header="ضمن الكفالة" Binding="{Binding IsCoveredByWarranty, UpdateSourceTrigger=PropertyChanged}" Width="90"/>
+                                    <DataGridTextColumn Header="المستحق على العميل" Binding="{Binding CustomerCharge, StringFormat={}{0:N0} ل.س}" Width="130" IsReadOnly="True"/>
+                                    <DataGridTemplateColumn Header="حذف" Width="60">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Content="✕" Foreground="#DC2626" Background="Transparent" BorderThickness="0" FontWeight="Bold" Command="{Binding DataContext.RemoveLaborCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </TabItem>
+                </TabControl>
+            </DockPanel>
+        </Grid>
+    </DockPanel>
+</UserControl>

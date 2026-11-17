@@ -14,6 +14,30 @@ public sealed class AssetsMockService : IAssetsClient
     private readonly List<AssetCustomerRentalDto> customerRentals = [];
     private readonly List<AssetMaintenanceExpenseBatchDto> maintenanceBatches = [];
     private readonly List<AssetFuelDispensingVoucherDto> fuelVouchers = [];
+    private readonly List<MaintenanceWorkOrderDto> workOrders = [];
+
+    // Workshop Technicians
+    private readonly List<string> workshopTechnicians =
+    [
+        "م. سمير كمال (كبير مهندسي الصيانة والميكانيك)",
+        "فادي الحسن (فني كهرباء وحساسات وبرمجة)",
+        "أحمد الرفاعي (فني هيدروليك وضغط عالي)",
+        "ماهر درويش (فني فحص وتشخيص إلكتروني)",
+        "باسل مراد (فني خراطة وتوضيب محركات)",
+    ];
+
+    // Available Spare Parts in Workshop Warehouses
+    private readonly List<(string ItemCode, string ItemName, decimal Cost, decimal SellPrice, string Warehouse)> availableSpareParts =
+    [
+        ("SP-OIL-15W40", "زيت محرك ديزل تخليقي 15W40 (برميل 20 لتر)", 420m, 520m, "مستودع قطع الغيار والزيوت الرئيسي"),
+        ("SP-FLT-OIL-KOM", "فلتر زيت هيدروليك أصلي كوماتسو", 130m, 175m, "مستودع قطع الغيار والزيوت الرئيسي"),
+        ("SP-FLT-AIR-MB", "فلتر هواء محرك شاحنة مرسيدس أكتروس", 95m, 135m, "مستودع قطع الغيار والزيوت الرئيسي"),
+        ("SP-BRK-PAD-F", "طقم وسائد فرامل أمامية سيراميك", 160m, 220m, "مستودع قطع الغيار والزيوت الرئيسي"),
+        ("SP-INJ-DSL-04", "طقم بخاخات ديزل كومون ريل إلكتروني", 850m, 1150m, "مستودع قطع الغيار والزيوت الرئيسي"),
+        ("SP-BELT-V-ALT", "سير دينامو ومروحة مسنن أصلي", 45m, 65m, "مستودع قطع الغيار والزيوت الرئيسي"),
+        ("SP-BAT-100AH", "بطارية جافة 100 أمبير 12 فولت شديدة التحمل", 210m, 280m, "مستودع قطع الغيار والزيوت الرئيسي"),
+        ("SP-SEAL-HYD-KIT", "طقم حشيات وإحكام بساتم هيدروليك", 180m, 240m, "مستودع قطع الغيار والزيوت الرئيسي"),
+    ];
 
     // Fuel Warehouses (Tanks)
     private readonly List<(Guid Id, string Name, decimal MovingAverageCost, decimal CurrentStockLiters)> fuelWarehouses =
@@ -291,6 +315,207 @@ public sealed class AssetsMockService : IAssetsClient
             Status = CustomerRentalStatus.ActiveOnLoan,
             Notes = "عقد إيجار تشغيلي شهري شامل التأمين ضد التلف مع فحص معايرة مسبق"
         });
+
+        // Initialize Sample Customer Maintenance Work Orders
+        workOrders.Add(new MaintenanceWorkOrderDto
+        {
+            Id = Guid.Parse("00000010-0000-0000-0000-000000000001"),
+            OrderNumber = "WO-2026-0101",
+            OrderDate = DateTime.Today.AddDays(-3),
+            ExpectedDeliveryDate = DateTime.Today.AddDays(1),
+            CustomerName = "شركة الشام للتجارة والنقل",
+            CustomerPhone = "0944112233",
+            CustomerAddress = "دمشق - المنطقة الصناعية",
+            EquipmentType = "شاحنة نقل ثقيل",
+            Brand = "مرسيدس بنز (Mercedes-Benz)",
+            Model = "أكتروس 1840 قلاب",
+            SerialNumberOrChassis = "WDB9340321K882194",
+            PlateOrDeviceNumber = "دمشق 89421",
+            MeterReading = 285400m,
+            ReceivedAccessories = "مفتاح أصلي + رخصة المركبة + جهاز تتبع GPS",
+            VisualCondition = "هيكل سليم، خدوش طفيفة في الصدام الأمامي",
+            CustomerReportedIssue = "ضعف عزم واهتزاز شديد في المحرك مع دخان أسود عند الحمل وتأخر التشغيل صباحاً",
+            TechnicalDiagnosis = "انسداد فلاتر الديزل وخلل في معايرة بخاخين وتلف سير الدينامو وحاجة لتبديل زيت المحرك",
+            Status = WorkOrderStatus.InRepair,
+            Priority = MaintenancePriority.Urgent,
+            Warranty = WarrantyStatus.OutOfWarranty,
+            AssignedTechnician = "م. سمير كمال (كبير مهندسي الصيانة والميكانيك)",
+            SupervisorNotes = "تم استلام الشاحنة وتعيين فريق الميكانيك لفحص البخاخات والضغط",
+            EstimatedCost = 2100m,
+            DiscountAmount = 50m,
+            PartsLines =
+            [
+                new MaintenanceWorkOrderPartLineDto
+                {
+                    ItemCode = "SP-OIL-15W40",
+                    ItemName = "زيت محرك ديزل تخليقي 15W40 (برميل 20 لتر)",
+                    WarehouseName = "مستودع قطع الغيار والزيوت الرئيسي",
+                    Quantity = 1m,
+                    UnitCost = 420m,
+                    UnitPrice = 520m,
+                    IsCoveredByWarranty = false,
+                },
+                new MaintenanceWorkOrderPartLineDto
+                {
+                    ItemCode = "SP-FLT-AIR-MB",
+                    ItemName = "فلتر هواء محرك شاحنة مرسيدس أكتروس",
+                    WarehouseName = "مستودع قطع الغيار والزيوت الرئيسي",
+                    Quantity = 2m,
+                    UnitCost = 95m,
+                    UnitPrice = 135m,
+                    IsCoveredByWarranty = false,
+                },
+                new MaintenanceWorkOrderPartLineDto
+                {
+                    ItemCode = "SP-INJ-DSL-04",
+                    ItemName = "طقم بخاخات ديزل كومون ريل إلكتروني",
+                    WarehouseName = "مستودع قطع الغيار والزيوت الرئيسي",
+                    Quantity = 1m,
+                    UnitCost = 850m,
+                    UnitPrice = 1150m,
+                    IsCoveredByWarranty = false,
+                }
+            ],
+            LaborLines =
+            [
+                new MaintenanceWorkOrderLaborLineDto
+                {
+                    ServiceCode = "SRV-DIAG-COMP",
+                    ServiceName = "فحص كمبيوتر المحرك وقراءة الحساسات",
+                    TechnicianName = "ماهر درويش (فني فحص وتشخيص إلكتروني)",
+                    LaborHours = 2m,
+                    HourlyRate = 50m,
+                    LaborAmount = 100m,
+                    TechnicianCommissionRate = 15m,
+                    IsCoveredByWarranty = false,
+                },
+                new MaintenanceWorkOrderLaborLineDto
+                {
+                    ServiceCode = "SRV-INJ-CALIB",
+                    ServiceName = "فك وفحص وتوضيب ومعايرة بخاخات الديزل",
+                    TechnicianName = "م. سمير كمال (كبير مهندسي الصيانة والميكانيك)",
+                    LaborHours = 5m,
+                    HourlyRate = 60m,
+                    LaborAmount = 300m,
+                    TechnicianCommissionRate = 20m,
+                    IsCoveredByWarranty = false,
+                }
+            ]
+        });
+
+        workOrders.Add(new MaintenanceWorkOrderDto
+        {
+            Id = Guid.Parse("00000010-0000-0000-0000-000000000002"),
+            OrderNumber = "WO-2026-0102",
+            OrderDate = DateTime.Today.AddDays(-2),
+            ExpectedDeliveryDate = DateTime.Today,
+            CustomerName = "مؤسسة الأفق للمقاولات العامة",
+            CustomerPhone = "0933556677",
+            CustomerAddress = "ريف دمشق - صحنايا",
+            EquipmentType = "حفارة هيدروليكية مجنزرة",
+            Brand = "كوماتسو (Komatsu)",
+            Model = "PC210LC-11",
+            SerialNumberOrChassis = "KM-PC210-99412",
+            PlateOrDeviceNumber = "معدات 4102",
+            MeterReading = 4120m,
+            ReceivedAccessories = "دلو حفر 1.2 م3 + مفاتيح التشغيل الأصلية",
+            VisualCondition = "سليمة مع بعض آثار أعمال الحفر والتراب",
+            CustomerReportedIssue = "تسريب زيت هيدروليك من ذراع الرفع الرئيسي وبطء استجابة البستن عند الرفع الثقيل",
+            TechnicalDiagnosis = "تلف ربلات وحشيات بساتم ذراع الرفع وتهريب زيت من الصمام الرئيسي",
+            Status = WorkOrderStatus.ReadyForDelivery,
+            Priority = MaintenancePriority.CriticalEmergency,
+            Warranty = WarrantyStatus.UnderWarranty,
+            AssignedTechnician = "أحمد الرفاعي (فني هيدروليك وضغط عالي)",
+            SupervisorNotes = "صيانة مشمولة بكفالة الصيانة السنوية للمعدة. جميع القطع والأجور مغطاة",
+            EstimatedCost = 450m,
+            DiscountAmount = 0m,
+            PartsLines =
+            [
+                new MaintenanceWorkOrderPartLineDto
+                {
+                    ItemCode = "SP-SEAL-HYD-KIT",
+                    ItemName = "طقم حشيات وإحكام بساتم هيدروليك",
+                    WarehouseName = "مستودع قطع الغيار والزيوت الرئيسي",
+                    Quantity = 2m,
+                    UnitCost = 180m,
+                    UnitPrice = 240m,
+                    IsCoveredByWarranty = true,
+                }
+            ],
+            LaborLines =
+            [
+                new MaintenanceWorkOrderLaborLineDto
+                {
+                    ServiceCode = "SRV-HYD-SEAL",
+                    ServiceName = "فك بساتم الهيدروليك واستبدال الحشيات واختبار الضغط",
+                    TechnicianName = "أحمد الرفاعي (فني هيدروليك وضغط عالي)",
+                    LaborHours = 6m,
+                    HourlyRate = 50m,
+                    LaborAmount = 300m,
+                    TechnicianCommissionRate = 20m,
+                    IsCoveredByWarranty = true,
+                }
+            ]
+        });
+
+        workOrders.Add(new MaintenanceWorkOrderDto
+        {
+            Id = Guid.Parse("00000010-0000-0000-0000-000000000003"),
+            OrderNumber = "WO-2026-0103",
+            OrderDate = DateTime.Today.AddDays(-7),
+            ExpectedDeliveryDate = DateTime.Today.AddDays(-5),
+            ActualDeliveryDate = DateTime.Today.AddDays(-4),
+            CustomerName = "مجموعة البشائر للصناعات البلاستيكية",
+            CustomerPhone = "0955889900",
+            CustomerAddress = "عدرا الصناعية",
+            EquipmentType = "مولدة كهربائية صناعية",
+            Brand = "بيركنز (Perkins)",
+            Model = "250 KVA Soundproof Generator",
+            SerialNumberOrChassis = "PK-ENG-773412",
+            PlateOrDeviceNumber = "GEN-04",
+            MeterReading = 1850m,
+            ReceivedAccessories = "لوحة التحكم DeepSea + كابلات التوصيل",
+            VisualCondition = "جيدة جداً ومحمية بكابين كاتم للصوت",
+            CustomerReportedIssue = "انخفاض الفولتية وتوقف مفاجئ للمولدة بعد 10 دقائق تشغيل مع صدور إنذار Over-Voltage",
+            TechnicalDiagnosis = "تلف منظم الجهد التلقائي AVR وحاجة لبرمجة كرت التحكم واستبدال بطارية البدء",
+            Status = WorkOrderStatus.DeliveredAndInvoiced,
+            Priority = MaintenancePriority.Normal,
+            Warranty = WarrantyStatus.OutOfWarranty,
+            AssignedTechnician = "فادي الحسن (فني كهرباء وحساسات وبرمجة)",
+            SupervisorNotes = "تم الإصلاح والتسليم للعميل واستلام المبلغ نقداً مع إصدار الفاتورة",
+            EstimatedCost = 650m,
+            DiscountAmount = 30m,
+            InvoiceNumber = "INV-SRV-2026-0038",
+            IsDelivered = true,
+            DeliveryReceiptNumber = "DEL-WO-0038",
+            PartsLines =
+            [
+                new MaintenanceWorkOrderPartLineDto
+                {
+                    ItemCode = "SP-BAT-100AH",
+                    ItemName = "بطارية جافة 100 أمبير 12 فولت شديدة التحمل",
+                    WarehouseName = "مستودع قطع الغيار والزيوت الرئيسي",
+                    Quantity = 1m,
+                    UnitCost = 210m,
+                    UnitPrice = 280m,
+                    IsCoveredByWarranty = false,
+                }
+            ],
+            LaborLines =
+            [
+                new MaintenanceWorkOrderLaborLineDto
+                {
+                    ServiceCode = "SRV-AVR-PROG",
+                    ServiceName = "استبدال وبرمجة منظم الجهد AVR ومعايرة كرت المولد",
+                    TechnicianName = "فادي الحسن (فني كهرباء وحساسات وبرمجة)",
+                    LaborHours = 3m,
+                    HourlyRate = 60m,
+                    LaborAmount = 180m,
+                    TechnicianCommissionRate = 15m,
+                    IsCoveredByWarranty = false,
+                }
+            ]
+        });
     }
 
     public Task<IReadOnlyList<AssetDto>> ListAssetsAsync(CancellationToken cancellationToken = default) =>
@@ -501,4 +726,71 @@ public sealed class AssetsMockService : IAssetsClient
 
     public Task<IReadOnlyList<(Guid Id, string Code, string Name)>> ListPaymentAccountsAsync(CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyList<(Guid Id, string Code, string Name)>>(paymentAccounts.AsReadOnly());
+
+    // ───────── Customer Maintenance Work Orders & Workshop Service Center ─────────
+
+    public Task<IReadOnlyList<MaintenanceWorkOrderDto>> ListWorkOrdersAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<MaintenanceWorkOrderDto>>(workOrders.AsReadOnly());
+
+    public Task<MaintenanceWorkOrderDto?> GetWorkOrderByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
+        Task.FromResult(workOrders.FirstOrDefault(w => w.Id == id));
+
+    public Task<MaintenanceWorkOrderDto> SaveWorkOrderAsync(MaintenanceWorkOrderDto workOrder, CancellationToken cancellationToken = default)
+    {
+        var existingIndex = workOrders.FindIndex(w => w.Id == workOrder.Id);
+        if (existingIndex >= 0)
+        {
+            workOrders[existingIndex] = workOrder;
+        }
+        else
+        {
+            workOrders.Insert(0, workOrder);
+        }
+        return Task.FromResult(workOrder);
+    }
+
+    public Task<MaintenanceWorkOrderDto> UpdateWorkOrderStatusAsync(Guid orderId, WorkOrderStatus newStatus, CancellationToken cancellationToken = default)
+    {
+        var existingIndex = workOrders.FindIndex(w => w.Id == orderId);
+        if (existingIndex >= 0)
+        {
+            var current = workOrders[existingIndex];
+            var updated = current with
+            {
+                Status = newStatus,
+                ActualDeliveryDate = newStatus == WorkOrderStatus.DeliveredAndInvoiced ? (current.ActualDeliveryDate ?? DateTime.Today) : current.ActualDeliveryDate,
+                IsDelivered = newStatus == WorkOrderStatus.DeliveredAndInvoiced ? true : current.IsDelivered
+            };
+            workOrders[existingIndex] = updated;
+            return Task.FromResult(updated);
+        }
+        throw new InvalidOperationException($"أمر الصيانة غير موجود: {orderId}");
+    }
+
+    public Task<(string InvoiceNumber, decimal TotalBilled)> DeliverAndInvoiceWorkOrderAsync(Guid orderId, decimal discount, CancellationToken cancellationToken = default)
+    {
+        var existingIndex = workOrders.FindIndex(w => w.Id == orderId);
+        if (existingIndex < 0) throw new InvalidOperationException($"أمر الصيانة غير موجود: {orderId}");
+
+        var current = workOrders[existingIndex];
+        var invoiceNum = $"INV-SRV-{DateTime.Today.Year}-{DateTime.Now:MMddHHmm}";
+        var deliveryNum = $"DEL-WO-{DateTime.Now:HHmmss}";
+        var updated = current with
+        {
+            DiscountAmount = discount,
+            Status = WorkOrderStatus.DeliveredAndInvoiced,
+            IsDelivered = true,
+            ActualDeliveryDate = DateTime.Today,
+            InvoiceNumber = invoiceNum,
+            DeliveryReceiptNumber = deliveryNum
+        };
+        workOrders[existingIndex] = updated;
+        return Task.FromResult((invoiceNum, updated.NetCustomerTotal));
+    }
+
+    public Task<IReadOnlyList<string>> ListTechniciansAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<string>>(workshopTechnicians.AsReadOnly());
+
+    public Task<IReadOnlyList<(string ItemCode, string ItemName, decimal Cost, decimal SellPrice, string Warehouse)>> ListAvailableSparePartsAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<(string ItemCode, string ItemName, decimal Cost, decimal SellPrice, string Warehouse)>>(availableSpareParts.AsReadOnly());
 }

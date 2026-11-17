@@ -21,4 +21,13 @@ public interface IAssetsClient
     Task<bool> PostDepreciationRunAsync(Guid runId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<(Guid Id, string Name, decimal MovingAverageCost, decimal CurrentStockLiters)>> ListFuelWarehousesAsync(CancellationToken cancellationToken = default);
     Task<IReadOnlyList<(Guid Id, string Code, string Name)>> ListPaymentAccountsAsync(CancellationToken cancellationToken = default);
+
+    // Customer Maintenance Center & Workshop Work Orders
+    Task<IReadOnlyList<MaintenanceWorkOrderDto>> ListWorkOrdersAsync(CancellationToken cancellationToken = default);
+    Task<MaintenanceWorkOrderDto?> GetWorkOrderByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<MaintenanceWorkOrderDto> SaveWorkOrderAsync(MaintenanceWorkOrderDto workOrder, CancellationToken cancellationToken = default);
+    Task<MaintenanceWorkOrderDto> UpdateWorkOrderStatusAsync(Guid orderId, WorkOrderStatus newStatus, CancellationToken cancellationToken = default);
+    Task<(string InvoiceNumber, decimal TotalBilled)> DeliverAndInvoiceWorkOrderAsync(Guid orderId, decimal discount, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<string>> ListTechniciansAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<(string ItemCode, string ItemName, decimal Cost, decimal SellPrice, string Warehouse)>> ListAvailableSparePartsAsync(CancellationToken cancellationToken = default);
 }

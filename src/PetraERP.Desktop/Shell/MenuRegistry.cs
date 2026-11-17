@@ -128,6 +128,7 @@ public static class MenuRegistry
         new("assets", "MN_Assets", Glyph: "\uE71D", Order: 65),
         new("assets.directory", "AST_Directory", Glyph: "\uE71D", ParentId: "assets", RequiredPermission: "Ledger.Accounts.View", Route: "assets-directory", Order: 10),
         new("assets.expense-journal", "AST_ExpenseJournal", Glyph: "\uE8A5", ParentId: "assets", RequiredPermission: "Ledger.Journals.Manage", Route: "fleet-expenses", Order: 20),
+        new("assets.work-order", "AST_WorkOrder", Glyph: "\uE90F", ParentId: "assets", RequiredPermission: "Sales.Invoices.View", Route: "maintenance-work-order", Order: 25),
         new("assets.fuel-voucher", "AST_FuelVoucher", Glyph: "\uE9D2", ParentId: "assets", RequiredPermission: "Inventory.Movements.View", Route: "fuel-dispensing", Order: 30),
         new("assets.custody", "AST_Custody", Glyph: "\uE77B", ParentId: "assets", RequiredPermission: "Ledger.Accounts.View", Route: "asset-custody", Order: 40),
         new("assets.rental", "AST_Rental", Glyph: "\uE749", ParentId: "assets", RequiredPermission: "Sales.Invoices.View", Route: "customer-rentals", Order: 50),

@@ -94,6 +94,7 @@ public static class DesktopComposition
         services.AddSingleton<Assets.CustomerRentalViewModel>();
         services.AddSingleton<Assets.AssetDossierTcoViewModel>();
         services.AddSingleton<Assets.AssetDepreciationRunViewModel>();
+        services.AddSingleton<Assets.MaintenanceWorkOrderViewModel>();
         services.AddSingleton<SalesInvoicesViewModel>();
         services.AddSingleton<Treasury.VouchersViewModel>();
         services.AddSingleton<Treasury.ChequesViewModel>();
