@@ -128,7 +128,7 @@ public sealed partial class DailyVoucherViewModel : PageViewModel
     /// <summary>The cash account balance before this voucher plus what it receives minus what it pays.</summary>
     public string FinalBalance => Format(ParseDecimal(PreviousBalance) + TotalReceive - TotalPay);
     public string BaseCurrencyCode => baseCurrency;
-    public string TafqeetText => ArabicTafqeet.ToWords(Math.Max(TotalPay, TotalReceive), CurrencyCode);
+    public string TafqeetText => ArabicTafqeet.ToWordsOrEmpty(Math.Max(TotalPay, TotalReceive), CurrencyCode);
 
     public void Localize() => OnPropertyChanged(nameof(StatusText));
 

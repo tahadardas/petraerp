@@ -58,11 +58,44 @@ public class ArabicTafqeetTests
     }
 
     [Fact]
+    public void ThreeDecimalCurrenciesReadThousandthsAsSubUnits()
+    {
+        var text = ArabicTafqeet.ToWords(1.234m, "KWD");
+        Assert.Contains("واحد دينار كويتي", text);
+        Assert.Contains("ومائتان وأربعة وثلاثون فلساً", text);
+    }
+
+    [Fact]
+    public void RoundingCarriesIntoTheIntegralPartAndNeverReadsHundredSubUnits()
+    {
+        var carried = ArabicTafqeet.ToWords(1.999m, "USD");
+        Assert.Contains("اثنان دولار أمريكي", carried);
+        Assert.DoesNotContain("سنت", carried);
+
+        Assert.Equal("فقط صفر دولار أمريكي لا غير", ArabicTafqeet.ToWords(0.004m, "USD"));
+    }
+
+    [Fact]
+    public void OutOfRangeAmountsThrowButDisplayVariantReturnsEmpty()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => ArabicTafqeet.ToWords(1_000_000_000_000_000m, "USD"));
+        Assert.Equal(string.Empty, ArabicTafqeet.ToWordsOrEmpty(79_000_000_000_000_000_000m, "USD"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => ArabicTafqeet.ToWords(1m, "USD", null, 4));
+    }
+
+    [Fact]
+    public void SubUnitEndingWithTaMarbutaTakesTanweenNotAlef()
+    {
+        Assert.Contains("خمسون هللةً", ArabicTafqeet.ToWords(100.50m, "SAR"));
+    }
+
+    [Fact]
     public void KnownCurrenciesResolveProperLabels()
     {
         var sar = ArabicTafqeet.ToWords(100.50m, "SAR");
         Assert.Contains("ريال سعودي", sar);
-        Assert.Contains("هللة", sar);
+        // Ordinal: the sub-unit now carries a tanween, which culture-aware matching treats as part of the preceding letter.
+        Assert.Contains("هللة", sar, StringComparison.Ordinal);
 
         var usd = ArabicTafqeet.ToWords(50.25m, "USD");
         Assert.Contains("دولار أمريكي", usd);

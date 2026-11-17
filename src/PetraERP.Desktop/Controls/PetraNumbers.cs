@@ -54,6 +54,8 @@ public static class PetraNumberFormat
     public static event EventHandler? Changed;
 
     public static NumberDisplayMode Mode => mode;
+    internal static CultureInfo CurrentCulture => mode == NumberDisplayMode.OperatingSystem ? operatingSystemCulture : culture;
+    internal static DecimalDisplayMode CurrentDecimalMode => decimals;
 
     /// <summary>Sets the display mode and UI culture (called by the shell on language/preference change).</summary>
     public static void Configure(NumberDisplayMode displayMode, CultureInfo uiCulture, DecimalDisplayMode decimalMode = DecimalDisplayMode.Automatic)

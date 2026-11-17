@@ -120,6 +120,10 @@ public static class ArabicTafqeet
         return sb.ToString();
     }
 
+    /// <summary>Display-safe variant: an amount outside the supported range yields an empty string instead of an exception.</summary>
+    public static string ToWordsOrEmpty(decimal amount, string? currency = null) =>
+        Math.Abs(amount) > MaximumAmount ? string.Empty : ToWords(amount, currency);
+
     /// <summary>
     /// Converts an integer into Arabic words without prefix or suffix.
     /// </summary>

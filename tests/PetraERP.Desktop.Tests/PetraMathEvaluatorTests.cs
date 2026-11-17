@@ -74,6 +74,38 @@ public class PetraMathEvaluatorTests
         Assert.False(PetraMathEvaluator.ContainsOperator("1234.56"));
     }
 
+    private static bool Eval(string text, NumberDisplayMode mode, DecimalDisplayMode decimals, out decimal value) =>
+        PetraMathEvaluator.TryEvaluateWith(text, mode, System.Globalization.CultureInfo.InvariantCulture, decimals, out value);
+
+    [Theory]
+    [InlineData("1,000.5+2", "1002.5")]
+    [InlineData("١٬٠٠٠٫٥+٢", "1002.5")]
+    [InlineData("1,000 * 2", "2000")]
+    [InlineData("(1,500.25 - 0.25) / 2", "750")]
+    public void GroupingCommaAndDecimalPointFollowTheSettings(string expression, string expected)
+    {
+        Assert.True(Eval(expression, NumberDisplayMode.Invariant, DecimalDisplayMode.Automatic, out var value));
+        Assert.Equal(decimal.Parse(expected, System.Globalization.CultureInfo.InvariantCulture), value);
+    }
+
+    [Theory]
+    [InlineData("1,5+1")]
+    [InlineData("1,00+1")]
+    [InlineData("1,0000+1")]
+    [InlineData("1.5.5+1")]
+    [InlineData("1,000,+1")]
+    public void AmbiguousOrMalformedSeparatorsAreRefusedNotGuessed(string expression)
+    {
+        Assert.False(Eval(expression, NumberDisplayMode.Invariant, DecimalDisplayMode.Automatic, out _));
+    }
+
+    [Fact]
+    public void DecimalCommaSettingMakesCommaTheDecimalSeparator()
+    {
+        Assert.True(Eval("1,5*2", NumberDisplayMode.NoGrouping, DecimalDisplayMode.Comma, out var value));
+        Assert.Equal(3m, value);
+    }
+
     [Fact]
     public void PetraNumberFormatTryParseInputEvaluatesInlineExpressions()
     {

@@ -78,7 +78,7 @@ public sealed class DocumentTotalsBar : Control
     {
         if (decimal.TryParse(GrandTotal, NumberStyles.Any, CultureInfo.InvariantCulture, out var amt))
         {
-            SetCurrentValue(TafqeetTextProperty, ArabicTafqeet.ToWords(amt, CurrencyCode));
+            SetCurrentValue(TafqeetTextProperty, ArabicTafqeet.ToWordsOrEmpty(amt, CurrencyCode));
         }
         else
         {
