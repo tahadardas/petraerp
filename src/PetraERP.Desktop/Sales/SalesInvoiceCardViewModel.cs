@@ -1191,8 +1191,26 @@ public sealed partial class SalesInvoiceCardViewModel : EntityCardViewModel
             navigationScope = open.Scope;
             InvoiceId = open.InvoiceId;
             ResetMode();
-            await LoadLookupsAsync(cancellationToken).ConfigureAwait(true);
-            await LoadInvoiceAsync(cancellationToken).ConfigureAwait(true);
+            // The document read does not depend on the lookups, so both travel together; the invoice is still applied only after
+            // the lookups are in place (the combo boxes bind to them), exactly as LoadInvoiceAsync does.
+            var detailTask = HasContext && InvoiceId is { } openId
+                ? salesInvoiceClient.GetSalesInvoiceAsync(CompanyId, BranchId, openId, cancellationToken)
+                : null;
+            try
+            {
+                await LoadLookupsAsync(cancellationToken).ConfigureAwait(true);
+                if (detailTask is not null)
+                {
+                    var detail = await detailTask.ConfigureAwait(true);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    ApplyLoadedInvoice(detail);
+                }
+            }
+            catch
+            {
+                if (detailTask is not null) _ = detailTask.ContinueWith(static t => _ = t.Exception, TaskScheduler.Default);
+                throw;
+            }
         }
         else if (parameter is NewSalesInvoiceCardRequest newRequest)
         {
