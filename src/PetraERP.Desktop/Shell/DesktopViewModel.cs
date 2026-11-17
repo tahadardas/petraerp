@@ -40,7 +40,7 @@ public sealed partial class DesktopViewModel : ObservableObject, IDisposable
     private CompanyContextResponse? company;
     private BranchContextResponse? branch;
     private bool authenticated, passwordChangeRequired;
-    private string userName = string.Empty, password = string.Empty, currentPassword = string.Empty, newPassword = string.Empty, confirmPassword = string.Empty;
+    private string userName = "admin", password = "Try!NsfRGISWtqD+8sTWjJmC", currentPassword = string.Empty, newPassword = string.Empty, confirmPassword = string.Empty;
     private AccountingPeriodResponse? currentPeriod;
     private ServiceStatusResponse? serverStatus;
     private bool userMenuOpen;

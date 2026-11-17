@@ -1,4 +1,4 @@
 {
-    "apiBaseUri":  "https://localhost:7180/",
+    "apiBaseUri":  "https://localhost:17483/",
     "requestTimeoutSeconds":  30
 }

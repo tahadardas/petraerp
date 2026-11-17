@@ -4,6 +4,8 @@
         xmlns:ux="clr-namespace:PetraERP.Desktop.Controls"
         xmlns:shell="clr-namespace:PetraERP.Desktop.Shell"
         Title="الفاتورة الإلكترونية 21 - برنامج الأمين"
+        WindowState="Maximized"
+        WindowStartupLocation="CenterScreen"
         Width="1366" Height="768"
         MinWidth="{StaticResource Window.MinimumWidth}" MinHeight="{StaticResource Window.MinimumHeight}"
         Style="{StaticResource {x:Type Window}}"
