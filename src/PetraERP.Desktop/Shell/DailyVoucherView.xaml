@@ -43,7 +43,7 @@
    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,4"><TextBlock Text="{Binding Localization[D_DV_Date]}" Style="{StaticResource Text.Label}"/>
     <ux:PetraDatePicker SelectedDate="{Binding VoucherDate}" IsEnabled="{Binding IsEditable}" AutomationProperties.Name="{Binding Localization[D_DV_Date]}"/></StackPanel>
    <StackPanel Grid.Row="0" Grid.Column="4" Margin="0,0,0,4"><TextBlock Text="{Binding Localization[D_DV_Currency]}" Style="{StaticResource Text.Label}"/>
-    <TextBox FlowDirection="LeftToRight" MaxLength="3" CharacterCasing="Upper" Text="{Binding CurrencyCode, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsEditable}"
+    <ComboBox FlowDirection="LeftToRight" ItemsSource="{Binding CurrencyOptions}" SelectedItem="{Binding CurrencyCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsEditable}" IsEditable="False" Height="26"
              AutomationProperties.Name="{Binding Localization[D_DV_Currency]}"/></StackPanel>
    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,4"><TextBlock Text="{Binding Localization[D_DV_Description]}" Style="{StaticResource Text.Label}"/>
     <TextBox MaxLength="1000" Text="{Binding VoucherDescription, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsEditable}" AutomationProperties.Name="{Binding Localization[D_DV_Description]}"/></StackPanel>

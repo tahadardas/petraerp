@@ -1284,8 +1284,17 @@ public sealed partial class SalesInvoiceCardViewModel : EntityCardViewModel
             if (settingsTask is not null)
             {
                 var settings = await settingsTask.ConfigureAwait(true);
-                foreach (var currency in settings.Currencies ?? [])
-                    if (currency.Code is { Length: 3 } code && currency.IsActive == true) CurrencyOptions.Add(code);
+                if (!string.IsNullOrEmpty(settings?.BaseCurrencyCode) && !CurrencyOptions.Contains(settings.BaseCurrencyCode))
+                    CurrencyOptions.Add(settings.BaseCurrencyCode);
+
+                foreach (var currency in settings?.Currencies ?? [])
+                    if (currency.Code is { Length: 3 } code && currency.IsActive == true && !CurrencyOptions.Contains(code))
+                        CurrencyOptions.Add(code);
+            }
+            foreach (var fallback in new[] { "SYP", "USD", "EUR", "SAR", "AED", "JOD" })
+            {
+                if (!CurrencyOptions.Contains(fallback))
+                    CurrencyOptions.Add(fallback);
             }
 
             await LoadAdjustmentAccountsAsync(cancellationToken).ConfigureAwait(true);

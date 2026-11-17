@@ -47,6 +47,7 @@ public sealed partial class DailyVoucherViewModel : PageViewModel
     [ObservableProperty] private Guid? cashAccountId;
     [ObservableProperty] private DateTime voucherDate;
     [ObservableProperty] private string currencyCode = string.Empty;
+    public ObservableCollection<string> CurrencyOptions { get; } = [];
     [ObservableProperty] private string rateText = "1";
     [ObservableProperty] private string voucherDescription = string.Empty;
     [ObservableProperty] private string previousBalance = "0";
@@ -130,6 +131,15 @@ public sealed partial class DailyVoucherViewModel : PageViewModel
     public string BaseCurrencyCode => baseCurrency;
     public string TafqeetText => ArabicTafqeet.ToWordsOrEmpty(Math.Max(TotalPay, TotalReceive), CurrencyCode);
 
+    partial void OnCurrencyCodeChanged(string value)
+    {
+        if (string.Equals(value, baseCurrency, StringComparison.OrdinalIgnoreCase))
+        {
+            RateText = "1";
+        }
+        OnPropertyChanged(nameof(TafqeetText));
+    }
+
     public void Localize() => OnPropertyChanged(nameof(StatusText));
 
     protected override async Task LoadAsync(object? parameter, CancellationToken cancellationToken)
@@ -138,6 +148,17 @@ public sealed partial class DailyVoucherViewModel : PageViewModel
         var currencyContext = await ledger.GetCurrencyContextAsync(CompanyId, BranchId, cancellationToken).ConfigureAwait(true);
         baseCurrency = currencyContext.BaseCurrency.Code;
         OnPropertyChanged(nameof(BaseCurrencyCode));
+        CurrencyOptions.Clear();
+        if (!string.IsNullOrEmpty(baseCurrency)) CurrencyOptions.Add(baseCurrency);
+        foreach (var cur in currencyContext.AdditionalCurrencies)
+        {
+            if (!string.IsNullOrEmpty(cur.Code) && !CurrencyOptions.Contains(cur.Code))
+                CurrencyOptions.Add(cur.Code);
+        }
+        foreach (var fallback in new[] { "SYP", "USD", "EUR", "SAR", "AED", "JOD" })
+        {
+            if (!CurrencyOptions.Contains(fallback)) CurrencyOptions.Add(fallback);
+        }
         if (string.IsNullOrEmpty(CurrencyCode)) CurrencyCode = baseCurrency;
         if (parameter is OpenDailyVoucherRequest request)
         {
