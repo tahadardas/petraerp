@@ -6,6 +6,8 @@
              xmlns:ast="clr-namespace:PetraERP.Desktop.Assets"
              Background="{DynamicResource Surface.Secondary}">
 
+    <UserControl.Resources><ux:BindingProxy x:Key="Proxy" Data="{Binding}"/></UserControl.Resources>
+
     <UserControl.InputBindings>
         <KeyBinding Key="Insert" Command="{Binding AddRowCommand}"/>
         <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveVoucherCommand}"/>
@@ -99,7 +101,7 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="#" Binding="{Binding LineNumber}" Width="40" IsReadOnly="True"/>
                 <DataGridComboBoxColumn Header="الآلية / المعدة *"
-                                        ItemsSource="{Binding Source={x:Reference Name=rootControl}, Path=DataContext.MachineryAssets}"
+                                        ItemsSource="{Binding Data.MachineryAssets, Source={StaticResource Proxy}}"
                                         SelectedItemBinding="{Binding Asset}"
                                         DisplayMemberPath="NameArabic"
                                         Width="220"/>
