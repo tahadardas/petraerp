@@ -975,6 +975,7 @@ public sealed partial class SalesInvoiceCardViewModel : EntityCardViewModel
         GrandTotalDisplay = grandTotal.ToString("0.0000", CultureInfo.InvariantCulture);
         TotalQuantityDisplay = totalQty.ToString("0.0000", CultureInfo.InvariantCulture);
         OnPropertyChanged(nameof(FirstPaymentRemainingDisplay));
+        NotifyInvoiceInfoProperties();
     }
 
     private static decimal ParseDecimal(string text) =>

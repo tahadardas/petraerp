@@ -203,6 +203,7 @@ public sealed partial class PurchasesViewModel
         AdditionsTotalDisplay = documentAdditions.ToString("F4", CultureInfo.InvariantCulture);
         GrandTotalDisplay = (sub - discount + tax + documentAdditions).ToString("F4", CultureInfo.InvariantCulture);
         TotalQuantityDisplay = quantity.ToString("F4", CultureInfo.InvariantCulture);
+        NotifyInvoiceInfoProperties();
     }
 
     public AsyncRelayCommand SaveCommand { get; private set; } = null!;

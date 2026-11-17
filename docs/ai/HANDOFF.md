@@ -188,3 +188,30 @@
 - **الاختبارات والحالة:**
   - اختبارات الأدوات والحدود المعمارية: 46/46 ناجحة (100%).
   - التغييرات مسجلة في `work/core-completion-2026-11-17`.
+
+---
+
+## نافذة ولوحة معلومات الفاتورة المستقلة وفق الأمين 10 (2026-11-17)
+- **المفهوم والتصميم المحاسبي الرقابي:**
+  - تمكين المحاسب ومدير المبيعات/المشتريات من الاطلاع اللحظي على مؤشرات الربحية وCOGS، رصيد العميل قبل وبعد الفاتورة، سقف الائتمان، التنسيب التشغيلي، وأزرار الانتقال المباشر للقيد وكشف الحساب دون إغلاق الفاتورة أو البحث في التقارير.
+- **التنفيذ:**
+  1. **تحليل التكلفة والربحية اللحظي (Profitability & COGS Analysis):**
+     - إضافة `EstimatedUnitCost`, `EstimatedLineCost`, `IsBelowCost` إلى `SalesInvoiceLineItem.cs`.
+     - حساب `EstimatedTotalCost`, `EstimatedProfit`, `EstimatedProfitMarginPercent` وتحذير البيع بأقل من التكلفة `HasBelowCostWarning` في `SalesInvoiceCardViewModel.InvoiceInfo.cs`.
+  2. **الموقف المالي للطرف وسقف الائتمان (Customer/Supplier Health & Credit):**
+     - حساب الرصيد قبل الفاتورة `CustomerBalanceBeforeDisplay` والرصيد المتوقع بعدها `CustomerBalanceAfterDisplay`.
+     - حساب نسبة استهلاك سقف الائتمان `CustomerCreditUtilizationDisplay` وتحذير تجاوز السقف `IsCreditExceeded` والائتمان الموقوف.
+     - تطبيق ذات المنظومة على المشتريات في `PurchasesViewModel.InvoiceInfo.cs` (رصيد المورد قبل وبعد وسقف الائتمان).
+  3. **التنسيب والترحيل التشغيلي:**
+     - إظهار النمط، المستودع، مركز الكلفة، والحساب المالي المقابل وتاريخ الاستحقاق.
+  4. **أدوات التدقيق والانتقال المباشر (Drill-Down Actions):**
+     - زر "عرض القيد المحاسبي" `OpenJournalCommand`.
+     - زر "كشف حساب تفصيلي" `OpenCustomerStatementCommand` / `OpenSupplierStatementCommand`.
+     - زر "بطاقة الطرف" `OpenCustomerCommand` / `OpenSupplierCommand`.
+  5. **النافذة المستقلة المنبثقة (Pop-out Window):**
+     - بناء نافذة `InvoiceInformationWindow.xaml` و `.xaml.cs` في `src/PetraERP.Desktop/Shell/` لتعمل كنافذة مستقلة عائمة فوق سطح المكتب أو شاشة ثانية، مع زر Pop-out `[❐]` واختصار `F8`.
+  6. **ترقية اللوحة الجانبية المنزلقة (Flyout Drawer):**
+     - تحديث شامل للـ Drawer في كل من `SalesInvoiceCardView.xaml` و `PurchasesView.xaml`.
+- **الاختبارات والحالة:**
+  - اختبارات الأدوات والحدود المعمارية: 46/46 ناجحة (100%).
+  - التغييرات مسجلة في `work/core-completion-2026-11-17`.

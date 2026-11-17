@@ -1,0 +1,236 @@
+<Window x:Class="PetraERP.Desktop.Shell.InvoiceInformationWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ux="clr-namespace:PetraERP.Desktop.Controls"
+        Title="معلومات الفاتورة (الأمين 10)" Width="390" Height="680" MinWidth="350" MinHeight="500"
+        Style="{StaticResource Window.Dialog}" WindowStartupLocation="CenterOwner" FlowDirection="RightToLeft">
+  <Window.Resources>
+    <BooleanToVisibilityConverter x:Key="Visible"/>
+  </Window.Resources>
+
+  <Grid Margin="12">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+
+    <!-- Header -->
+    <DockPanel Grid.Row="0" Margin="0,0,0,10">
+      <Button DockPanel.Dock="Left" Style="{StaticResource Button.Icon}" Content="&#xE711;" FontSize="11" Click="OnCloseClick" ToolTip="إغلاق (Esc)"/>
+      <StackPanel Orientation="Horizontal">
+        <TextBlock Text="&#xE946;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource Primary}" FontSize="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+        <TextBlock Text="معلومات الفاتورة (Al-Ameen 10)" FontWeight="Bold" FontSize="15" VerticalAlignment="Center"/>
+      </StackPanel>
+    </DockPanel>
+
+    <!-- Content Sections -->
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+      <StackPanel>
+
+        <!-- 1. Accounting & Audit Status -->
+        <Border Style="{StaticResource Panel.Card}" Padding="10" Margin="0,0,0,8">
+          <StackPanel>
+            <TextBlock Text="التدقيق المحاسبي والسند المالي" FontWeight="SemiBold" Foreground="{DynamicResource Text.Secondary}" FontSize="11" Margin="0,0,0,6"/>
+            <DockPanel Margin="0,2">
+              <TextBlock Text="حالة الفاتورة:" Style="{StaticResource Text.Caption}" Width="95"/>
+              <ux:StatusBadge Text="{Binding InvoiceAuditStatusDisplay}" Kind="{Binding DocumentStatusKind}"/>
+            </DockPanel>
+            <DockPanel Margin="0,6,0,2">
+              <TextBlock Text="رقم السند المالي:" Style="{StaticResource Text.Caption}" Width="95" VerticalAlignment="Center"/>
+              <Button DockPanel.Dock="Right" Style="{StaticResource Button.Subtle}" Content="عرض القيد" Command="{Binding OpenJournalCommand}"
+                      Visibility="{Binding HasGeneratedJournal, Converter={StaticResource Visible}}" Padding="6,2" FontSize="{StaticResource Font.Caption}"/>
+              <TextBlock Text="{Binding InvoiceJournalNumberDisplay}" FontWeight="SemiBold" FlowDirection="LeftToRight" VerticalAlignment="Center"/>
+            </DockPanel>
+          </StackPanel>
+        </Border>
+
+        <!-- 2. Profitability & COGS (Sales Invoices) -->
+        <Border Style="{StaticResource Panel.Card}" Padding="10" Margin="0,0,0,8" Visibility="{Binding HasCostData, Converter={StaticResource Visible}}">
+          <StackPanel>
+            <DockPanel Margin="0,0,0,6">
+              <TextBlock Text="تحليل الربحية وتكلفة المبيعات" FontWeight="SemiBold" Foreground="{DynamicResource Text.Secondary}" FontSize="11"/>
+              <TextBlock DockPanel.Dock="Right" Text="تقديري (COGS)" Foreground="{DynamicResource Text.Tertiary}" FontSize="10"/>
+            </DockPanel>
+
+            <DockPanel Margin="0,2">
+              <TextBlock Text="التكلفة التقديرية:" Style="{StaticResource Text.Caption}" Width="105"/>
+              <TextBlock Text="{Binding EstimatedTotalCostDisplay}" FontWeight="SemiBold" FlowDirection="LeftToRight"/>
+            </DockPanel>
+
+            <DockPanel Margin="0,2">
+              <TextBlock Text="مجمل الربح التقديري:" Style="{StaticResource Text.Caption}" Width="105"/>
+              <TextBlock Text="{Binding EstimatedProfitDisplay}" FontWeight="Bold" FontSize="13"
+                         Foreground="{Binding IsProfitable, Converter={StaticResource Visible}}" FlowDirection="LeftToRight"/>
+            </DockPanel>
+
+            <DockPanel Margin="0,2">
+              <TextBlock Text="نسبة هامش الربح:" Style="{StaticResource Text.Caption}" Width="105"/>
+              <TextBlock Text="{Binding EstimatedProfitMarginDisplay}" FontWeight="Bold" Foreground="{DynamicResource Primary}" FlowDirection="LeftToRight"/>
+            </DockPanel>
+
+            <!-- Below Cost Alert -->
+            <Border Background="#FEE2E2" BorderBrush="#EF4444" BorderThickness="1" CornerRadius="{DynamicResource Radius.Small}" Padding="8,4" Margin="0,6,0,0"
+                    Visibility="{Binding HasBelowCostWarning, Converter={StaticResource Visible}}">
+              <DockPanel LastChildFill="True">
+                <TextBlock Text="&#xE7BA;" FontFamily="Segoe MDL2 Assets" Foreground="#DC2626" FontSize="13" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                <TextBlock Text="تحذير: الفاتورة تحوي مواد تباع بأقل من سعر التكلفة!" Foreground="#991B1B" FontSize="11" FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center"/>
+              </DockPanel>
+            </Border>
+          </StackPanel>
+        </Border>
+
+        <!-- 3. Customer / Supplier Financial Health & Credit -->
+        <Border Style="{StaticResource Panel.Card}" Padding="10" Margin="0,0,0,8">
+          <StackPanel>
+            <DockPanel Margin="0,0,0,6">
+              <TextBlock Text="الموقف المالي والائتمان" FontWeight="SemiBold" Foreground="{DynamicResource Text.Secondary}" FontSize="11"/>
+              <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button Style="{StaticResource Button.Subtle}" Content="كشف حساب" Command="{Binding OpenCustomerStatementCommand}"
+                        Visibility="{Binding HasSelectedCustomer, Converter={StaticResource Visible}}" Padding="4,1" Margin="0,0,4,0" FontSize="10"/>
+                <Button Style="{StaticResource Button.Subtle}" Content="كشف حساب" Command="{Binding OpenSupplierStatementCommand}"
+                        Visibility="{Binding HasSelectedSupplier, Converter={StaticResource Visible}}" Padding="4,1" Margin="0,0,4,0" FontSize="10"/>
+                <Button Style="{StaticResource Button.Subtle}" Content="البطاقة" Command="{Binding OpenCustomerCommand}"
+                        Visibility="{Binding HasSelectedCustomer, Converter={StaticResource Visible}}" Padding="4,1" FontSize="10"/>
+                <Button Style="{StaticResource Button.Subtle}" Content="البطاقة" Command="{Binding OpenSupplierCommand}"
+                        Visibility="{Binding HasSelectedSupplier, Converter={StaticResource Visible}}" Padding="4,1" FontSize="10"/>
+              </StackPanel>
+            </DockPanel>
+
+            <!-- Customer Data -->
+            <StackPanel Visibility="{Binding HasSelectedCustomer, Converter={StaticResource Visible}}">
+              <DockPanel Margin="0,2">
+                <TextBlock Text="اسم العميل:" Style="{StaticResource Text.Caption}" Width="105"/>
+                <TextBlock Text="{Binding SelectedCustomer.NameArabic}" FontWeight="SemiBold"/>
+              </DockPanel>
+              <DockPanel Margin="0,2">
+                <TextBlock Text="الرصيد قبل الفاتورة:" Style="{StaticResource Text.Caption}" Width="105"/>
+                <TextBlock Text="{Binding CustomerBalanceBeforeDisplay}" FlowDirection="LeftToRight"/>
+              </DockPanel>
+              <DockPanel Margin="0,2">
+                <TextBlock Text="الرصيد بعد الفاتورة:" Style="{StaticResource Text.Caption}" Width="105"/>
+                <TextBlock Text="{Binding CustomerBalanceAfterDisplay}" FontWeight="Bold" Foreground="{DynamicResource Primary}" FlowDirection="LeftToRight"/>
+              </DockPanel>
+              <DockPanel Margin="0,2" Visibility="{Binding HasCustomerCreditLimit, Converter={StaticResource Visible}}">
+                <TextBlock Text="سقف الائتمان:" Style="{StaticResource Text.Caption}" Width="105"/>
+                <TextBlock Text="{Binding CustomerCreditLimitDisplay}" FlowDirection="LeftToRight"/>
+              </DockPanel>
+              <DockPanel Margin="0,2" Visibility="{Binding HasCustomerCreditLimit, Converter={StaticResource Visible}}">
+                <TextBlock Text="نسبة استهلاك السقف:" Style="{StaticResource Text.Caption}" Width="105"/>
+                <TextBlock Text="{Binding CustomerCreditUtilizationDisplay}" FontWeight="SemiBold" FlowDirection="LeftToRight"/>
+              </DockPanel>
+              <Border Background="#FEE2E2" BorderBrush="#EF4444" BorderThickness="1" CornerRadius="{DynamicResource Radius.Small}" Padding="8,4" Margin="0,4,0,0"
+                      Visibility="{Binding IsCreditExceeded, Converter={StaticResource Visible}}">
+                <TextBlock Text="⚠️ تجاوز سقف الائتمان المسموح!" Foreground="#991B1B" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center"/>
+              </Border>
+              <Border Background="{DynamicResource Error}" Padding="4,2" CornerRadius="2" Margin="0,4,0,0" Visibility="{Binding IsCustomerCreditBlocked, Converter={StaticResource Visible}}">
+                <TextBlock Text="حساب موقوف ائتمانياً" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource Text.OnAccent}" FontWeight="Bold" HorizontalAlignment="Center"/>
+              </Border>
+            </StackPanel>
+
+            <!-- Supplier Data -->
+            <StackPanel Visibility="{Binding HasSelectedSupplier, Converter={StaticResource Visible}}">
+              <DockPanel Margin="0,2">
+                <TextBlock Text="اسم المورد:" Style="{StaticResource Text.Caption}" Width="105"/>
+                <TextBlock Text="{Binding SelectedSupplier.NameArabic}" FontWeight="SemiBold"/>
+              </DockPanel>
+              <DockPanel Margin="0,2">
+                <TextBlock Text="الرصيد قبل الفاتورة:" Style="{StaticResource Text.Caption}" Width="105"/>
+                <TextBlock Text="{Binding SupplierBalanceBeforeDisplay}" FlowDirection="LeftToRight"/>
+              </DockPanel>
+              <DockPanel Margin="0,2">
+                <TextBlock Text="الرصيد بعد الفاتورة:" Style="{StaticResource Text.Caption}" Width="105"/>
+                <TextBlock Text="{Binding SupplierBalanceAfterDisplay}" FontWeight="Bold" Foreground="{DynamicResource Primary}" FlowDirection="LeftToRight"/>
+              </DockPanel>
+              <DockPanel Margin="0,2" Visibility="{Binding HasSupplierCreditLimit, Converter={StaticResource Visible}}">
+                <TextBlock Text="سقف الائتمان:" Style="{StaticResource Text.Caption}" Width="105"/>
+                <TextBlock Text="{Binding SupplierCreditLimitDisplay}" FlowDirection="LeftToRight"/>
+              </DockPanel>
+              <DockPanel Margin="0,2" Visibility="{Binding HasSupplierCreditLimit, Converter={StaticResource Visible}}">
+                <TextBlock Text="نسبة استهلاك السقف:" Style="{StaticResource Text.Caption}" Width="105"/>
+                <TextBlock Text="{Binding SupplierCreditUtilizationDisplay}" FontWeight="SemiBold" FlowDirection="LeftToRight"/>
+              </DockPanel>
+              <Border Background="{DynamicResource Error}" Padding="4,2" CornerRadius="2" Margin="0,4,0,0" Visibility="{Binding IsSupplierCreditBlocked, Converter={StaticResource Visible}}">
+                <TextBlock Text="حساب موقوف ائتمانياً" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource Text.OnAccent}" FontWeight="Bold" HorizontalAlignment="Center"/>
+              </Border>
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <!-- 4. Operational Attribution & Dates -->
+        <Border Style="{StaticResource Panel.Card}" Padding="10" Margin="0,0,0,8">
+          <StackPanel>
+            <TextBlock Text="التنسيب والترحيل التشغيلي" FontWeight="SemiBold" Foreground="{DynamicResource Text.Secondary}" FontSize="11" Margin="0,0,0,6"/>
+            <DockPanel Margin="0,2">
+              <TextBlock Text="نمط الفاتورة:" Style="{StaticResource Text.Caption}" Width="105"/>
+              <TextBlock Text="{Binding DraftPatternNameDisplay}" FontWeight="SemiBold"/>
+            </DockPanel>
+            <DockPanel Margin="0,2">
+              <TextBlock Text="المستودع:" Style="{StaticResource Text.Caption}" Width="105"/>
+              <TextBlock Text="{Binding DraftWarehouseNameDisplay}"/>
+            </DockPanel>
+            <DockPanel Margin="0,2">
+              <TextBlock Text="مركز الكلفة:" Style="{StaticResource Text.Caption}" Width="105"/>
+              <TextBlock Text="{Binding DraftCostCenterNameDisplay}"/>
+            </DockPanel>
+            <DockPanel Margin="0,2">
+              <TextBlock Text="الحساب المقابل:" Style="{StaticResource Text.Caption}" Width="105"/>
+              <TextBlock Text="{Binding DraftFinancialAccountDisplay}" Foreground="{DynamicResource Text.Secondary}"/>
+            </DockPanel>
+            <DockPanel Margin="0,2">
+              <TextBlock Text="تاريخ الفاتورة:" Style="{StaticResource Text.Caption}" Width="105"/>
+              <TextBlock Text="{Binding InvoiceDateUtcDisplay}" FlowDirection="LeftToRight"/>
+            </DockPanel>
+            <DockPanel Margin="0,2">
+              <TextBlock Text="طريقة الدفع:" Style="{StaticResource Text.Caption}" Width="105"/>
+              <TextBlock Text="{Binding PaymentMethodDisplay}"/>
+            </DockPanel>
+            <DockPanel Margin="0,2" Visibility="{Binding ShowDueDate, Converter={StaticResource Visible}}">
+              <TextBlock Text="تاريخ الاستحقاق:" Style="{StaticResource Text.Caption}" Width="105"/>
+              <TextBlock Text="{Binding DueDateDisplay}" FontWeight="SemiBold" Foreground="{DynamicResource Warning}" FlowDirection="LeftToRight"/>
+            </DockPanel>
+          </StackPanel>
+        </Border>
+
+        <!-- 5. Totals & Quantities Summary -->
+        <Border Style="{StaticResource Panel.Card}" Padding="10" Margin="0,0,0,8">
+          <StackPanel>
+            <TextBlock Text="ملخص الأقلام والمبالغ الإجمالية" FontWeight="SemiBold" Foreground="{DynamicResource Text.Secondary}" FontSize="11" Margin="0,0,0,6"/>
+            <DockPanel Margin="0,2">
+              <TextBlock Text="عدد الأسطر (الأقلام):" Style="{StaticResource Text.Caption}" Width="120"/>
+              <TextBlock Text="{Binding FilledLinesCount}" FontWeight="SemiBold" FlowDirection="LeftToRight"/>
+            </DockPanel>
+            <DockPanel Margin="0,2">
+              <TextBlock Text="إجمالي الكميات:" Style="{StaticResource Text.Caption}" Width="120"/>
+              <TextBlock Text="{Binding TotalQuantityDisplay}" FlowDirection="LeftToRight"/>
+            </DockPanel>
+            <DockPanel Margin="0,2">
+              <TextBlock Text="المجموع الجزئي:" Style="{StaticResource Text.Caption}" Width="120"/>
+              <TextBlock Text="{Binding SubTotalDisplay}" FlowDirection="LeftToRight"/>
+            </DockPanel>
+            <DockPanel Margin="0,2">
+              <TextBlock Text="مجموع الحسم:" Style="{StaticResource Text.Caption}" Width="120"/>
+              <TextBlock Text="{Binding DiscountTotalDisplay}" FlowDirection="LeftToRight"/>
+            </DockPanel>
+            <DockPanel Margin="0,2">
+              <TextBlock Text="مجموع الضريبة/الإضافات:" Style="{StaticResource Text.Caption}" Width="120"/>
+              <TextBlock Text="{Binding TaxTotalDisplay}" FlowDirection="LeftToRight"/>
+            </DockPanel>
+            <Border Height="1" Background="{DynamicResource Divider}" Margin="0,6"/>
+            <DockPanel Margin="0,2">
+              <TextBlock Text="الصافي الإجمالي:" FontWeight="Bold" FontSize="13" Width="120"/>
+              <TextBlock Text="{Binding GrandTotalDisplay}" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource Success}" FlowDirection="LeftToRight"/>
+            </DockPanel>
+          </StackPanel>
+        </Border>
+
+      </StackPanel>
+    </ScrollViewer>
+
+    <!-- Footer -->
+    <DockPanel Grid.Row="2" Margin="0,8,0,0">
+      <Button DockPanel.Dock="Left" Style="{StaticResource Button.Subtle}" Content="إغلاق (Esc)" Click="OnCloseClick" MinWidth="80"/>
+      <TextBlock Text="PetraERP v10.0" Foreground="{DynamicResource Text.Tertiary}" FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+    </DockPanel>
+  </Grid>
+</Window>
