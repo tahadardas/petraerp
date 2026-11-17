@@ -1,0 +1,39 @@
+metric;p50;p95;max;runs
+client_wall_ms;133.6;238.9;242.0;20
+server_total_ms;133.1;238.3;241.3;20
+server_sql_ms;47.8;80.7;80.8;20
+sql_commands;110.0;110.0;110.0;20
+
+most executed statements (annual database): executions;total_ms;text
+111;6.1;SELECT TOP(2) [a].[Id], [a].[CompanyId], [a].[DisplayNameArabic], [a].[DisplayNameEnglish], [a].[FirstVerifiedAtUtc]  FROM [audit].[ActorReferences] AS [a]  WHERE [a].[Id
+91;24.8;SELECT [s].[Id], [s].[AdditionsTotal], [s].[ApprovedAtUtc], [s].[ApprovedByUserId], [s].[BranchId], [s].[CompanyId], [s].[CostCenterId], [s].[CreatedAtUtc], [s].[CreatedB
+69;4.2;SELECT [i].[SourceLineId] AS [Key], COALESCE(SUM([i].[Quantity]), 0.0) AS [Quantity]  FROM [sales].[InvoiceLines] AS [i]  WHERE [i].[SourceLineId] IS NOT NULL AND [i].[So
+69;2.8;SELECT TOP(2) [c].[Id], [c].[ActorUserId], [c].[BranchId], [c].[CompanyId], [c].[CreditLimitBase], [c].[ExposureAfterBase], [c].[ExposureBeforeBase], [c].[IdempotencyKey]
+54;2.4;SELECT TOP(2) [c].[CompanyId], [c].[AllowCreditPurchases], [c].[AllowCreditSales], [c].[AllowManualNumbering], [c].[AllowPatternNumberingOverrides], [c].[AllowSaveAsDraft
+52;2.6;SELECT CASE      WHEN EXISTS (          SELECT 1          FROM (              SELECT * FROM [system].[Companies] WITH (UPDLOCK,HOLDLOCK) WHERE [Id]=@p0          ) AS [p] 
+49;6.4;SELECT [p0].[Id], [p0].[AdditionsTotal], [p0].[ApprovedAtUtc], [p0].[ApprovedByUserId], [p0].[BranchId], [p0].[CompanyId], [p0].[CostCenterId], [p0].[CreatedAtUtc], [p0].
+47;2.3;SELECT TOP(2) [p].[Id], [p].[BaseCurrencyCode], [p].[Code], [p].[CreatedAtUtc], [p].[IsActive], [p].[NameArabic], [p].[NameEnglish], [p].[RowVersion], [p].[UpdatedAtUtc] 
+47;2.3;SELECT TOP(2) [p].[Id], [p].[Address], [p].[Code], [p].[CompanyId], [p].[CreatedAtUtc], [p].[DefaultBankAccountId], [p].[DefaultCashAccountId], [p].[DefaultCostCenterId],
+46;2.2;SELECT COUNT(*)  FROM [inventory].[Warehouses] AS [w]  WHERE [w].[Id] = @warehouses1 AND [w].[CompanyId] = @companyId AND [w].[BranchId] = @branchId AND [w].[IsActive] = 
+46;2.8;SELECT TOP(2) [p].[Id], [p].[AddressesJson], [p].[Barcode], [p].[Code], [p].[CommercialRegistration], [p].[CompanyId], [p].[ConditionalDiscountAccountId], [p].[ContactsJs
+46;1.0;SELECT [s].[VoucherId], [s].[SettlementAmount], [s].[SettlementBaseAmount]  FROM [treasury].[SettlementApplications] AS [s]  INNER JOIN [treasury].[SettlementBatches] AS 
+46;2.3;SELECT [o].[Id], [o].[AccountId], [o].[BranchId], [o].[CompanyId], [o].[CreatedAtUtc], [o].[CurrencyCode], [o].[CurrentBaseCarryingAmount], [o].[DueDateUtc], [o].[Exchang
+46;6.9;SELECT [i].[Id], [i].[CustomerId], [i].[BranchId], [i].[InvoiceNumber], [i].[InvoiceDateUtc], [i].[CurrencyCode], [i].[ExchangeRate], [i].[GrandTotal], [i].[JournalEntryI
+46;3.5;SELECT [v].[Id], [v].[Amount], [v].[ExchangeRate], COALESCE((      SELECT COALESCE(SUM([v1].[Amount]), 0.0)      FROM [treasury].[VoucherAllocations] AS [v1]      WHERE [
+
+most expensive statements by total elapsed time (annual database): executions;total_ms;text
+4;296.6;SELECT SCHEMA_NAME(t.schema_id) COLLATE DATABASE_DEFAULT+N'.'+t.name COLLATE DATABASE_DEFAULT+N'|'+i.name COLLATE DATABASE_DEFAULT+N'|'+CONVERT(nvarchar(1),i.is_unique)+N
+4;225.9;SELECT SCHEMA_NAME(t.schema_id) COLLATE DATABASE_DEFAULT+N'.'+t.name COLLATE DATABASE_DEFAULT+N'|'+c.name COLLATE DATABASE_DEFAULT+N'|'+      TYPE_NAME(c.system_type_id) 
+4;221.7;SELECT SCHEMA_NAME(t.schema_id) COLLATE DATABASE_DEFAULT+N'.'+t.name COLLATE DATABASE_DEFAULT+N'|'+f.name COLLATE DATABASE_DEFAULT+N'|'+SCHEMA_NAME(p.schema_id) COLLATE D
+4;59.3;SELECT SCHEMA_NAME(t.schema_id) COLLATE DATABASE_DEFAULT+N'.'+t.name COLLATE DATABASE_DEFAULT+N'|'+c.name COLLATE DATABASE_DEFAULT+N'|'+d.definition AS [Value]  FROM sys.
+4;39.3;SELECT SCHEMA_NAME(t.schema_id) COLLATE DATABASE_DEFAULT+N'.'+t.name COLLATE DATABASE_DEFAULT+N'|'+k.name COLLATE DATABASE_DEFAULT+N'|'+k.type COLLATE DATABASE_DEFAULT+N'
+4;31.3;SELECT [name] AS [Value] FROM sys.foreign_keys WHERE is_disabled=0 AND is_not_trusted=0
+4;29.0;SELECT [name] AS [Value] FROM sys.check_constraints WHERE is_disabled=0 AND is_not_trusted=0
+4;27.2;SELECT SCHEMA_NAME([schema_id]) COLLATE DATABASE_DEFAULT + N'.' + [name] COLLATE DATABASE_DEFAULT AS [Value] FROM sys.tables WHERE is_ms_shipped = 0
+91;24.8;SELECT [s].[Id], [s].[AdditionsTotal], [s].[ApprovedAtUtc], [s].[ApprovedByUserId], [s].[BranchId], [s].[CompanyId], [s].[CostCenterId], [s].[CreatedAtUtc], [s].[CreatedB
+4;20.4;SELECT SCHEMA_NAME(schema_id) COLLATE DATABASE_DEFAULT+N'.'+name COLLATE DATABASE_DEFAULT+N'|'+TYPE_NAME(system_type_id) COLLATE DATABASE_DEFAULT+N'|'+CONVERT(nvarchar(40
+4;17.4;SELECT [name] AS [Value] FROM sys.triggers WHERE parent_class=1 AND is_disabled=0 AND is_ms_shipped=0
+1;12.1;SELECT TOP (15) qs.execution_count, qs.total_elapsed_time / 1000.0,   LEFT(REPLACE(REPLACE(SUBSTRING(st.text, qs.statement_start_offset / 2 + 1,     (CASE WHEN qs.stateme
+4;9.9;SELECT m.definition AS [Value] FROM sys.triggers t JOIN sys.sql_modules m ON m.object_id=t.object_id  WHERE t.parent_class=1 AND t.is_disabled=0 AND t.is_ms_shipped=0 AND
+23;8.4;INSERT INTO [sales].[Invoices] ([Id], [AdditionsTotal], [ApprovedAtUtc], [ApprovedByUserId], [BranchId], [CompanyId], [CostCenterId], [CreatedAtUtc], [CreatedByUserId], [
+1;7.1;INSERT INTO [inventory].[UnitsOfMeasure] ([Id], [Code], [CompanyId], [CreatedAtUtc], [DecimalPlaces], [Dimension], [IsActive], [NameArabic], [NameEnglish], [Symbol], [Upd

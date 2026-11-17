@@ -1,0 +1,1 @@
+LEDGER_SCALE journals=100000 lines_on_account=100000 seed_s=15.2 first_page_p50_ms=239 deep_offset_page_500_p50_ms=793 cursor_next_at_depth_p50_ms=70 closing=1000000.0000

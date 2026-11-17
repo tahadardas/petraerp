@@ -1,0 +1,36 @@
+route;status;cmds_p50;sql_ms_p50;total_ms_p50;runs
+GET invoice;200;22;16.1;56.6;10
+GET parties/lookup;400;8;4.9;17.8;10
+GET inventory/warehouses;200;10;6.1;21.2;10
+GET inventory/items/lookup;400;8;4.8;17.6;10
+GET inventory/units;200;10;5.9;20.4;10
+GET currencies;200;12;6.8;23.4;10
+GET patterns/runnable;200;9;5.5;20.1;10
+GET sales/links;404;1;0.6;3.5;10
+
+most executed statements (annual database): executions;total_ms;text
+229;23.7;SELECT [j].[JournalId], [j].[AccountId], [j].[BaseDebit], [j].[BaseCredit]  FROM [ledger].[JournalLines] AS [j]  WHERE [j].[CompanyId] = @companyId AND [j].[JournalId] = 
+228;15.6;SELECT [v].[SalesInvoiceId], [v].[Amount]  FROM [treasury].[VoucherAllocations] AS [v]  INNER JOIN [treasury].[Vouchers] AS [v0] ON [v].[VoucherId] = [v0].[Id]  WHERE [v]
+116;6.3;SELECT TOP(2) [c].[Id], [c].[ActorUserId], [c].[BranchId], [c].[CompanyId], [c].[CreditLimitBase], [c].[ExposureAfterBase], [c].[ExposureBeforeBase], [c].[IdempotencyKey]
+116;8.9;SELECT [i].[SourceLineId] AS [Key], COALESCE(SUM([i].[Quantity]), 0.0) AS [Quantity]  FROM [sales].[InvoiceLines] AS [i]  WHERE [i].[SourceLineId] IS NOT NULL AND [i].[So
+116;46.3;SELECT [s].[Id], [s].[AdditionsTotal], [s].[ApprovedAtUtc], [s].[ApprovedByUserId], [s].[BranchId], [s].[CompanyId], [s].[CostCenterId], [s].[CreatedAtUtc], [s].[CreatedB
+115;3.8;SELECT [s].[VoucherId], [s].[SettlementAmount], [s].[SettlementBaseAmount]  FROM [treasury].[SettlementApplications] AS [s]  INNER JOIN [treasury].[SettlementBatches] AS 
+115;7.4;SELECT [o].[Id], [o].[AccountId], [o].[BranchId], [o].[CompanyId], [o].[CreatedAtUtc], [o].[CurrencyCode], [o].[CurrentBaseCarryingAmount], [o].[DueDateUtc], [o].[Exchang
+115;18.6;SELECT [i].[Id], [i].[CustomerId], [i].[BranchId], [i].[InvoiceNumber], [i].[InvoiceDateUtc], [i].[CurrencyCode], [i].[ExchangeRate], [i].[GrandTotal], [i].[JournalEntryI
+115;11.2;SELECT [v].[Id], [v].[Amount], [v].[ExchangeRate], COALESCE((      SELECT COALESCE(SUM([v1].[Amount]), 0.0)      FROM [treasury].[VoucherAllocations] AS [v1]      WHERE [
+114;8.6;SELECT [s].[SalesInvoiceId], [s].[InvoiceAmount], [s].[BookedBaseAmount]  FROM [treasury].[SettlementApplications] AS [s]  INNER JOIN [treasury].[SettlementBatches] AS [s
+114;10.6;SELECT [s].[SalesInvoiceId], [s].[InvoiceAmount], [s].[BookedBaseAmount]  FROM [treasury].[SettlementApplications] AS [s]  INNER JOIN [treasury].[SettlementBatches] AS [s
+114;20.0;SELECT [i].[Id], [i].[CustomerId], [i].[BranchId], [i].[InvoiceNumber], [i].[InvoiceDateUtc], [i].[CurrencyCode], [i].[ExchangeRate], [i].[GrandTotal], [i].[JournalEntryI
+most executed statements (system database): executions;total_ms;text
+422;27.3;SELECT TOP(1) [f].[Id], [f].[CompanyId], [f].[CreatedAtUtc], [f].[DatabaseName], [f].[FiscalYearId], [f].[IsDefault], [f].[ProvisioningFingerprint], [f].[RangeEnd], [f].[
+224;21.6;SELECT TOP(1) [u].[Id], [s].[Id], [u].[UserName], [u].[MustChangePassword]  FROM [security].[Sessions] AS [s]  INNER JOIN [security].[Users] AS [u] ON [s].[UserId] = [u].
+211;13.0;SELECT TOP(1) [c].[Id], [c].[BaseCurrencyCode], [c].[Code], [c].[CreatedAtUtc], [c].[IsActive], [c].[NameArabic], [c].[NameEnglish], [c].[RowVersion], [c].[UpdatedAtUtc] 
+211;22.9;SELECT CASE      WHEN EXISTS (          SELECT 1          FROM [security].[Users] AS [u]          WHERE [u].[Id] = @actor AND [u].[IsActive] = CAST(1 AS bit) AND [u].[Mus
+211;18.0;SELECT CASE      WHEN EXISTS (          SELECT 1          FROM [security].[UserCompanyScopes] AS [u]          WHERE [u].[UserId] = @userId AND [u].[CompanyId] = @workspac
+211;13.2;SELECT [b].[Id]  FROM [system].[Branches] AS [b]  WHERE [b].[CompanyId] = @row_CompanyId
+199;33.0;SELECT TOP(1) [u].[IsActive], CASE      WHEN EXISTS (          SELECT 1          FROM [security].[UserRoles] AS [u0]          WHERE [u0].[UserId] = [u].[Id] AND EXISTS ( 
+52;3.8;INSERT INTO [__EFMigrationsHistory]([MigrationId],[ProductVersion]) values(@1,@2)
+34;6.0;SELECT TOP(2) [u].[Id], [u].[DisplayNameArabic], [u].[DisplayNameEnglish]  FROM [security].[Users] AS [u]  WHERE [u].[Id] = @scope_ActorUserId AND [u].[IsActive] = CAST(1
+15;1.1;SELECT TOP(1) [u].[IsActive], CASE      WHEN EXISTS (          SELECT 1          FROM [security].[UserCompanyScopes] AS [u0]          WHERE [u0].[UserId] = [u].[Id] AND [
+7;0.5;INSERT INTO [security].[Permissions]([Code]) values(@1)
+5;0.7;SELECT TOP(1) [u].[IsActive], [u].[MustChangePassword], CASE      WHEN EXISTS (          SELECT 1          FROM [security].[UserRoles] AS [u0]          WHERE [u0].[UserId
