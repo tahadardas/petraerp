@@ -94,7 +94,9 @@ public sealed partial class AccountCardViewModel : EntityCardViewModel
         LoadProfileDraft(mode == EntityCardMode.New ? null : savedProfile);
         if (mode == EntityCardMode.New || Account is null)
         {
-            DraftCode = Account?.Code ?? string.Empty;
+            DraftCode = Account is not null
+                ? ChartOfAccountsViewModel.GenerateNextChildCode(Account.Code, Children.Select(c => c.Code))
+                : string.Empty;
             DraftNameArabic = string.Empty; DraftNameEnglish = null;
             DraftCostCenterPolicy = CostCenterPolicy.Optional; DraftPostingAllowed = true;
         }
@@ -279,7 +281,8 @@ public sealed partial class AccountCardViewModel : EntityCardViewModel
     {
         foreach (var name in new[] { nameof(HasAccount), nameof(Title), nameof(Breadcrumb), nameof(ParentLabel), nameof(StatusText), nameof(StatusKind),
                      nameof(CurrencyText), nameof(BaseCurrency), nameof(CanViewLedger), nameof(CanManage), nameof(HasSummary), nameof(HasChildAccounts),
-                     nameof(IncludesDescendants), nameof(Opening), nameof(TotalDebit), nameof(TotalCredit), nameof(Closing), nameof(MovementCount) })
+                     nameof(IncludesDescendants), nameof(Opening), nameof(TotalDebit), nameof(TotalCredit), nameof(Closing), nameof(MovementCount),
+                     nameof(HasNatureViolation), nameof(NatureViolationWarning) })
         {
             OnPropertyChanged(name);
         }

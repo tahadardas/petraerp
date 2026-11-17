@@ -48,6 +48,7 @@ public sealed partial class ChartOfAccountsViewModel : PageViewModel, ISavablePa
     private AccountResponse? editing;
 
     [ObservableProperty] private string filter = string.Empty;
+    [ObservableProperty] private bool onlyWithMovements;
     [ObservableProperty] private AccountNode? selectedNode;
     [ObservableProperty] private bool isEditorOpen;
     [ObservableProperty] private bool isNew;
@@ -206,11 +207,27 @@ public sealed partial class ChartOfAccountsViewModel : PageViewModel, ISavablePa
     {
         Nodes.Clear();
         var term = Filter.Trim();
+
+        // Al-Ameen style: filter active accounts with movements/journal lines
+        HashSet<Guid>? movementFilter = null;
+        if (OnlyWithMovements)
+        {
+            var byId = all.ToDictionary(node => node.Id);
+            movementFilter = new HashSet<Guid>();
+            foreach (var node in all.Where(node => node.Account.HasJournalLines))
+            {
+                for (var current = node.Account; current is not null; current = current.ParentId is { } parent && byId.TryGetValue(parent, out var p) ? p.Account : null)
+                {
+                    if (!movementFilter.Add(current.Id)) break;
+                }
+            }
+        }
+
         if (term.Length > 0)
         {
             var byId = all.ToDictionary(node => node.Id);
             var include = new HashSet<Guid>();
-            foreach (var node in all.Where(node => Matches(node.Account, term)))
+            foreach (var node in all.Where(node => Matches(node.Account, term) && (movementFilter == null || movementFilter.Contains(node.Id))))
             {
                 for (var current = node.Account; current is not null; current = current.ParentId is { } parent && byId.TryGetValue(parent, out var p) ? p.Account : null)
                 {
@@ -225,6 +242,7 @@ public sealed partial class ChartOfAccountsViewModel : PageViewModel, ISavablePa
         var hidden = new HashSet<Guid>();
         foreach (var node in all)
         {
+            if (movementFilter != null && !movementFilter.Contains(node.Id)) continue;
             if (node.Account.ParentId is { } parent && hidden.Contains(parent)) { hidden.Add(node.Id); continue; }
             Nodes.Add(node);
             if (!node.IsExpanded) hidden.Add(node.Id);
@@ -272,6 +290,7 @@ public sealed partial class ChartOfAccountsViewModel : PageViewModel, ISavablePa
     }
 
     partial void OnFilterChanged(string value) => Rebuild();
+    partial void OnOnlyWithMovementsChanged(bool value) => Rebuild();
 
     partial void OnSelectedNodeChanged(AccountNode? value)
     {
@@ -318,7 +337,9 @@ public sealed partial class ChartOfAccountsViewModel : PageViewModel, ISavablePa
         IsDeletePending = false; DeleteReason = string.Empty;
         editing = null;
         IsNew = true;
-        Code = parent is null ? string.Empty : parent.Code;
+        Code = parent is null
+            ? string.Empty
+            : GenerateNextChildCode(parent.Code, all.Where(n => n.Account.ParentId == parent.Id).Select(n => n.Account.Code));
         NameArabic = string.Empty; NameEnglish = null;
         AccountType = parent?.AccountType ?? AccountType.Assets;
         PostingAllowed = true; CostCenterPolicy = CostCenterPolicy.Optional; CurrencyMode = AccountCurrencyMode.BaseCurrencyOnly;
@@ -326,6 +347,40 @@ public sealed partial class ChartOfAccountsViewModel : PageViewModel, ISavablePa
         IsEditorOpen = true;
         RefreshParents();
         NotifyEditor();
+    }
+
+    /// <summary>
+    /// Al-Ameen style auto-generation of next available sub-account code.
+    /// E.g. parent "1101" with children "110101", "110102" -> suggests "110103".
+    /// </summary>
+    public static string GenerateNextChildCode(string parentCode, IEnumerable<string> existingChildrenCodes)
+    {
+        if (string.IsNullOrWhiteSpace(parentCode)) return string.Empty;
+
+        var suffixes = new List<(long Value, int Length)>();
+        foreach (var childCode in existingChildrenCodes)
+        {
+            if (childCode.StartsWith(parentCode, StringComparison.Ordinal) && childCode.Length > parentCode.Length)
+            {
+                var rawSuffix = childCode[parentCode.Length..];
+                if (long.TryParse(rawSuffix, out var num) && num > 0)
+                {
+                    suffixes.Add((num, rawSuffix.Length));
+                }
+            }
+        }
+
+        if (suffixes.Count == 0)
+        {
+            // Default 2-digit padding ("01") for sub-accounts
+            return parentCode + "01";
+        }
+
+        var maxNum = suffixes.Max(s => s.Value);
+        var targetLength = suffixes.Max(s => s.Length);
+        var nextNum = maxNum + 1;
+        var nextSuffix = nextNum.ToString().PadLeft(targetLength, '0');
+        return parentCode + nextSuffix;
     }
 
     /// <summary>Valid parents: active control accounts of the same type that are not the account itself or its descendants.</summary>
