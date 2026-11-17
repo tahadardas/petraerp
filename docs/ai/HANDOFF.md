@@ -407,3 +407,22 @@
   - بناء كامل الحل في نمط Release: `dotnet build PetraERP.slnx -c Release`: **0 Warning(s), 0 Error(s)** في كافة المشاريع الـ 19.
   - فحص أدوات التحقق والحدود المعمارية: `pytest tests/tooling/`: **46/46 ناجحة (100%)**.
   - الملف التنفيذي جاهز ومحدث ومحصن: `D:\PetraERP\src\PetraERP.Desktop\bin\Release\net10.0-windows\PetraERP.Desktop.exe`.
+
+---
+
+## تصحيح خطأ فتح شاشات الأصول والآليات ومصاريف المركبات (2026-11-17)
+- **المشكلة المبلغ عنها:**
+  - ظهور رسالة خطأ `Provide value on 'System.Windows.StaticResourceExtension' threw an exception` عند فتح قائمة "مصاريف وآليات".
+- **التشخيص الدقيق عبر `desktop_crash.log`:**
+  - الاستثناء المسجل:
+    `System.Exception: Cannot find resource named 'Text.Title'. Resource names are case sensitive.`
+  - السبب: في ملف `Themes/Components.xaml`، تم تعريف النمط `Text.Title` في السطر 19 معتمداً على `BasedOn="{StaticResource Text.PageTitle}"`، بينما كان النمط الأساسي `Text.PageTitle` معرّفاً لاحقاً في السطر 25 (Forward Reference). في محرك XAML، يجب أن يسبق النمط الأساسي النمط المشتق منه عند استخدام `StaticResource`.
+- **الحلول المنفذة:**
+  1. **إعادة ترتيب الموارد في `Themes/Components.xaml`:**
+     - نقل تعريف `Text.Title` ليصبح بعد `Text.PageTitle` مباشرة، مما يضمن تحميل النمط وجميع الشاشات الثمانية التابعة للأصول والآليات وورشة الصيانة بنجاح.
+  2. **منع توالي مربعات الحوار التكرارية في `App.xaml.cs`:**
+     - تزويد `OnDispatcherUnhandledException` بحارس `isShowingExceptionDialog` لمنع فتح نوافذ حوار متتالية ومتطابقة أثناء دورات إعادة الرسم.
+- **نتائج التحقق:**
+  - بناء كامل الحل بنمط Release: `dotnet build PetraERP.slnx -c Release`: **0 Warning(s), 0 Error(s)**.
+  - فحص أدوات التحقق والحدود المعمارية: `pytest tests/tooling/`: **46/46 ناجحة (100%)**.
+  - الملف التنفيذي محدّث وجاهز: `D:\PetraERP\src\PetraERP.Desktop\bin\Release\net10.0-windows\PetraERP.Desktop.exe`.

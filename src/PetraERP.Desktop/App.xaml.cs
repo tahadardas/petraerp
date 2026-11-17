@@ -13,6 +13,7 @@ public partial class App : System.Windows.Application, IDisposable
     private ServiceProvider? services;
     private DispatcherTimer? sessionTimer;
     private DesktopInstanceLease? instance;
+    private bool isShowingExceptionDialog;
 
     public App()
     {
@@ -32,13 +33,21 @@ public partial class App : System.Windows.Application, IDisposable
             return;
         }
 
-        // Keep app alive and show non-fatal notification
+        // Keep app alive and show at most one non-fatal notification without cascading modal dialogs
         e.Handled = true;
-        try
+        if (!isShowingExceptionDialog)
         {
-            MessageBox.Show($"تنبيه: حدث خطأ غير متوقع في الواجهة ({e.Exception.Message}).\nتم تسجيل التفاصيل في ملف desktop_crash.log", "PetraERP", MessageBoxButton.OK, MessageBoxImage.Warning);
+            isShowingExceptionDialog = true;
+            try
+            {
+                MessageBox.Show($"تنبيه: حدث خطأ غير متوقع في الواجهة ({e.Exception.Message}).\nتم تسجيل التفاصيل في ملف desktop_crash.log", "PetraERP", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            catch { }
+            finally
+            {
+                isShowingExceptionDialog = false;
+            }
         }
-        catch { }
     }
 
     private void OnCurrentDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)

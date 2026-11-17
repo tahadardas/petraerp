@@ -16,7 +16,6 @@
   <loc:StandardLabelConverter x:Key="EnumLabel"/>
   <ux:NumberConverter x:Key="Number"/>
   <ux:NegativeNumberConverter x:Key="IsNegative"/>
-  <Style x:Key="Text.Title" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource Text.PageTitle}"/>
   <Style x:Key="Text.Body" TargetType="{x:Type TextBlock}">
     <Setter Property="Foreground" Value="{DynamicResource Text}"/>
     <Setter Property="FontSize" Value="{StaticResource Font.Body}"/>
@@ -27,6 +26,7 @@
     <Setter Property="FontWeight" Value="SemiBold"/>
     <Setter Property="Foreground" Value="{DynamicResource Text}"/>
   </Style>
+  <Style x:Key="Text.Title" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource Text.PageTitle}"/>
   <Style x:Key="Text.Section" TargetType="{x:Type TextBlock}">
     <Setter Property="FontSize" Value="{StaticResource Font.Subtitle}"/>
     <Setter Property="FontWeight" Value="SemiBold"/>
