@@ -30,7 +30,7 @@ export const topMenus: readonly MenuItem[] = [
     label: "menu.invoices",
     children: [
       { id: "sales-invoices", label: "menu.sales_invoices", screen: "sales-invoices" },
-      { id: "new-sales-invoice", label: "menu.sales_invoices", screen: "sales-invoice" },
+      { id: "purchase-invoices", label: "menu.purchase_invoices", screen: "purchase-invoices" },
     ],
   },
   {
@@ -42,7 +42,15 @@ export const topMenus: readonly MenuItem[] = [
       { id: "new-payment", label: "menu.treasury", screen: "treasury-voucher", params: { kind: "Payment" } },
     ],
   },
-  { id: "warehouses", label: "menu.warehouses" },
+  {
+    id: "warehouses",
+    label: "menu.warehouses",
+    children: [
+      { id: "items", label: "menu.items", screen: "items" },
+      { id: "warehouses-list", label: "menu.warehouses_list", screen: "warehouses" },
+      { id: "units", label: "menu.units", screen: "units" },
+    ],
+  },
   {
     id: "reports",
     label: "menu.reports",
@@ -51,11 +59,19 @@ export const topMenus: readonly MenuItem[] = [
       { id: "account-ledger", label: "menu.account_ledger", screen: "account-ledger" },
     ],
   },
-  { id: "maintenance", label: "menu.maintenance" },
+  {
+    id: "maintenance",
+    label: "menu.maintenance",
+    children: [
+      { id: "security-audit", label: "menu.security_audit", screen: "security-audit" },
+    ],
+  },
   {
     id: "settings",
     label: "menu.settings",
     children: [
+      { id: "users", label: "menu.users", screen: "users" },
+      { id: "roles", label: "menu.roles", screen: "roles" },
       { id: "patterns", label: "menu.patterns", screen: "pattern-manager" },
     ],
   },

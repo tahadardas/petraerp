@@ -26,10 +26,10 @@ PARTY-01,Parties Directory,/parties,DONE,parties.view;parties.manage,GET /partie
 PARTY-02,Customer Statement,/parties/customer-statement,DONE,parties.view,GET /reports/parties/{id}/statement,PartyStatementScreen.tsx
 PARTY-03,Supplier Statement,/parties/supplier-statement,DONE,parties.view,GET /reports/parties/{id}/statement,PartyStatementScreen.tsx
 PARTY-04,Unified Party Statement,/parties/statement,DONE,parties.view,GET /reports/parties/{id}/statement,PartyStatementScreen.tsx
-INV-01,Items Directory & Card,/inventory/items,IN_PROGRESS,inventory.view;inventory.manage,GET/POST /inventory/items,ItemsScreen.tsx
+INV-01,Items Directory & Card,/inventory/items,DONE,inventory.view;inventory.manage,GET/POST /inventory/items,ItemsScreen.tsx / Vite Build
 INV-02,Quick Item Directory,/inventory/lookup,DONE,inventory.view,GET /inventory/items/lookup,LookupPicker.tsx
-INV-03,Units & Conversions,/inventory/units,IN_PROGRESS,inventory.manage,GET/POST /inventory/units,UnitsScreen.tsx
-INV-04,Warehouses Directory,/inventory/warehouses,IN_PROGRESS,inventory.manage,GET/POST /inventory/warehouses,WarehousesScreen.tsx
+INV-03,Units & Conversions,/inventory/units,DONE,inventory.manage,GET/POST /inventory/units,UnitsScreen.tsx / Vite Build
+INV-04,Warehouses Directory,/inventory/warehouses,DONE,inventory.manage,GET/POST /inventory/warehouses,WarehousesScreen.tsx / Vite Build
 INV-05,Inventory Operations,/inventory/operations,SCHEDULED,inventory.operations,GET/POST /inventory/documents,OpenAPI Defined
 INV-06,Stocktaking,/inventory/stocktaking,SCHEDULED,inventory.stocktake,POST /inventory/adjustments,OpenAPI Defined
 INV-07,Item Price Tool,/inventory/prices,SCHEDULED,inventory.pricing,POST /inventory/price-adjustments,OpenAPI Defined
@@ -39,7 +39,7 @@ PAT-01,Document Pattern Manager,/patterns,DONE,patterns.view;patterns.manage,GET
 PAT-02,Pattern Card Screen,/patterns/:id,DONE,patterns.manage,GET /document-patterns/{id}/effective,PatternCardScreen.tsx
 SALES-01,Sales Invoices List,/sales/invoices,DONE,sales.view;sales.create,GET /sales/invoices,SalesInvoicesScreen.tsx
 SALES-02,Sales Invoice Card,/sales/invoices/:id,DONE,sales.create;sales.post,POST /sales/invoices; /post; /reverse,SalesInvoiceCardScreen.tsx
-PURCHASE-01,Purchase Invoices List & Card,/purchases/invoices,IN_PROGRESS,purchases.view;purchases.create,GET/POST /purchases/invoices,PurchaseInvoicesScreen.tsx
+PURCHASE-01,Purchase Invoices List & Card,/purchases/invoices,DONE,purchases.view;purchases.create,GET/POST /purchases/invoices,PurchaseInvoicesScreen.tsx / PurchaseInvoiceCardScreen.tsx
 INVOICE-PRINT,Document Print Preview,/print/preview,SCHEDULED,documents.print,GET /reporting/execute,OpenAPI Defined
 TR-01,Treasury Receipts List & Card,/treasury/receipts,DONE,treasury.receipt,GET/POST /treasury/vouchers,TreasuryVouchersScreen.tsx
 TR-02,Treasury Payments List & Card,/treasury/payments,DONE,treasury.payment,GET/POST /treasury/vouchers,TreasuryVouchersScreen.tsx
@@ -55,9 +55,9 @@ REP-03,Financial Reports Center,/reports/financial,SCHEDULED,reports.financial,G
 REP-04,Reports Center Catalog,/reports,SCHEDULED,reports.view,GET /reporting/catalog,OpenAPI Defined
 REP-05,Analytical Reports,/reports/analytical,SCHEDULED,reports.view,GET /reporting/execute,OpenAPI Defined
 REP-06,Movements Reports,/reports/movements,SCHEDULED,reports.view,GET /reports/inventory/movements/{id},OpenAPI Defined
-ADM-01,Users Administration,/admin/users,IN_PROGRESS,admin.users,GET/POST /admin/users,UsersScreen.tsx
-ADM-02,Roles & Permissions,/admin/roles,IN_PROGRESS,admin.roles,GET/POST /admin/roles,RolesScreen.tsx
-ADM-03,Security Audit Log,/admin/audit,IN_PROGRESS,admin.audit,GET /audit/security-events,SecurityAuditScreen.tsx
+ADM-01,Users Administration,/admin/users,DONE,admin.users,GET/POST /admin/users,UsersScreen.tsx / Vite Build
+ADM-02,Roles & Permissions,/admin/roles,DONE,admin.roles,GET/POST /admin/roles,RolesScreen.tsx / Vite Build
+ADM-03,Security Audit Log,/admin/audit,DONE,admin.audit,GET /audit/security-events,SecurityAuditScreen.tsx / Vite Build
 ADM-04,Document Number Maintenance,/admin/document-numbers,SCHEDULED,admin.numbering,GET /document-numbers/audit,OpenAPI Defined
 ADM-05,Branches Tree & Setup,/admin/branches,SCHEDULED,admin.branches,GET /branch-admin/tree,OpenAPI Defined
 ADM-06,Branch Comparison,/reports/branch-comparison,SCHEDULED,reports.branches,GET /branch-reports/trial-balance,OpenAPI Defined

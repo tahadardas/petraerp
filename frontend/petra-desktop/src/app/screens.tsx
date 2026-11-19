@@ -31,6 +31,17 @@ export const screens: Readonly<Record<string, ScreenLoader>> = {
   // Core Accounting Reports
   "account-ledger": lazy(() => import("@/features/reports/AccountLedgerScreen")),
   "trial-balance": lazy(() => import("@/features/reports/TrialBalanceScreen")),
+  // Inventory
+  items: lazy(() => import("@/features/inventory/ItemsScreen")),
+  warehouses: lazy(() => import("@/features/inventory/WarehousesScreen")),
+  units: lazy(() => import("@/features/inventory/UnitsScreen")),
+  // Purchases
+  "purchase-invoices": lazy(() => import("@/features/purchases/PurchaseInvoicesScreen")),
+  "purchase-invoice-card": lazy(() => import("@/features/purchases/PurchaseInvoiceCardScreen")),
+  // Administration & Audit
+  users: lazy(() => import("@/features/admin/UsersScreen")),
+  roles: lazy(() => import("@/features/admin/RolesScreen")),
+  "security-audit": lazy(() => import("@/features/admin/SecurityAuditScreen")),
   // Development gallery of the input engine (opened from the header in dev builds only).
   gallery: lazy(() => import("@/features/gallery/GalleryScreen")),
 };

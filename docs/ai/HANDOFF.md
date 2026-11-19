@@ -30,10 +30,14 @@
    - فواتير المبيعات (`SalesInvoicesScreen.tsx`, `SalesInvoiceCardScreen.tsx`) بـ 50 سطراً جاهزاً والترحيل والعكس.
    - سندات الخزينة قبض ودفع (`TreasuryVouchersScreen.tsx`, `TreasuryVoucherCardScreen.tsx`).
    - دفتر الأستاذ (`AccountLedgerScreen.tsx`) وميزان المراجعة (`TrialBalanceScreen.tsx`) مع تصدير Excel/TSV فوري.
-5. **نتائج التحقق الفني:**
+5. **شاشات المستودعات والمشتريات وإدارة النظام:**
+   - دليل المواد (`ItemsScreen.tsx`) ودليل المستودعات (`WarehousesScreen.tsx`) ووحدات القياس (`UnitsScreen.tsx`).
+   - فواتير المشتريات (`PurchaseInvoicesScreen.tsx`, `PurchaseInvoiceCardScreen.tsx`) مع 50 سطراً جاهزاً والترحيل والعكس وتحديث أرصدة المخزون والذمم خادمياً.
+   - إدارة المستخدمين (`UsersScreen.tsx`) والأدوار والصلاحيات (`RolesScreen.tsx`) وسجل التدقيق والأمان (`SecurityAuditScreen.tsx`).
+6. **نتائج التحقق الفني المحدثة:**
    - Vitest: 60/60 اختباراً ناجحاً بنسبة 100%.
    - TypeScript Strict (`strict: true`, `exactOptionalPropertyTypes: true`): 0 أخطاء.
-   - Vite Production Build: 20 ملف chunk جاهزة للإنتاج بنجاح تام.
+   - Vite Production Build: 28 ملف chunk جاهزة للإنتاج بنجاح تام.
    - API Client Check: `npm run api:check` متطابق تماماً مع العقد الخادمي.
 
 ## الحالة المؤكدة سابقًا (من docs/closure، مُشغَّلة فعليًا قبل هذه الحزمة)
