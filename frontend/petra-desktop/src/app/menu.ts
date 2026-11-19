@@ -60,12 +60,15 @@ export const topMenus: readonly MenuItem[] = [
     id: "reports",
     label: "menu.reports",
     children: [
+      { id: "general-journal", label: "menu.general_journal", screen: "general-journal" },
       { id: "trial-balance", label: "menu.trial_balance", screen: "trial-balance" },
       { id: "account-ledger", label: "menu.account_ledger", screen: "account-ledger" },
       { id: "financial-reports", label: "menu.financial_reports", screen: "financial-reports" },
       { id: "aging-report", label: "menu.aging_report", screen: "aging-report" },
       { id: "sales-analysis", label: "menu.sales_analysis", screen: "sales-analysis" },
       { id: "purchase-analysis", label: "menu.purchase_analysis", screen: "purchase-analysis" },
+      { id: "inventory-valuation", label: "menu.inventory_valuation", screen: "inventory-valuation" },
+      { id: "inventory-movements", label: "menu.inventory_movements", screen: "inventory-movements" },
     ],
   },
   {

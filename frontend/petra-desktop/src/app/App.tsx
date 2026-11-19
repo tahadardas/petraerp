@@ -68,12 +68,15 @@ export function App() {
     { id: "cmd-users", title: "إدارة المستخدمين", category: "الإعدادات", screen: "users" },
     { id: "cmd-roles", title: "الأدوار والصلاحيات", category: "الإعدادات", screen: "roles" },
     { id: "cmd-security-audit", title: "سجل التدقيق والأمان", category: "الصيانة", screen: "security-audit" },
+    { id: "cmd-general-journal", title: "دفتر اليومية العام", category: "التقارير", screen: "general-journal" },
     { id: "cmd-trial-balance", title: "ميزان المراجعة العام", category: "التقارير", screen: "trial-balance" },
     { id: "cmd-account-ledger", title: "دفتر الأستاذ للحساب", category: "التقارير", screen: "account-ledger" },
     { id: "cmd-financial-reports", title: "القوائم المالية (قائمة الدخل والميزانية)", category: "التقارير", screen: "financial-reports" },
     { id: "cmd-aging-report", title: "تقرير أعمار الذمم والديون", category: "التقارير", screen: "aging-report" },
     { id: "cmd-sales-analysis", title: "تقرير تحليل المبيعات", category: "التقارير", screen: "sales-analysis" },
     { id: "cmd-purchase-analysis", title: "تقرير تحليل المشتريات", category: "التقارير", screen: "purchase-analysis" },
+    { id: "cmd-inventory-valuation", title: "تقييم بضاعة آخر المدة والمخزون", category: "التقارير", screen: "inventory-valuation" },
+    { id: "cmd-inventory-movements", title: "كشف حركة مادة تفصيلي", category: "المستودعات", screen: "inventory-movements" },
     { id: "cmd-switch-context", title: "تبديل الشركة أو الفرع أو السنة المالية", category: "النظام", action: () => setContextModalOpen(true) },
   ], []);
 

@@ -34,11 +34,14 @@ export const screens: Readonly<Record<string, ScreenLoader>> = {
   "open-items": lazy(() => import("@/features/treasury/OpenItemsSettlementScreen")),
   // Core Accounting Reports
   "account-ledger": lazy(() => import("@/features/reports/AccountLedgerScreen")),
+  "general-journal": lazy(() => import("@/features/reports/GeneralJournalScreen")),
   "trial-balance": lazy(() => import("@/features/reports/TrialBalanceScreen")),
   "financial-reports": lazy(() => import("@/features/reports/FinancialStatementsScreen")),
   "aging-report": lazy(() => import("@/features/reports/AgingReportScreen")),
   "sales-analysis": lazy(() => import("@/features/reports/SalesAnalysisScreen")),
   "purchase-analysis": lazy(() => import("@/features/reports/PurchaseAnalysisScreen")),
+  "inventory-valuation": lazy(() => import("@/features/reports/InventoryValuationScreen")),
+  "inventory-movements": lazy(() => import("@/features/reports/InventoryMovementsScreen")),
   // Inventory
   items: lazy(() => import("@/features/inventory/ItemsScreen")),
   warehouses: lazy(() => import("@/features/inventory/WarehousesScreen")),

@@ -12,7 +12,7 @@ ACC-01,Chart of Accounts,/accounts,DONE,accounts.view,GET /ledger/chart/accounts
 ACC-02,Quick Account Directory,/accounts/lookup,DONE,accounts.view,GET /ledger/accounts,LookupPicker.tsx / Vitest
 ACC-03,Journal Entries List & Card,/journals,DONE,journals.view;journals.create,GET/POST /ledger/journals,JournalsScreen.tsx / JournalEntryScreen.tsx
 ACC-04,Daily Voucher,/daily-vouchers,DONE,journals.view,POST /ledger/journals,JournalsScreen.tsx (Mapped to VoucherKind)
-ACC-05,General Journal Book,/reports/general-journal,SCHEDULED,reports.view,GET /ledger/journals,OpenAPI Defined
+ACC-05,General Journal Book,/reports/general-journal,DONE,reports.view,GET /ledger/reports/general-journal,GeneralJournalScreen.tsx
 ACC-06,Account Ledger,/reports/account-ledger,DONE,ledger.view,GET /ledger/reports/account-ledger/{id},AccountLedgerScreen.tsx
 ACC-07,Trial Balance,/reports/trial-balance,DONE,trial_balance.view,GET /ledger/reports/trial-balance,TrialBalanceScreen.tsx
 ACC-08,Currency Balance,/reports/currency-balance,SCHEDULED,reports.view,GET /currencies/rates/effective,OpenAPI Defined
@@ -54,7 +54,7 @@ REP-02,Executive Dashboard,/reports/executive,SCHEDULED,reports.executive,GET /r
 REP-03,Financial Reports Center,/reports/financial,DONE,reports.financial,GET /reports/financial/income-statement,FinancialStatementsScreen.tsx
 REP-04,Reports Center Catalog,/reports,SCHEDULED,reports.view,GET /reporting/catalog,OpenAPI Defined
 REP-05,Analytical Reports,/reports/analytical,DONE,reports.view,GET /reports/sales-analysis; /reports/purchase-analysis,SalesAnalysisScreen.tsx / PurchaseAnalysisScreen.tsx / AgingReportScreen.tsx
-REP-06,Movements Reports,/reports/movements,SCHEDULED,reports.view,GET /reports/inventory/movements/{id},OpenAPI Defined
+REP-06,Movements & Valuation Reports,/reports/movements,DONE,reports.view,GET /reports/inventory/valuation; /reports/inventory/movements/{id},InventoryValuationScreen.tsx / InventoryMovementsScreen.tsx
 ADM-01,Users Administration,/admin/users,DONE,admin.users,GET/POST /admin/users,UsersScreen.tsx / Vite Build
 ADM-02,Roles & Permissions,/admin/roles,DONE,admin.roles,GET/POST /admin/roles,RolesScreen.tsx / Vite Build
 ADM-03,Security Audit Log,/admin/audit,DONE,admin.audit,GET /audit/security-events,SecurityAuditScreen.tsx / Vite Build
