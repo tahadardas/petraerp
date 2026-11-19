@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PetraERP.Domain/PetraERP.Domain.csproj" />
+    <Project Path="src/PetraERP.Application/PetraERP.Application.csproj" />
+    <Project Path="src/PetraERP.Contracts/PetraERP.Contracts.csproj" />
+    <Project Path="src/PetraERP.Infrastructure/PetraERP.Infrastructure.csproj" />
+    <Project Path="src/PetraERP.Api/PetraERP.Api.csproj" />
+    <Project Path="src/PetraERP.ApiClient/PetraERP.ApiClient.csproj" />
+    <Project Path="src/PetraERP.Reporting.OpenSource/PetraERP.Reporting.OpenSource.csproj" />
+    <Project Path="src/PetraERP.Modules.Abstractions/PetraERP.Modules.Abstractions.csproj" />
+    <Project Path="src/PetraERP.Modules.Packaging/PetraERP.Modules.Packaging.csproj" />
+    <Project Path="src/PetraERP.Modules.Host/PetraERP.Modules.Host.csproj" />
+    <Project Path="src/PetraERP.Modules.Sample/PetraERP.Modules.Sample.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PetraERP.Reporting.Tests/PetraERP.Reporting.Tests.csproj" />
+    <Project Path="tests/PetraERP.Infrastructure.Tests/PetraERP.Infrastructure.Tests.csproj" />
+    <Project Path="tests/PetraERP.Application.Tests/PetraERP.Application.Tests.csproj" />
+    <Project Path="tests/PetraERP.Domain.Tests/PetraERP.Domain.Tests.csproj" />
+    <Project Path="tests/PetraERP.Api.Tests/PetraERP.Api.Tests.csproj" />
+    <Project Path="tests/PetraERP.Modules.Tests/PetraERP.Modules.Tests.csproj" />
+  </Folder>
+</Solution>

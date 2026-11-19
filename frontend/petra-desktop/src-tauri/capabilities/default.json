@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Minimal window permissions. No file-system, shell or network plugin is granted: the UI talks to the API over HTTPS only.",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}

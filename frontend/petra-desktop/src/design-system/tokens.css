@@ -1,0 +1,87 @@
+/* Petra Calm Enterprise — design tokens. Calm surfaces, high-contrast inputs, dense but readable tables.
+   Direction (RTL/LTR) and theme are attributes on <html> (dir, data-theme); components use logical properties only. */
+:root {
+  --font-ui: "Segoe UI Variable", "Segoe UI", "Noto Sans Arabic", system-ui, sans-serif;
+  --font-mono: "Cascadia Mono", Consolas, monospace;
+  --fs-caption: 12px;
+  --fs-body: 14px;
+  --fs-title: 18px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --radius: 6px;
+  --row-height: 32px; /* dense table row; comfortable density overrides it */
+  --control-height: 34px;
+}
+
+:root[data-theme="light"] {
+  --bg-app: #eef1f5;
+  --bg-surface: #f8f9fb;
+  --bg-input: #ffffff;
+  --bg-sunken: #e6eaf0;
+  --bg-row-alt: #f1f4f8;
+  --text: #1f2933;
+  --text-muted: #55616f;
+  --border: #9aa6b4; /* inputs must stand out from the surface */
+  --divider: #d5dbe3;
+  --accent: #1f6fa3;
+  --accent-hover: #185a86;
+  --accent-contrast: #ffffff;
+  --success: #1f7a4d;
+  --warning: #9a6700;
+  --danger: #b4383d;
+  --focus: #1f6fa3;
+}
+
+:root[data-theme="dark"] {
+  --bg-app: #10181d;
+  --bg-surface: #172229;
+  --bg-input: #1d2b33;
+  --bg-sunken: #0c1317;
+  --bg-row-alt: #131d23;
+  --text: #e6edf2;
+  --text-muted: #9fb0bd;
+  --border: #4a6070;
+  --divider: #2a3a45;
+  --accent: #5aa9d6;
+  --accent-hover: #7bbfe4;
+  --accent-contrast: #08131a;
+  --success: #5fc08c;
+  --warning: #e0b04a;
+  --danger: #ef7b80;
+  --focus: #5aa9d6;
+}
+
+:root[data-density="comfortable"] {
+  --row-height: 40px;
+  --control-height: 40px;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg-app);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--fs-body);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+/* Digits are always Latin and laid out left-to-right so amounts read the same in Arabic and English. */
+.numeric {
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}

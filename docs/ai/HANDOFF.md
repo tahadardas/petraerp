@@ -8,6 +8,15 @@
 - Soak ترحيل 60 دقيقة: 6710/6710، حمل مختلط 150 طلبًا بلا فروق؛ دفتر الأستاذ عند مليون سطر: أول صفحة 3.9ث (هدف 1ث غير محقق).
 - القرار: NO-GO (`docs/closure/RELEASE_GO_NO_GO.md`).
 
+## قرار المالك: الانتقال من WPF إلى React + TypeScript + Tauri 2 (19 نوفمبر 2026)
+- **نافذ فوراً:** الواجهة الرسمية React/Tauri 2 في `frontend/petra-desktop/`؛ WPF = Legacy / Frozen / Pending Retirement (لا ميزات WPF جديدة؛ يبقى في Git مرجعاً حتى إثبات التكافؤ). ADR: `docs/adr/ADR-0003-wpf-to-react-tauri-desktop-migration.md`. `AGENTS.md` حُدِّث وفق ذلك.
+- **الفرع:** `feature/frontend-react-tauri-phase1` (من `work/core-completion-2026-11-17` عند `7795f2f`). **نقطة الرجوع:** الوسم `legacy/wpf-final-2026-11-19` (مدفوع).
+- **المرحلة 1 (هيكل) منفَّذة:** مشروع Vite+React+TS strict، عميل API مطبوع من OpenAPI، نظام نوافذ داخلية، رموز التصميم (فاتح/داكن، RTL/LTR)، قوائم علوية، غلاف Tauri مكتوب **غير مُترجَم** (Rust غير مثبّت). `PetraERP.Backend.slnx` يبني Backend دون WPF.
+- **مقسَّم المسؤوليات:** Claude Code = Backend؛ Antigravity = الواجهة. لا تعديل لملفات الآخر دون تنسيق.
+- **ما لم يُنفَّذ:** محرك الإدخال/الجداول/القوائم السياقية، أي شاشة محاسبية، ترجمة Tauri، حذف WPF (يحتاج تكافؤاً وموافقة صريحة).
+- **ملاحظة:** نص التوجيه الذي وصلني مقطوع عند «إعداد» في نهاية المرحلة الأولى؛ نفّذتُ البنود المذكورة قبله.
+- شجرة العمل فيها حذوفات docs/ لم أحذفها أنا (docs/AlAmeen10-UI، docs/Performance، قائمة البوابات…) ولم أُلزمها.
+
 ## أنماط السندات (AMN-VPAT) — تقارير في `docs/closure/voucher-patterns/`
 - GATE-000 (تدقيق) منفَّذ ومعتمد. قرارات المالك: الحساب الموحد الخيار A (للجدد/بلا حركة)؛ سند اليومية = `VoucherFormKind` فوق القبض/الدفع؛ المتعدد الطرق مؤجل؛ نمط بلا منح فروع = لا أحد (التنفيذ ينتظر موافقة على ترحيل منح للأنماط القديمة).
 - GATE-001 (مخطط v2 + ترقية + تحقق) منفَّذ ومُختبر، بانتظار موافقة (`GATE_001_REPORT.md`). فشل قائم لا علاقة به: `ApiContractTests.ContractsExposeNoBinaryFloatingPointOrRawDecimalMembers` (DTOs التجميع/الأصول).
