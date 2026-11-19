@@ -13,11 +13,29 @@ internal sealed class PetraApiOptions
 
     public long MaxRequestBodyBytes { get; set; } = 1_048_576;
 
+    /// <summary>
+    /// Extra browser origins allowed to call the API (exact scheme://host[:port], no wildcards), added to <see cref="BuiltInUiOrigins"/>.
+    /// The React UI runs in a Tauri webview or the Vite dev server, which is a different origin from the API.
+    /// </summary>
+    public string[] UiOrigins { get; set; } = [];
+
+    /// <summary>The desktop shell (Tauri on Windows serves from http(s)://tauri.localhost) and the local Vite dev server only.</summary>
+    internal static readonly string[] BuiltInUiOrigins =
+    [
+        "http://tauri.localhost", "https://tauri.localhost", "tauri://localhost",
+        "http://localhost:1420", "http://127.0.0.1:1420",
+    ];
+
     internal void Validate()
     {
         if (MaxRequestBodyBytes is < 16_384 or > 104_857_600)
         {
             throw new InvalidOperationException("Petra:Api:MaxRequestBodyBytes must be between 16 KiB and 100 MiB.");
+        }
+
+        if (UiOrigins.Any(origin => !Uri.TryCreate(origin, UriKind.Absolute, out var uri) || uri.PathAndQuery != "/" || origin.Contains('*', StringComparison.Ordinal)))
+        {
+            throw new InvalidOperationException("Petra:Api:UiOrigins must be exact origins such as https://erp.example.com (no paths, no wildcards).");
         }
     }
 }

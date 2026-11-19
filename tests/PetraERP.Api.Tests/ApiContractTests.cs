@@ -28,6 +28,31 @@ public sealed class ApiContractTests
         Assert.Contains("Bearer", response.Headers.WwwAuthenticate.ToString(), StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData("http://tauri.localhost", true)]
+    [InlineData("http://localhost:1420", true)]
+    [InlineData("https://evil.example", false)]
+    public async Task OnlyTheDesktopShellOriginsPassCorsPreflightBeforeAuthentication(string origin, bool allowed)
+    {
+        using var factory = new PetraApiFactory();
+        using var client = factory.CreateClient();
+        using var preflight = new HttpRequestMessage(HttpMethod.Options, new Uri("/api/v1/auth/login", UriKind.Relative));
+        preflight.Headers.Add("Origin", origin);
+        preflight.Headers.Add("Access-Control-Request-Method", "POST");
+        preflight.Headers.Add("Access-Control-Request-Headers", "authorization,content-type,x-petra-workspace,idempotency-key");
+        using var response = await client.SendAsync(preflight, Cancellation).ConfigureAwait(true);
+        if (allowed)
+        {
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            Assert.Equal(origin, response.Headers.GetValues("Access-Control-Allow-Origin").Single());
+            Assert.Contains("x-petra-workspace", string.Join(',', response.Headers.GetValues("Access-Control-Allow-Headers")), StringComparison.OrdinalIgnoreCase);
+        }
+        else
+        {
+            Assert.False(response.Headers.Contains("Access-Control-Allow-Origin"));
+        }
+    }
+
     [Fact]
     public async Task SuppliedCorrelationIdIsEchoedAndMalformedOnesAreReplaced()
     {

@@ -50,6 +50,19 @@ internal static class PetraServiceRegistration
         services.Configure<RouteHandlerOptions>(static options => options.ThrowOnBadRequest = true);
         services.Configure<JsonOptions>(static options => ConfigureJson(options.SerializerOptions));
 
+        // Browser/webview clients are cross-origin: answer preflights before authentication. Bearer tokens travel in a header, so no cookies/credentials.
+        services.AddCors();
+        services.AddOptions<Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions>().Configure<IOptions<PetraApiOptions>>(static (cors, api) =>
+        {
+            var allowed = new HashSet<string>(PetraApiOptions.BuiltInUiOrigins.Concat(api.Value.UiOrigins), StringComparer.OrdinalIgnoreCase);
+            cors.AddPolicy(PetraPipeline.UiCorsPolicy, policy => policy
+                .SetIsOriginAllowed(origin => allowed.Contains(origin.TrimEnd('/')))
+                .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+                .WithHeaders("Authorization", "Content-Type", "Accept", "Accept-Language", "Idempotency-Key", "If-Match", "X-Petra-Workspace", "X-Correlation-Id")
+                .WithExposedHeaders("Server-Timing", "ETag", "Location", "X-Correlation-Id", "X-Petra-Workspace-Readiness", "Retry-After", "Content-Disposition")
+                .SetPreflightMaxAge(TimeSpan.FromMinutes(10)));
+        });
+
         services.AddProblemDetails(static options => options.CustomizeProblemDetails = ApiProblems.Customize);
         services.AddExceptionHandler<ApiExceptionHandler>();
 

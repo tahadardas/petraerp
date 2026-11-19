@@ -7,6 +7,8 @@ namespace PetraERP.Api.Hosting;
 
 internal static class PetraPipeline
 {
+    internal const string UiCorsPolicy = "PetraUi";
+
     internal static void UsePetraPipeline(this WebApplication app)
     {
         var api = app.Services.GetRequiredService<IOptions<PetraApiOptions>>().Value;
@@ -28,6 +30,7 @@ internal static class PetraPipeline
 
         app.UseResponseCompression();
         app.UseRouting();
+        app.UseCors(UiCorsPolicy);
         app.UseRateLimiter();
         app.UseAuthentication();
         app.UseAuthorization();
