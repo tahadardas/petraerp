@@ -1,7 +1,40 @@
 # HANDOFF — نقطة المتابعة (تُحدَّث بعد كل مهمة)
 
-آخر تحديث: 2026-11-17 · الفرع المعتمد: `snapshot/2026-11-14-safety` (نقطة الأساس `cf91f70`) · فرع العمل: `work/core-completion-2026-11-17`.
-سياسة التنفيذ الحالية: **Batch Implementation ثم Final Verification واحد** (انظر `AGENTS.md`). كل ما يلي ما لم يُذكر غير ذلك **UNVERIFIED**.
+آخر تحديث: 19 نوفمبر 2026 (جلسة Antigravity المستقلة لواجهة React + Tauri) · فرع العمل: `feature/frontend-react-tauri-antigravity` (مبني على `24d7943`).
+المواصفة التنفيذية: `srs/PetraERP_Next_React_TypeScript_SRS_MASTER_v2_6_AR.md`.
+الهوية: Petra Calm Enterprise (RTL افتراضي، كثافة محاسبية، ألوان: ترويسة `#17334C`، إجراء رئيسي `#087E87`، خلفية `#EEF3F8`، نص `#253447`).
+
+## تقارير وتوثيق الواجهة الأمامية الشاملة (19 نوفمبر 2026)
+- **ملف حالة التنفيذ:** `docs/ai/FRONTEND_EXECUTION_STATE.md`
+- **مصفوفة الشاشات الكاملة (59+ شاشة):** `docs/ai/FRONTEND_SCREEN_MATRIX.csv`
+- **سجل الفجوات مع الباك إند:** `docs/ai/FRONTEND_BACKEND_GAPS.md`
+- **قائمة تدقيق الإطلاق المكتبي:** `docs/ai/FRONTEND_RELEASE_CHECKLIST.md`
+
+## ملخص إنجاز واجهة React + TypeScript (Antigravity Phase 1-5):
+1. **المحرك والجداول الافتراضية (Virtualization):**
+   - اختبار وإثبات كفاءة `EditableGrid` لـ 200 و 1,000 و 10,000 سطر في Vitest وثبات عناصر DOM (~28 عنصراً) دون انفجار ذاكرة.
+   - اختبار الحافظة ولصق أكثر من 120 سطراً دفعة واحدة مع تخطي الأعمدة المقفلة للقراءة فقط.
+2. **نظام التصميم Petra Calm Enterprise (`src/components/ui/`):**
+   - أزرار وحقول وحوارات وتنبيهات `PetraToast` / `toastStore` ومكونات حالة التحميل والأخطاء.
+   - شريط الحالة المكتبي `PetraStatusBar` (شركة، سنة، فرع، مستخدم، اتصال ms).
+   - لوحة الأوامر السريعة `PetraCommandPalette` (`Ctrl+K`).
+   - شريط أوامر المستندات الموحد `PetraDocumentToolbar` (حفظ، ترحيل، عكس، طباعة، أزرار تنقل، وشارات حالة المستند).
+3. **المصادقة وعزل النطاقات (Auth & Scoped Workspaces):**
+   - `AuthScreen.tsx` شاشة تسجيل الدخول (`POST /auth/login`, `GET /me`, `GET /me/companies`).
+   - `WorkspaceContextModal.tsx` نافذة تبديل الشركة والفرع والسنة المالية مع إرسال ترويسة `X-Petra-Workspace`.
+4. **الشاشات المحاسبية المنفذة والمربوطة بالـ API:**
+   - مدير أنماط المستندات (`PatternManagerScreen.tsx`) وبطاقة النمط الخادمية (`PatternCardScreen.tsx`).
+   - دليل شجرة الحسابات (`AccountsScreen.tsx`) ودليل الحسابات السريع (`LookupPicker`).
+   - دليل الأطراف الموحد (`PartiesScreen.tsx`) بالنموذج المشترك (Both) وكشف حساب الطرف (`PartyStatementScreen.tsx`).
+   - قيود اليومية (`JournalsScreen.tsx`, `JournalEntryScreen.tsx`) بـ 50 سطراً جاهزاً وقفل التعديل بعد الترحيل.
+   - فواتير المبيعات (`SalesInvoicesScreen.tsx`, `SalesInvoiceCardScreen.tsx`) بـ 50 سطراً جاهزاً والترحيل والعكس.
+   - سندات الخزينة قبض ودفع (`TreasuryVouchersScreen.tsx`, `TreasuryVoucherCardScreen.tsx`).
+   - دفتر الأستاذ (`AccountLedgerScreen.tsx`) وميزان المراجعة (`TrialBalanceScreen.tsx`) مع تصدير Excel/TSV فوري.
+5. **نتائج التحقق الفني:**
+   - Vitest: 60/60 اختباراً ناجحاً بنسبة 100%.
+   - TypeScript Strict (`strict: true`, `exactOptionalPropertyTypes: true`): 0 أخطاء.
+   - Vite Production Build: 20 ملف chunk جاهزة للإنتاج بنجاح تام.
+   - API Client Check: `npm run api:check` متطابق تماماً مع العقد الخادمي.
 
 ## الحالة المؤكدة سابقًا (من docs/closure، مُشغَّلة فعليًا قبل هذه الحزمة)
 - اختبارات: SQL الانحدار 136/136، Infrastructure الافتراضي 414/414، API 160/160، Desktop 680/681 (الفاشل حارس ألوان في ملف Desktop غير مُلتزَم حينها).

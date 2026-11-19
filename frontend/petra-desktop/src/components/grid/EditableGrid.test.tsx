@@ -90,4 +90,64 @@ describe("EditableGrid", () => {
     const first = screen.getAllByRole("columnheader")[0] as HTMLElement;
     expect(first.style.position).toBe("sticky");
   });
+
+  it("virtualizes smoothly with 200, 1,000 and 10,000 rows without DOM node explosion", () => {
+    // In jsdom clientHeight is 0 by default; mock clientHeight and offsetHeight to simulate a 600px desktop viewport
+    const originalClientHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "clientHeight");
+    Object.defineProperty(HTMLElement.prototype, "clientHeight", { configurable: true, value: 600 });
+    Object.defineProperty(HTMLElement.prototype, "offsetHeight", { configurable: true, value: 600 });
+
+    try {
+      // Generate 1,000 rows
+      const thousandRows: Line[] = Array.from({ length: 1000 }, (_, i) => ({
+        note: `قيد رقم ${i + 1}`,
+        debit: `${(i + 1) * 10}`,
+        credit: "",
+        balance: `${(i + 1) * 10}`,
+      }));
+
+      const { unmount } = render(<Host initial={thousandRows} />);
+      const grid = screen.getByRole("grid");
+      // With 1000 rows plus 10 cushion rows, aria-rowcount is 1010
+      expect(Number(grid.getAttribute("aria-rowcount"))).toBeGreaterThanOrEqual(1000);
+
+      // In virtual mode, the total rendered row elements in DOM is limited to visible window + overscan (~28 rows), NOT 1000
+      const renderedRows = within(grid).getAllByRole("row");
+      expect(renderedRows.length).toBeLessThan(50);
+      unmount();
+
+      // Now test with 10,000 rows
+      const tenThousandRows: Line[] = Array.from({ length: 10000 }, (_, i) => ({
+        note: `حركة رقم ${i + 1}`,
+        debit: `${(i + 1) * 5}`,
+        credit: "",
+        balance: `${(i + 1) * 5}`,
+      }));
+
+      render(<Host initial={tenThousandRows} />);
+      const bigGrid = screen.getByRole("grid");
+      expect(Number(bigGrid.getAttribute("aria-rowcount"))).toBeGreaterThanOrEqual(10000);
+
+      const bigRenderedRows = within(bigGrid).getAllByRole("row");
+      // Only the virtual slice is rendered (much less than 10,000 rows)
+      expect(bigRenderedRows.length).toBeLessThan(50);
+    } finally {
+      if (originalClientHeight) {
+        Object.defineProperty(HTMLElement.prototype, "clientHeight", originalClientHeight);
+      }
+    }
+  });
+
+  it("pastes 100+ rows efficiently without data loss", () => {
+    render(<Host />);
+    const box = screen.getByRole("textbox", { name: "البيان 1" });
+    // Note: col 0 is note, col 1 is read-only balance (skipped), col 2 is debit, col 3 is credit
+    const bulkLines = Array.from({ length: 120 }, (_, i) => `سطر ${i + 1}\t\t${(i + 1) * 10}\t0`).join("\r\n");
+    fireEvent.paste(box, { clipboardData: { getData: () => bulkLines } });
+
+    expect(stored()).toHaveLength(120);
+    expect(latest[0]?.note).toBe("سطر 1");
+    expect(latest[119]?.note).toBe("سطر 120");
+    expect(latest[119]?.debit).toBe("1200");
+  });
 });

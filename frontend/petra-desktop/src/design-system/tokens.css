@@ -1,7 +1,7 @@
 /* Petra Calm Enterprise — design tokens. Calm surfaces, high-contrast inputs, dense but readable tables.
    Direction (RTL/LTR) and theme are attributes on <html> (dir, data-theme); components use logical properties only. */
 :root {
-  --font-ui: "Segoe UI Variable", "Segoe UI", "Noto Sans Arabic", system-ui, sans-serif;
+  --font-ui: "IBM Plex Sans Arabic", "Segoe UI Variable", "Segoe UI", "Noto Sans Arabic", system-ui, sans-serif;
   --font-mono: "Cascadia Mono", Consolas, monospace;
   --fs-caption: 12px;
   --fs-body: 14px;
@@ -11,47 +11,57 @@
   --space-3: 12px;
   --space-4: 16px;
   --space-6: 24px;
-  --radius: 6px;
+  --radius: 4px;
   --row-height: 32px; /* dense table row; comfortable density overrides it */
-  --control-height: 34px;
+  --control-height: 32px;
+  --header-bg: #17334C;
+  --header-text: #FFFFFF;
 }
 
 :root[data-theme="light"] {
-  --bg-app: #eef1f5;
-  --bg-surface: #f8f9fb;
-  --bg-input: #ffffff;
-  --bg-sunken: #e6eaf0;
-  --bg-row-alt: #f1f4f8;
-  --text: #1f2933;
-  --text-muted: #55616f;
-  --border: #9aa6b4; /* inputs must stand out from the surface */
-  --divider: #d5dbe3;
-  --accent: #1f6fa3;
-  --accent-hover: #185a86;
-  --accent-contrast: #ffffff;
-  --success: #1f7a4d;
-  --warning: #9a6700;
-  --danger: #b4383d;
-  --focus: #1f6fa3;
+  --bg-app: #EEF3F8;
+  --bg-surface: #FFFFFF;
+  --bg-input: #FFFFFF;
+  --bg-sunken: #E4ECF4;
+  --bg-row-alt: #EFF5FC;
+  --text: #253447;
+  --text-muted: #5A6D82;
+  --border: #CBD8E5;
+  --divider: #DCE5EE;
+  --primary: #087E87;
+  --primary-hover: #06676E;
+  --primary-contrast: #FFFFFF;
+  --accent: #087E87;
+  --accent-hover: #06676E;
+  --accent-contrast: #FFFFFF;
+  --success: #1E824C;
+  --warning: #D9822B;
+  --danger: #C0392B;
+  --focus: #087E87;
 }
 
 :root[data-theme="dark"] {
-  --bg-app: #10181d;
+  --header-bg: #0E1E2C;
+  --header-text: #E6EDF2;
+  --bg-app: #10181D;
   --bg-surface: #172229;
-  --bg-input: #1d2b33;
-  --bg-sunken: #0c1317;
-  --bg-row-alt: #131d23;
-  --text: #e6edf2;
-  --text-muted: #9fb0bd;
-  --border: #4a6070;
-  --divider: #2a3a45;
-  --accent: #5aa9d6;
-  --accent-hover: #7bbfe4;
-  --accent-contrast: #08131a;
-  --success: #5fc08c;
-  --warning: #e0b04a;
-  --danger: #ef7b80;
-  --focus: #5aa9d6;
+  --bg-input: #1D2B33;
+  --bg-sunken: #0C1317;
+  --bg-row-alt: #131D23;
+  --text: #E6EDF2;
+  --text-muted: #9FB0BD;
+  --border: #3A4E5E;
+  --divider: #253440;
+  --primary: #12A5B0;
+  --primary-hover: #18BDCA;
+  --primary-contrast: #08131A;
+  --accent: #12A5B0;
+  --accent-hover: #18BDCA;
+  --accent-contrast: #08131A;
+  --success: #38A169;
+  --warning: #DD6B20;
+  --danger: #E53E3E;
+  --focus: #12A5B0;
 }
 
 :root[data-density="comfortable"] {

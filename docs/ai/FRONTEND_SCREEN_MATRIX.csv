@@ -1,0 +1,69 @@
+ScreenId,ScreenName,Route,Status,Permissions,BackendEndpoint,Evidence
+AUTH-00,Company Picker,/auth/companies,DONE,Public,GET /api/v1/me/workspaces,AuthScreen.tsx / Vitest
+AUTH-01,Company Login,/auth/login,DONE,Public,POST /api/v1/auth/login,AuthScreen.tsx / Vitest
+WS-01,Workspace Context Modal,/workspace/switch,DONE,Authenticated,GET /api/v1/me/companies,WorkspaceContextModal.tsx
+DR-01,Disaster Recovery Wizard,/recovery/wizard,BLOCKED_BY_BACKEND,Admin,POST /api/v1/administration/backups/test-restore,SEC-DR-SRS Pending v2
+WS-02,Company Creation Wizard,/workspace/companies/new,SCHEDULED,Admin,POST /api/v1/workspaces/companies,OpenAPI Defined
+WS-03,Fiscal Year Manager,/workspace/fiscal-years,SCHEDULED,Admin,GET/POST /api/v1/workspaces/fiscal-years,OpenAPI Defined
+WS-04,Main Workspace Shell,/workspace,DONE,Authenticated,Local State + Session,WorkspaceShell.tsx / App.tsx
+WS-05,Command Palette & Favorites,/workspace/palette,DONE,Authenticated,Ctrl+K Local Registry,PetraCommandPalette.tsx
+WS-06,User Preferences,/settings/preferences,SCHEDULED,Authenticated,/workspace/preferences,OpenAPI Defined
+ACC-01,Chart of Accounts,/accounts,DONE,accounts.view,GET /ledger/chart/accounts/tree,AccountsScreen.tsx / Vitest
+ACC-02,Quick Account Directory,/accounts/lookup,DONE,accounts.view,GET /ledger/accounts,LookupPicker.tsx / Vitest
+ACC-03,Journal Entries List & Card,/journals,DONE,journals.view;journals.create,GET/POST /ledger/journals,JournalsScreen.tsx / JournalEntryScreen.tsx
+ACC-04,Daily Voucher,/daily-vouchers,DONE,journals.view,POST /ledger/journals,JournalsScreen.tsx (Mapped to VoucherKind)
+ACC-05,General Journal Book,/reports/general-journal,SCHEDULED,reports.view,GET /ledger/journals,OpenAPI Defined
+ACC-06,Account Ledger,/reports/account-ledger,DONE,ledger.view,GET /ledger/reports/account-ledger/{id},AccountLedgerScreen.tsx
+ACC-07,Trial Balance,/reports/trial-balance,DONE,trial_balance.view,GET /ledger/reports/trial-balance,TrialBalanceScreen.tsx
+ACC-08,Currency Balance,/reports/currency-balance,SCHEDULED,reports.view,GET /currencies/rates/effective,OpenAPI Defined
+ACC-09,Cost Centers Directory,/cost-centers,SCHEDULED,cost_centers.view,GET /ledger/chart/cost-centers/tree,OpenAPI Defined
+ACC-10,Fiscal Periods,/settings/periods,SCHEDULED,admin.periods,GET /workspaces/fiscal-years,OpenAPI Defined
+ACC-11,Batch Posting Manager,/posting/batches,SCHEDULED,posting.manage,GET/POST /posting-batches,OpenAPI Defined
+ACC-12,Opening Balances,/accounting/opening-balances,SCHEDULED,opening_balances.manage,GET/POST /opening-balances,OpenAPI Defined
+ACC-13,Fiscal Year Rollover,/admin/rollover,SCHEDULED,admin.rollover,POST /workspaces/rollover/preview,OpenAPI Defined
+ACC-14,Account Reconciliation,/accounting/reconciliation,SCHEDULED,reconciliation.view,GET /reconciliation,OpenAPI Defined
+PARTY-01,Parties Directory,/parties,DONE,parties.view;parties.manage,GET /parties,PartiesScreen.tsx / Vitest
+PARTY-02,Customer Statement,/parties/customer-statement,DONE,parties.view,GET /reports/parties/{id}/statement,PartyStatementScreen.tsx
+PARTY-03,Supplier Statement,/parties/supplier-statement,DONE,parties.view,GET /reports/parties/{id}/statement,PartyStatementScreen.tsx
+PARTY-04,Unified Party Statement,/parties/statement,DONE,parties.view,GET /reports/parties/{id}/statement,PartyStatementScreen.tsx
+INV-01,Items Directory & Card,/inventory/items,IN_PROGRESS,inventory.view;inventory.manage,GET/POST /inventory/items,ItemsScreen.tsx
+INV-02,Quick Item Directory,/inventory/lookup,DONE,inventory.view,GET /inventory/items/lookup,LookupPicker.tsx
+INV-03,Units & Conversions,/inventory/units,IN_PROGRESS,inventory.manage,GET/POST /inventory/units,UnitsScreen.tsx
+INV-04,Warehouses Directory,/inventory/warehouses,IN_PROGRESS,inventory.manage,GET/POST /inventory/warehouses,WarehousesScreen.tsx
+INV-05,Inventory Operations,/inventory/operations,SCHEDULED,inventory.operations,GET/POST /inventory/documents,OpenAPI Defined
+INV-06,Stocktaking,/inventory/stocktaking,SCHEDULED,inventory.stocktake,POST /inventory/adjustments,OpenAPI Defined
+INV-07,Item Price Tool,/inventory/prices,SCHEDULED,inventory.pricing,POST /inventory/price-adjustments,OpenAPI Defined
+INV-08,Item Limits,/inventory/limits,SCHEDULED,inventory.manage,GET /inventory/items/{id}/stock,OpenAPI Defined
+INV-09,Assembly & Disassembly,/inventory/assembly,FROZEN_OR_BLOCKED,inventory.assembly,None,SRS INV-09 Blocked Explicitly
+PAT-01,Document Pattern Manager,/patterns,DONE,patterns.view;patterns.manage,GET /document-patterns,PatternManagerScreen.tsx
+PAT-02,Pattern Card Screen,/patterns/:id,DONE,patterns.manage,GET /document-patterns/{id}/effective,PatternCardScreen.tsx
+SALES-01,Sales Invoices List,/sales/invoices,DONE,sales.view;sales.create,GET /sales/invoices,SalesInvoicesScreen.tsx
+SALES-02,Sales Invoice Card,/sales/invoices/:id,DONE,sales.create;sales.post,POST /sales/invoices; /post; /reverse,SalesInvoiceCardScreen.tsx
+PURCHASE-01,Purchase Invoices List & Card,/purchases/invoices,IN_PROGRESS,purchases.view;purchases.create,GET/POST /purchases/invoices,PurchaseInvoicesScreen.tsx
+INVOICE-PRINT,Document Print Preview,/print/preview,SCHEDULED,documents.print,GET /reporting/execute,OpenAPI Defined
+TR-01,Treasury Receipts List & Card,/treasury/receipts,DONE,treasury.receipt,GET/POST /treasury/vouchers,TreasuryVouchersScreen.tsx
+TR-02,Treasury Payments List & Card,/treasury/payments,DONE,treasury.payment,GET/POST /treasury/vouchers,TreasuryVouchersScreen.tsx
+TR-03,Commercial Cheques,/treasury/cheques,SCHEDULED,treasury.cheques,None,API Contract Pending
+TR-04,Bank Reconciliation,/treasury/bank-reconciliation,SCHEDULED,treasury.reconcile,None,API Contract Pending
+TR-05,Open Items Settlement,/treasury/settlements,SCHEDULED,treasury.settle,GET /open-items,OpenAPI Defined
+FX-01,Currencies Manager,/currencies,SCHEDULED,currencies.manage,GET /currencies,OpenAPI Defined
+FX-02,Exchange Rate Bulletin,/currencies/rates,SCHEDULED,currencies.rates,GET /currencies/rates/bulletin,OpenAPI Defined
+FX-03,FX Revaluation,/currencies/revaluation,SCHEDULED,currencies.revaluation,POST /currencies/fx-revaluation/preview,OpenAPI Defined
+REP-01,Home Overview Dashboard,/home,DONE,Authenticated,Client Shell KPIs,HomeScreen.tsx
+REP-02,Executive Dashboard,/reports/executive,SCHEDULED,reports.executive,GET /reporting/execute,OpenAPI Defined
+REP-03,Financial Reports Center,/reports/financial,SCHEDULED,reports.financial,GET /reports/financial/income-statement,OpenAPI Defined
+REP-04,Reports Center Catalog,/reports,SCHEDULED,reports.view,GET /reporting/catalog,OpenAPI Defined
+REP-05,Analytical Reports,/reports/analytical,SCHEDULED,reports.view,GET /reporting/execute,OpenAPI Defined
+REP-06,Movements Reports,/reports/movements,SCHEDULED,reports.view,GET /reports/inventory/movements/{id},OpenAPI Defined
+ADM-01,Users Administration,/admin/users,IN_PROGRESS,admin.users,GET/POST /admin/users,UsersScreen.tsx
+ADM-02,Roles & Permissions,/admin/roles,IN_PROGRESS,admin.roles,GET/POST /admin/roles,RolesScreen.tsx
+ADM-03,Security Audit Log,/admin/audit,IN_PROGRESS,admin.audit,GET /audit/security-events,SecurityAuditScreen.tsx
+ADM-04,Document Number Maintenance,/admin/document-numbers,SCHEDULED,admin.numbering,GET /document-numbers/audit,OpenAPI Defined
+ADM-05,Branches Tree & Setup,/admin/branches,SCHEDULED,admin.branches,GET /branch-admin/tree,OpenAPI Defined
+ADM-06,Branch Comparison,/reports/branch-comparison,SCHEDULED,reports.branches,GET /branch-reports/trial-balance,OpenAPI Defined
+ADM-07,Inter-Company Settlement,/admin/inter-company,SCHEDULED,admin.intercompany,GET /inter-company/links,OpenAPI Defined
+ADM-08,Encrypted Backups & Disaster Recovery,/admin/backups,BLOCKED_BY_BACKEND,admin.backups,GET/POST /administration/backups,Blocked by SRS SEC-DR-SRS
+ADM-09,Al-Ameen Migration Import,/migration/alameen,SCHEDULED,admin.migration,POST /migration/alameen/preview,OpenAPI Defined
+ADM-10,Company Policies & Options,/admin/company-options,SCHEDULED,admin.settings,GET /workspace/preferences,OpenAPI Defined
+ADM-11,Print Template Designer,/admin/print-templates,SCHEDULED,admin.print,None,API Contract Pending
+ADM-12,Multi-Window Manager,/workspace/windows,DONE,Authenticated,Local Tab/Window Shell,WorkspaceShell.tsx
