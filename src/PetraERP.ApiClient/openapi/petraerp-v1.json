@@ -36545,7 +36545,9 @@
           "CashReceipt",
           "CashPayment",
           "CashJournal",
-          "ManualJournal"
+          "ManualJournal",
+          "Assembly",
+          "Disassembly"
         ]
       },
       "CashAccountDto": {
@@ -44094,6 +44096,19 @@
             "type": "integer",
             "format": "int32"
           },
+          "voucher": {
+            "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/PatternVoucherPolicyDto"
+              }
+            ]
+          },
           "defaultWarehouseId": {
             "type": "string",
             "format": "uuid",
@@ -44297,6 +44312,29 @@
           "Published",
           "Retired"
         ]
+      },
+      "PatternVoucherPolicyDto": {
+        "type": "object",
+        "properties": {
+          "formKind": {
+            "$ref": "#/components/schemas/VoucherFormKind"
+          },
+          "captionMode": {
+            "$ref": "#/components/schemas/VoucherCaptionMode"
+          },
+          "denyMutationsOnOrBefore": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "perLineJournal": {
+            "type": "boolean"
+          },
+          "autoPost": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
       },
       "PaymentMethod": {
         "enum": [
@@ -49752,7 +49790,11 @@
           "TransferOut",
           "AdjustmentIncrease",
           "AdjustmentDecrease",
-          "InternalIssue"
+          "InternalIssue",
+          "AssemblyIssue",
+          "AssemblyReceipt",
+          "DisassemblyIssue",
+          "DisassemblyReceipt"
         ]
       },
       "StockMovementPageResponse": {
@@ -51224,6 +51266,12 @@
         },
         "additionalProperties": false
       },
+      "VoucherCaptionMode": {
+        "enum": [
+          "DebitCredit",
+          "FromTo"
+        ]
+      },
       "VoucherDetailDto": {
         "required": [
           "exchangeRate",
@@ -51384,6 +51432,13 @@
           }
         },
         "additionalProperties": false
+      },
+      "VoucherFormKind": {
+        "enum": [
+          "GenericVoucher",
+          "MultiMethodReceipt",
+          "MultiMethodPayment"
+        ]
       },
       "VoucherKind": {
         "enum": [

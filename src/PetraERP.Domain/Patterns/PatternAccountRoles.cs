@@ -119,7 +119,9 @@ public static class PatternAccountRoles
         if (approval.ThresholdAmount is { } threshold && (threshold < 0m || decimal.Round(threshold, 4) != threshold))
             throw RuleViolation.Create(ApprovalInvalid, "The approval threshold must be a non-negative amount with at most four decimals.");
 
-        return configuration with { AccountMappings = mappings, NumberingPolicy = numbering, ApprovalPolicy = approval };
+        var voucher = VoucherPatternRules.Validate(kind, configuration.Voucher);
+        var upgraded = PatternConfigurationUpgrader.ToCurrent(configuration);
+        return upgraded with { AccountMappings = mappings, NumberingPolicy = numbering, ApprovalPolicy = approval, Voucher = voucher };
     }
 
     /// <summary>Publishing fails closed when the operation's engine would be unable to post with this configuration.</summary>

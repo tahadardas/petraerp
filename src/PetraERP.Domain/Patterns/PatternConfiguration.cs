@@ -6,7 +6,13 @@
 /// </summary>
 public sealed record PatternConfiguration
 {
+    /// <summary>Version 2 adds the optional <see cref="Voucher"/> block; version-1 revisions stay valid and run with its defaults.</summary>
+    public const int CurrentSchemaVersion = 2;
+
     public int SchemaVersion { get; init; } = 1;
+
+    /// <summary>Voucher run settings; null = defaults (see <see cref="VoucherPatternRules.Effective"/>). Only for voucher operations.</summary>
+    public PatternVoucherPolicy? Voucher { get; init; }
 
     public Guid? DefaultWarehouseId { get; init; }
 

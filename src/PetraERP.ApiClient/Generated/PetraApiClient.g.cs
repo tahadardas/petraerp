@@ -53670,6 +53670,9 @@ namespace PetraERP.ApiClient
         [System.Text.Json.Serialization.JsonPropertyName("schemaVersion")]
         public int? SchemaVersion { get; set; } = default!;
 
+        [System.Text.Json.Serialization.JsonPropertyName("voucher")]
+        public PatternVoucherPolicyDto? Voucher { get; set; } = default!;
+
         [System.Text.Json.Serialization.JsonPropertyName("defaultWarehouseId")]
         public System.Guid? DefaultWarehouseId { get; set; } = default!;
 
@@ -53861,6 +53864,27 @@ namespace PetraERP.ApiClient
 
         [System.Runtime.Serialization.EnumMember(Value = @"Retired")]
         Retired = 3,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class PatternVoucherPolicyDto
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("formKind")]
+        public VoucherFormKind? FormKind { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("captionMode")]
+        public VoucherCaptionMode? CaptionMode { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("denyMutationsOnOrBefore")]
+        public System.DateOnly? DenyMutationsOnOrBefore { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("perLineJournal")]
+        public bool? PerLineJournal { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("autoPost")]
+        public bool? AutoPost { get; set; } = default!;
 
     }
 
@@ -58107,6 +58131,18 @@ namespace PetraERP.ApiClient
         [System.Runtime.Serialization.EnumMember(Value = @"InternalIssue")]
         InternalIssue = 9,
 
+        [System.Runtime.Serialization.EnumMember(Value = @"AssemblyIssue")]
+        AssemblyIssue = 10,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AssemblyReceipt")]
+        AssemblyReceipt = 11,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"DisassemblyIssue")]
+        DisassemblyIssue = 12,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"DisassemblyReceipt")]
+        DisassemblyReceipt = 13,
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -59118,6 +59154,18 @@ namespace PetraERP.ApiClient
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum VoucherCaptionMode
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"DebitCredit")]
+        DebitCredit = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"FromTo")]
+        FromTo = 1,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class VoucherDetailDto
     {
 
@@ -59219,6 +59267,21 @@ namespace PetraERP.ApiClient
 
         [System.Text.Json.Serialization.JsonPropertyName("lines")]
         public System.Collections.Generic.IReadOnlyList<VoucherLineDto>? Lines { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum VoucherFormKind
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"GenericVoucher")]
+        GenericVoucher = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"MultiMethodReceipt")]
+        MultiMethodReceipt = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"MultiMethodPayment")]
+        MultiMethodPayment = 2,
 
     }
 

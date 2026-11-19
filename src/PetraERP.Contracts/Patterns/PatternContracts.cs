@@ -36,9 +36,41 @@ public enum PatternNumberingScope
 }
 
 
+/// <summary>How a voucher pattern runs; independent of the accounting operation (receipt, payment, journal).</summary>
+public enum VoucherFormKind
+{
+    GenericVoucher = 1,
+    MultiMethodReceipt = 2,
+    MultiMethodPayment = 3,
+}
+
+/// <summary>Column captions only; never changes the direction of an entry.</summary>
+public enum VoucherCaptionMode
+{
+    DebitCredit = 0,
+    FromTo = 1,
+}
+
+/// <summary>
+/// Voucher settings of a revision (schema version 2). Absent = defaults: GenericVoucher, DebitCredit. Options the server does not
+/// enforce yet are rejected unless left at their default.
+/// </summary>
+public sealed record PatternVoucherPolicyDto
+{
+    public VoucherFormKind FormKind { get; init; } = VoucherFormKind.GenericVoucher;
+    public VoucherCaptionMode CaptionMode { get; init; } = VoucherCaptionMode.DebitCredit;
+    /// <summary>Reserved; rejected when set until it is enforced.</summary>
+    public DateOnly? DenyMutationsOnOrBefore { get; init; }
+    /// <summary>Reserved; rejected when true until it is enforced.</summary>
+    public bool PerLineJournal { get; init; }
+    /// <summary>Reserved; rejected when true until it is enforced.</summary>
+    public bool AutoPost { get; init; }
+}
+
 public sealed record PatternConfigurationDto
 {
     public int SchemaVersion { get; init; } = 1;
+    public PatternVoucherPolicyDto? Voucher { get; init; }
     public Guid? DefaultWarehouseId { get; init; }
     public string? DefaultCurrencyCode { get; init; }
     public Guid? DefaultCostCenterId { get; init; }

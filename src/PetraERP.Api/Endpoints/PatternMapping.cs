@@ -64,6 +64,14 @@ internal static class PatternMapping
         new()
         {
             SchemaVersion = config.SchemaVersion,
+            Voucher = config.Voucher is null ? null : new PatternVoucherPolicyDto
+            {
+                FormKind = (VoucherFormKind)config.Voucher.FormKind,
+                CaptionMode = (VoucherCaptionMode)config.Voucher.CaptionMode,
+                DenyMutationsOnOrBefore = config.Voucher.DenyMutationsOnOrBefore,
+                PerLineJournal = config.Voucher.PerLineJournal,
+                AutoPost = config.Voucher.AutoPost,
+            },
             DefaultWarehouseId = config.DefaultWarehouseId,
             DefaultCurrencyCode = config.DefaultCurrencyCode,
             DefaultCostCenterId = config.DefaultCostCenterId,
@@ -113,6 +121,14 @@ internal static class PatternMapping
         new()
         {
             SchemaVersion = dto.SchemaVersion,
+            Voucher = dto.Voucher is null ? null : new DomainPattern.PatternVoucherPolicy
+            {
+                FormKind = (DomainPattern.VoucherFormKind)dto.Voucher.FormKind,
+                CaptionMode = (DomainPattern.VoucherCaptionMode)dto.Voucher.CaptionMode,
+                DenyMutationsOnOrBefore = dto.Voucher.DenyMutationsOnOrBefore,
+                PerLineJournal = dto.Voucher.PerLineJournal,
+                AutoPost = dto.Voucher.AutoPost,
+            },
             DefaultWarehouseId = dto.DefaultWarehouseId,
             DefaultCurrencyCode = dto.DefaultCurrencyCode,
             DefaultCostCenterId = dto.DefaultCostCenterId,

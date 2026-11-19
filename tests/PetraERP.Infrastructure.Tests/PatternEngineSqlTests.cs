@@ -238,6 +238,61 @@ public sealed class PatternEngineSqlTests
 
     [Fact(Explicit = true)]
     [Trait("Category", "SqlServer")]
+    public async Task VoucherBlockIsStoredAtSchemaTwoAndInvalidBlocksAreRefusedWithStableCodes()
+    {
+        var database = await SqlTestDatabase.CreateAsync().ConfigureAwait(true);
+        await using (database.ConfigureAwait(true))
+        {
+            var scenario = await LedgerScenario.CreateAsync(database).ConfigureAwait(true);
+            using var context = database.Context();
+            var service = new SqlPatternService(context);
+            var scope = PatternScope.Create(scenario.CompanyA, scenario.BranchA1, scenario.Actor);
+
+            CreateDocumentPatternCommand Command(string code, PatternConfiguration configuration, BusinessOperationKind kind = BusinessOperationKind.ManualJournal) => new()
+            {
+                OperationKind = kind, Code = code, NameArabic = "نمط " + code, ShortCode = code[..2], BranchIds = [scenario.BranchA1],
+                InitialConfiguration = configuration,
+            };
+
+            // A schema-1 configuration without the block is stored upgraded, keeps its values and runs with the defaults.
+            var legacy = await service.CreatePatternAsync(scope, Command("VL-1", new PatternConfiguration
+            {
+                SchemaVersion = 1, NumberingPolicy = new PatternNumberingPolicy { Prefix = "VL-", MinimumDigits = 5 },
+            }), Cancellation).ConfigureAwait(true);
+            var legacyConfig = legacy.ActiveRevision!.Configuration;
+            Assert.Equal(PatternConfiguration.CurrentSchemaVersion, legacyConfig.SchemaVersion);
+            Assert.Equal("VL-", legacyConfig.NumberingPolicy.Prefix);
+            Assert.Null(legacyConfig.Voucher);
+            Assert.Equal(VoucherFormKind.GenericVoucher, VoucherPatternRules.Effective(legacyConfig).FormKind);
+
+            // The block round-trips through the database.
+            var withBlock = await service.CreatePatternAsync(scope, Command("VB-1", new PatternConfiguration
+            {
+                Voucher = new PatternVoucherPolicy { FormKind = VoucherFormKind.GenericVoucher, CaptionMode = VoucherCaptionMode.FromTo },
+            }), Cancellation).ConfigureAwait(true);
+            var read = await service.GetPatternAsync(scope, withBlock.Id, Cancellation).ConfigureAwait(true);
+            var stored = Assert.Single(read.Revisions).Configuration; // a new pattern holds one draft revision
+            Assert.Equal(VoucherCaptionMode.FromTo, stored.Voucher!.CaptionMode);
+            Assert.Equal(PatternConfiguration.CurrentSchemaVersion, stored.SchemaVersion);
+
+            async Task AssertRefusedAsync(string code, string expected, PatternConfiguration configuration, BusinessOperationKind kind = BusinessOperationKind.ManualJournal)
+            {
+                var exception = await Assert.ThrowsAsync<BusinessRuleException>(() => service.CreatePatternAsync(scope, Command(code, configuration, kind), Cancellation)).ConfigureAwait(true);
+                Assert.Equal(expected, exception.Code);
+            }
+
+            await AssertRefusedAsync("VM-1", VoucherPatternRules.FormUnsupported,
+                new() { Voucher = new PatternVoucherPolicy { FormKind = VoucherFormKind.MultiMethodReceipt } }).ConfigureAwait(true);
+            await AssertRefusedAsync("VM-2", VoucherPatternRules.OptionNotEnforced,
+                new() { Voucher = new PatternVoucherPolicy { AutoPost = true } }).ConfigureAwait(true);
+            await AssertRefusedAsync("VM-3", VoucherPatternRules.BlockNotAllowed,
+                new() { Voucher = new PatternVoucherPolicy() }, BusinessOperationKind.SalesInvoice).ConfigureAwait(true);
+            await AssertRefusedAsync("VM-4", VoucherPatternRules.SchemaUnsupported, new() { SchemaVersion = 3 }).ConfigureAwait(true);
+        }
+    }
+
+    [Fact(Explicit = true)]
+    [Trait("Category", "SqlServer")]
     public async Task BranchGrantFiltersRunnablePatterns()
     {
         var database = await SqlTestDatabase.CreateAsync().ConfigureAwait(true);
