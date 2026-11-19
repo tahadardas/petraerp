@@ -570,7 +570,7 @@
 ---
 
 ## تنفيذ Antigravity التلقائي لواجهات React + Tauri 2 (المرحلة S — 19 نوفمبر 2026)
-- **الفرع:** `feature/frontend-react-tauri-antigravity`
+- **الفرع:** `feature/frontend-react-tauri-antigravity` (الالتزام `f992b07`)
 - **الشاشات المنفذة في هذه الدفعة:**
   1. `WS-02` (`CompanyCreationWizardScreen.tsx`): معالج إنشاء وتأسيس الشركة القانونية الجديدة، تهيئة قاعدة البيانات المستقلة، تحديد السنة المالية الأولى والعملة الأساسية، وتطبيق قوالب شجرة الحسابات والأنماط التلقائية (`POST /api/v1/workspaces/companies`).
   2. `ACC-08` (`CurrencyBalanceReportScreen.tsx`): ميزان العملات الأجنبية والمعادل المحلي بسعر الصرف المعتمد (`ProfessionalReportKind: "CurrencyBalance"` عبر `/api/v1/.../reporting/execute`)، إخفاء الحسابات الصفرية، عرض الأرصدة والعملات وحركات الفترة، تصدير TSV فوري، والانتقال المباشر لدفتر الأستاذ.
