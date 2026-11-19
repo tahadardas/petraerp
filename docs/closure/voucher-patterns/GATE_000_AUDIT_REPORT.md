@@ -8,9 +8,9 @@
 | التصنيف | العدد |
 |---|---|
 | IMPLEMENTED+RUNTIME-PASS | 4 (VP-005, 010, 012, 028) |
-| STATIC_PRESENT | 8 |
-| CONFIRMED_GAP | 15 |
-| VERIFY | 15 |
+| STATIC_PRESENT | 7 |
+| CONFIRMED_GAP | 15 (منها VP-020 صُنِّف هنا فجوة خادمية خلافاً لـSTATIC_PRESENT في المواصفة) |
+| VERIFY | 16 |
 | NOT_APPLICABLE | 0 |
 
 ## أهم النتائج
