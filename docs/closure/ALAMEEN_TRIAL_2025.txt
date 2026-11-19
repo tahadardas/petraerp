@@ -1,0 +1,55 @@
+snapshot accounts=967 (posting=893) currencies=SYP,USD parties=734 warehouses=6 items=436 stock=6 vouchers=5899 lines=31661 guarantee=Snapshot
+stock rows with non-positive quantity (not postable): 0; zero-cost positive rows: 0
+source debit=236564816179.5705879458 credit=236564816179.5705860823
+provisioned rows=2153
+identities complete=True issues=0
+cutover {"MigrationRunId":"34a3a12e-a8dc-4ea7-beec-c3c157abb7a0","AccountsImported":967,"PartiesImported":734,"ItemsImported":436,"WarehousesImported":6,"OpeningBalanceBatchId":"f6f30978-d885-4859-aee0-a072742a8de4","TotalOpeningBalance":109166685733.1464,"TotalOpeningCredit":109166685733.1464,"StockBalancesImported":6,"StockValuationTotal":409240324.1478,"Success":true,"Message":"\u062A\u0645 \u062A\u0631\u062D\u064A\u0644 \u0627\u0644\u0623\u0631\u0635\u062F\u0629 \u0627\u0644\u0627\u0641\u062A\u062A\u0627\u062D\u064A\u0629 \u0648\u0627\u0644\u0645\u0633\u062A\u0648\u062F\u0639\u064A\u0629 \u0645\u0646 \u0627\u0644\u0644\u0642\u0637\u0629 \u0627\u0644\u0645\u062C\u0645\u062F\u0629 \u0639\u0628\u0631 \u0647\u0648\u064A\u0627\u062A \u0645\u0628\u062F\u0648\u0644\u0629 \u0628\u0627\u0644\u0643\u0627\u0645\u0644."}
+openitem SYP amount=31064159647.7330 rate=1.00000000 base=31064159647.7330
+openitem USD amount=2278731.8033 rate=10965.72908791 base=24987955618.9924
+openitem USD amount=401414.5161 rate=10886.96353024 base=4370185197.2896
+openitem USD amount=257017.5000 rate=10623.06360462 base=2730313250.0004
+openitem SYP amount=2254339186.3250 rate=1.00000000 base=2254339186.3250
+openitems total=229
+reconciliation {
+  "MigrationRunId": "34a3a12e-a8dc-4ea7-beec-c3c157abb7a0",
+  "ReconciledAtUtc": "2026-11-19T12:57:25.8547396+00:00",
+  "TrialBalanceDifference": "0.0000",
+  "ArDifference": "0.0000",
+  "ApDifference": "0.0000",
+  "InventoryDifference": "0.0000",
+  "Passed": true,
+  "Checks": [
+    {
+      "CheckName": "LEDGER_ACCOUNT_BALANCES",
+      "SourceValue": "0.0000",
+      "TargetValue": "0.0000",
+      "Difference": "0.0000",
+      "Passed": true,
+      "Details": "\u0644\u0627 \u0641\u0631\u0648\u0642 \u0641\u064A \u0627\u0644\u0645\u064A\u0632\u0627\u0646 \u0627\u0644\u0639\u0627\u0645 \u0644\u0643\u0644 \u062D\u0633\u0627\u0628 \u0648\u0639\u0645\u0644\u0629 \u0639\u0644\u0649 \u0645\u0633\u062A\u0648\u0649 \u0643\u0644 \u0647\u0648\u064A\u0629 (\u0623\u0631\u0635\u062F\u0629 \u0635\u0627\u0641\u064A\u0629)."
+    },
+    {
+      "CheckName": "RECEIVABLES",
+      "SourceValue": "0.0000",
+      "TargetValue": "0.0000",
+      "Difference": "0.0000",
+      "Passed": true,
+      "Details": "\u0644\u0627 \u0641\u0631\u0648\u0642 \u0641\u064A \u0630\u0645\u0645 \u0627\u0644\u0639\u0645\u0644\u0627\u0621 \u0639\u0644\u0649 \u0645\u0633\u062A\u0648\u0649 \u0643\u0644 \u0647\u0648\u064A\u0629 (\u0623\u0631\u0635\u062F\u0629 \u0635\u0627\u0641\u064A\u0629)."
+    },
+    {
+      "CheckName": "PAYABLES",
+      "SourceValue": "0.0000",
+      "TargetValue": "0.0000",
+      "Difference": "0.0000",
+      "Passed": true,
+      "Details": "\u0644\u0627 \u0641\u0631\u0648\u0642 \u0641\u064A \u0630\u0645\u0645 \u0627\u0644\u0645\u0648\u0631\u062F\u064A\u0646 \u0639\u0644\u0649 \u0645\u0633\u062A\u0648\u0649 \u0643\u0644 \u0647\u0648\u064A\u0629 (\u0623\u0631\u0635\u062F\u0629 \u0635\u0627\u0641\u064A\u0629)."
+    },
+    {
+      "CheckName": "STOCK",
+      "SourceValue": "0.0000",
+      "TargetValue": "0.0000",
+      "Difference": "0.0000",
+      "Passed": true,
+      "Details": "\u0644\u0627 \u0641\u0631\u0648\u0642 \u0641\u064A \u0623\u0631\u0635\u062F\u0629 \u0627\u0644\u0645\u062E\u0632\u0648\u0646 \u0639\u0644\u0649 \u0645\u0633\u062A\u0648\u0649 \u0643\u0644 \u0647\u0648\u064A\u0629 (\u0623\u0631\u0635\u062F\u0629 \u0635\u0627\u0641\u064A\u0629)."
+    }
+  ]
+}
