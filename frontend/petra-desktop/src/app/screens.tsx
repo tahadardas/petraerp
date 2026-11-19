@@ -19,6 +19,8 @@ export const screens: Readonly<Record<string, ScreenLoader>> = {
   accounts: lazy(() => import("@/features/accounts/AccountsScreen")),
   "cost-centers": lazy(() => import("@/features/costcenters/CostCentersScreen")),
   "opening-balances": lazy(() => import("@/features/accounting/OpeningBalancesScreen")),
+  "batch-posting": lazy(() => import("@/features/accounting/BatchPostingScreen")),
+  "reconciliation": lazy(() => import("@/features/accounting/ReconciliationScreen")),
   "fiscal-years": lazy(() => import("@/features/calendar/FiscalYearsScreen")),
   journals: lazy(() => import("@/features/journals/JournalsScreen")),
   "journal-entry": lazy(() => import("@/features/journals/JournalEntryScreen")),
@@ -44,6 +46,8 @@ export const screens: Readonly<Record<string, ScreenLoader>> = {
   "purchase-analysis": lazy(() => import("@/features/reports/PurchaseAnalysisScreen")),
   "inventory-valuation": lazy(() => import("@/features/reports/InventoryValuationScreen")),
   "inventory-movements": lazy(() => import("@/features/reports/InventoryMovementsScreen")),
+  "reports-catalog": lazy(() => import("@/features/reports/ReportsCatalogScreen")),
+  "branch-comparison": lazy(() => import("@/features/admin/BranchComparisonScreen")),
   // Inventory
   items: lazy(() => import("@/features/inventory/ItemsScreen")),
   warehouses: lazy(() => import("@/features/inventory/WarehousesScreen")),
@@ -54,11 +58,14 @@ export const screens: Readonly<Record<string, ScreenLoader>> = {
   "purchase-invoice-card": lazy(() => import("@/features/purchases/PurchaseInvoiceCardScreen")),
   // Currencies & Foreign Exchange
   currencies: lazy(() => import("@/features/currencies/CurrenciesScreen")),
+  "fx-revaluation": lazy(() => import("@/features/currencies/FxRevaluationScreen")),
   // Administration & Audit
   branches: lazy(() => import("@/features/admin/BranchesScreen")),
+  "inter-company": lazy(() => import("@/features/admin/InterCompanyScreen")),
   users: lazy(() => import("@/features/admin/UsersScreen")),
   roles: lazy(() => import("@/features/admin/RolesScreen")),
   "security-audit": lazy(() => import("@/features/admin/SecurityAuditScreen")),
+  preferences: lazy(() => import("@/features/settings/PreferencesScreen")),
   // Development gallery of the input engine (opened from the header in dev builds only).
   gallery: lazy(() => import("@/features/gallery/GalleryScreen")),
 };

@@ -22,6 +22,9 @@ export const topMenus: readonly MenuItem[] = [
       { id: "accounts", label: "menu.accounts", screen: "accounts" },
       { id: "cost-centers", label: "menu.cost_centers", screen: "cost-centers" },
       { id: "opening-balances", label: "menu.opening_balances", screen: "opening-balances" },
+      { id: "batch-posting", label: "menu.batch_posting", screen: "batch-posting" },
+      { id: "reconciliation", label: "menu.reconciliation", screen: "reconciliation" },
+      { id: "fx-revaluation", label: "menu.fx_revaluation", screen: "fx-revaluation" },
       { id: "journals", label: "menu.journals", screen: "journals" },
       { id: "new-journal", label: "menu.journals", screen: "journal-entry" },
       { id: "parties", label: "menu.parties", screen: "parties" },
@@ -70,6 +73,8 @@ export const topMenus: readonly MenuItem[] = [
       { id: "purchase-analysis", label: "menu.purchase_analysis", screen: "purchase-analysis" },
       { id: "inventory-valuation", label: "menu.inventory_valuation", screen: "inventory-valuation" },
       { id: "inventory-movements", label: "menu.inventory_movements", screen: "inventory-movements" },
+      { id: "branch-comparison", label: "menu.branch_comparison", screen: "branch-comparison" },
+      { id: "reports-catalog", label: "menu.reports_catalog", screen: "reports-catalog" },
     ],
   },
   {
@@ -85,10 +90,12 @@ export const topMenus: readonly MenuItem[] = [
     children: [
       { id: "fiscal-years", label: "menu.fiscal_years", screen: "fiscal-years" },
       { id: "branches", label: "menu.branches", screen: "branches" },
+      { id: "inter-company", label: "menu.inter_company", screen: "inter-company" },
       { id: "currencies", label: "menu.currencies", screen: "currencies" },
       { id: "users", label: "menu.users", screen: "users" },
       { id: "roles", label: "menu.roles", screen: "roles" },
       { id: "patterns", label: "menu.patterns", screen: "pattern-manager" },
+      { id: "preferences", label: "menu.preferences", screen: "preferences" },
     ],
   },
 ];

@@ -46,6 +46,9 @@ export function App() {
     { id: "cmd-accounts", title: "دليل الحسابات", category: "المحاسبة", screen: "accounts", shortcut: "F3" },
     { id: "cmd-cost-centers", title: "دليل مراكز الكلفة", category: "المحاسبة", screen: "cost-centers" },
     { id: "cmd-opening-balances", title: "قيد الأرصدة الافتتاحية", category: "المحاسبة", screen: "opening-balances" },
+    { id: "cmd-batch-posting", title: "الترحيل الآلي الجماعي للمستندات", category: "المحاسبة", screen: "batch-posting" },
+    { id: "cmd-reconciliation", title: "فحص المطابقة المحاسبية الشاملة (14 فحصاً)", category: "المحاسبة", screen: "reconciliation" },
+    { id: "cmd-fx-revaluation", title: "إعادة تقييم فروقات أسعار الصرف", category: "المحاسبة", screen: "fx-revaluation" },
     { id: "cmd-fiscal-years", title: "السنوات والفترات المالية", category: "الإعدادات", screen: "fiscal-years" },
     { id: "cmd-journals", title: "القيود اليومية العامة", category: "المحاسبة", screen: "journals" },
     { id: "cmd-new-journal", title: "قيد يومية جديد", category: "المحاسبة", screen: "journal-entry", shortcut: "Ctrl+N" },
@@ -66,6 +69,8 @@ export function App() {
     { id: "cmd-open-items", title: "تسوية الفواتير والذمم المفتوحة", category: "السندات", screen: "open-items" },
     { id: "cmd-patterns", title: "إدارة أنماط المستندات", category: "الإعدادات", screen: "pattern-manager" },
     { id: "cmd-branches", title: "إدارة وهيكلية الفروع", category: "الإعدادات", screen: "branches" },
+    { id: "cmd-inter-company", title: "تسوية ومطابقة الحسابات بين الشركات الشقيقة", category: "الإعدادات", screen: "inter-company" },
+    { id: "cmd-preferences", title: "تفضيلات وخيارات بيئة العمل", category: "الإعدادات", screen: "preferences" },
     { id: "cmd-currencies", title: "إدارة العملات وأسعار الصرف", category: "الإعدادات", screen: "currencies" },
     { id: "cmd-users", title: "إدارة المستخدمين", category: "الإعدادات", screen: "users" },
     { id: "cmd-roles", title: "الأدوار والصلاحيات", category: "الإعدادات", screen: "roles" },
@@ -79,6 +84,8 @@ export function App() {
     { id: "cmd-purchase-analysis", title: "تقرير تحليل المشتريات", category: "التقارير", screen: "purchase-analysis" },
     { id: "cmd-inventory-valuation", title: "تقييم بضاعة آخر المدة والمخزون", category: "التقارير", screen: "inventory-valuation" },
     { id: "cmd-inventory-movements", title: "كشف حركة مادة تفصيلي", category: "المستودعات", screen: "inventory-movements" },
+    { id: "cmd-branch-comparison", title: "مقارنة الفروع وميزان المراجعة المجمع", category: "التقارير", screen: "branch-comparison" },
+    { id: "cmd-reports-catalog", title: "مركز التقارير المحاسبية والتنفيذ الفوري", category: "التقارير", screen: "reports-catalog" },
     { id: "cmd-switch-context", title: "تبديل الشركة أو الفرع أو السنة المالية", category: "النظام", action: () => setContextModalOpen(true) },
   ], []);
 
