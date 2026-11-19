@@ -18,7 +18,7 @@
 | اختبارات Vitest | 60/60 ناجح | 11 ملف اختبار، شمل اختبارات الجدولة لـ 200 و 1,000 و 10,000 سطر |
 | بناء الإنتاج (Vite) | سليم | `npm run build` أنتج 55 ملف chunk جاهزة دون أي خطأ (806ms) |
 | مطابقة OpenAPI | متطابق | `npm run api:check` يؤكد مطابقة `schema.d.ts` مع `petraerp-v1.json` |
-| غلاف Tauri (Windows) | غلاف جاهز / بناء Rust معلّق | إعدادات `src-tauri` (NSIS, CSP, permissions) جاهزة، مترجم Rust/MSVC غير مثبت على البيئة الحالية |
+| غلاف وبناء Tauri 2 (Windows) | منجز وشغال بالكامل | تم تثبيت Rust 1.100.0 (MSVC)، وبناء التطبيق المكتبي المستقل بنجاح `target/release/petra-desktop.exe` (9.76MB)، وتشغيل بيئة التطوير المباشرة `tauri dev` بنجاح على Windows WebView2. |
 
 ---
 
