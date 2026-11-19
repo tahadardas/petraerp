@@ -25,6 +25,7 @@ export const topMenus: readonly MenuItem[] = [
       { id: "batch-posting", label: "menu.batch_posting", screen: "batch-posting" },
       { id: "reconciliation", label: "menu.reconciliation", screen: "reconciliation" },
       { id: "fx-revaluation", label: "menu.fx_revaluation", screen: "fx-revaluation" },
+      { id: "fiscal-year-rollover", label: "menu.fiscal_year_rollover", screen: "fiscal-year-rollover" },
       { id: "journals", label: "menu.journals", screen: "journals" },
       { id: "new-journal", label: "menu.journals", screen: "journal-entry" },
       { id: "parties", label: "menu.parties", screen: "parties" },
@@ -58,6 +59,8 @@ export const topMenus: readonly MenuItem[] = [
       { id: "warehouses-list", label: "menu.warehouses_list", screen: "warehouses" },
       { id: "units", label: "menu.units", screen: "units" },
       { id: "inventory-operations", label: "menu.inventory_operations", screen: "inventory-operations" },
+      { id: "stocktaking", label: "menu.stocktaking", screen: "stocktaking" },
+      { id: "item-pricing-limits", label: "menu.item_pricing_limits", screen: "item-pricing-limits" },
     ],
   },
   {
@@ -82,6 +85,7 @@ export const topMenus: readonly MenuItem[] = [
     label: "menu.maintenance",
     children: [
       { id: "security-audit", label: "menu.security_audit", screen: "security-audit" },
+      { id: "document-numbers", label: "menu.document_numbers", screen: "document-numbers" },
     ],
   },
   {

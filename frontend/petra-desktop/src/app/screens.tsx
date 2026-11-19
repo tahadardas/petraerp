@@ -21,6 +21,7 @@ export const screens: Readonly<Record<string, ScreenLoader>> = {
   "opening-balances": lazy(() => import("@/features/accounting/OpeningBalancesScreen")),
   "batch-posting": lazy(() => import("@/features/accounting/BatchPostingScreen")),
   "reconciliation": lazy(() => import("@/features/accounting/ReconciliationScreen")),
+  "fiscal-year-rollover": lazy(() => import("@/features/accounting/FiscalYearRolloverScreen")),
   "fiscal-years": lazy(() => import("@/features/calendar/FiscalYearsScreen")),
   journals: lazy(() => import("@/features/journals/JournalsScreen")),
   "journal-entry": lazy(() => import("@/features/journals/JournalEntryScreen")),
@@ -53,6 +54,8 @@ export const screens: Readonly<Record<string, ScreenLoader>> = {
   warehouses: lazy(() => import("@/features/inventory/WarehousesScreen")),
   units: lazy(() => import("@/features/inventory/UnitsScreen")),
   "inventory-operations": lazy(() => import("@/features/inventory/InventoryOperationsScreen")),
+  stocktaking: lazy(() => import("@/features/inventory/StocktakingScreen")),
+  "item-pricing-limits": lazy(() => import("@/features/inventory/ItemPricingAndLimitsScreen")),
   // Purchases
   "purchase-invoices": lazy(() => import("@/features/purchases/PurchaseInvoicesScreen")),
   "purchase-invoice-card": lazy(() => import("@/features/purchases/PurchaseInvoiceCardScreen")),
@@ -62,6 +65,7 @@ export const screens: Readonly<Record<string, ScreenLoader>> = {
   // Administration & Audit
   branches: lazy(() => import("@/features/admin/BranchesScreen")),
   "inter-company": lazy(() => import("@/features/admin/InterCompanyScreen")),
+  "document-numbers": lazy(() => import("@/features/admin/DocumentNumbersScreen")),
   users: lazy(() => import("@/features/admin/UsersScreen")),
   roles: lazy(() => import("@/features/admin/RolesScreen")),
   "security-audit": lazy(() => import("@/features/admin/SecurityAuditScreen")),

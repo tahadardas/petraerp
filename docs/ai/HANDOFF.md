@@ -539,9 +539,30 @@
   - Vitest: **60/60 ناجح** (100%).
   - بناء الإنتاج (Vite): **51 ملف chunk** جاهزة ونظيفة دون أي تحذير (`built in 1.17s`).
   - إجمالي الشاشات المكتملة في المصفوفة: **54 شاشة من أصل 68** (79.4%).
+
+---
+
+## تنفيذ Antigravity التلقائي لواجهات React + Tauri 2 (المرحلة R — 19 نوفمبر 2026)
+- **الفرع:** `feature/frontend-react-tauri-antigravity`
+- **الشاشات المنفذة في هذه الدفعة:**
+  1. `ACC-13` (`FiscalYearRolloverScreen.tsx`): تدوير وإغلاق السنة المالية وترحيل الأرصدة الافتتاحية والذمم وبضاعة المخزون، اختيار السنة المصدر والهدف، واختيار حساب الأرباح المدورة، فحص توازن ميزان المراجعة المقفل، تنفيذ التدوير بحماية إثبات الهوية وإصدار القيد الافتتاحي وتصدير TSV.
+  2. `ADM-04` (`DocumentNumbersScreen.tsx`): صيانة ترقيم المستندات وسلسلة التدقيق التشفيرية المانعة للتلاعب، إدارة طلبات التعديل، فحص التعارض جافاً مسبقاً (Dry-Run Preview)، دورة حياة الطلب (اعتماد/رفض/سحب)، وسجل تدقيق تشفيري متسلسل مع فحص سلامة السلسلة التشفيرية (SHA-256 Chain Integrity).
+  3. `INV-06` (`StocktakingScreen.tsx`): الجرد الفعلي وتسوية المخزون، اختيار المستودع وحسابي بضاعة المخزون وفروقات الجرد، جدول إدخال الكميات المجرودة الفعلية وتكلفتها، حفظ مسودة الجرد، وحساب فوارق الجرد (عجز/زيادة)، ثم اعتماد وترحيل الفوارق إلى حركات المخزون وقيود اليومية.
+  4. `INV-07` / `INV-08` (`ItemPricingAndLimitsScreen.tsx`): أداة تعديل وتحديث أسعار المواد بنسب مئوية مجمعة لكافة المواد أو لمجموعة محددة مع خيار المعاينة الجافة قبل التطبيق، ومراقبة الحدود الدنيا ونقاط إعادة الطلب للمواد النشطة مع إبراز شارات الأمان (حرج، يحتاج طلب، رصيد آمن، فائض) وتصدير TSV.
+- **التسجيل والربط:**
+  - تسجيل كافة الشاشات في `src/app/screens.tsx`.
+  - إضافة عناصر التنقل في القوائم العلوية `src/app/menu.ts`.
+  - تسجيل أوامر الاختصارات في لوحة الأوامر السريعة `Ctrl+K` في `src/app/App.tsx`.
+  - إضافة مفاتيح الترجمة العربية والإنجليزية في `src/i18n/messages.ts`.
+- **نتائج التحقق:**
+  - `npm run typecheck`: **0 أخطاء** تحت `strict: true` و `exactOptionalPropertyTypes: true`.
+  - Vitest: **60/60 ناجح** (100%).
+  - بناء الإنتاج (Vite): **55 ملف chunk** جاهزة ونظيفة دون أي تحذير (`built in 806ms`).
+  - إجمالي الشاشات المكتملة في المصفوفة: **59 شاشة من أصل 68** (86.8%).
 - **المهمة التالية:**
   - متابعة تنفيذ الشاشات المتبقية:
-    - `ACC-13`: Fiscal Year Rollover (`/admin/rollover`)
-    - `ADM-04`: Document Number Maintenance (`/admin/document-numbers`)
-    - `INV-06`: Stocktaking (`/inventory/stocktaking`)
-    - `INV-07` / `INV-08`: Item Pricing Tool & Stock Limits
+    - `WS-02`: Company Creation Wizard (`/workspace/companies/new`)
+    - `ACC-08`: Currency Balance Report (`/reports/currency-balance`)
+    - `INVOICE-PRINT`: Document Print Preview (`/print/preview`)
+    - `REP-02`: Executive Dashboard (`/reports/executive`)
+    - `ADM-09`: Al-Ameen Migration Import (`/migration/alameen`)
