@@ -694,11 +694,36 @@ public sealed partial class SalesPostingSqlTests
 
 
 
+    /// <summary>Al-Ameen journal detail: with the option on, two invoice lines of one item give two revenue lines in the same single journal; off, they merge.</summary>
+    [Theory(Explicit = true)]
+    [Trait("Category", "SqlServer")]
+    [InlineData(false, 1)]
+    [InlineData(true, 2)]
+    public async Task DetailedJournalLinesSplitRevenuePerInvoiceLineWithinOneJournal(bool detailed, int expectedRevenueLines)
+    {
+        var database = await SqlTestDatabase.CreateAsync().ConfigureAwait(true);
+        await using (database.ConfigureAwait(true))
+        {
+            var fixture = await CreateAsync(database, detailedJournalLines: detailed).ConfigureAwait(true); var s = fixture.Scenario;
+            using var context = database.Context();
+            var service = Service(context);
+            var current = await service.GetInvoiceAsync(s.CompanyA, s.BranchA1, fixture.InvoiceId, Cancellation).ConfigureAwait(true);
+            await service.UpdateInvoiceAsync(s.CompanyA, s.BranchA1, fixture.InvoiceId, new UpdateSalesInvoiceCommand(current.CustomerId, current.WarehouseId, current.InvoiceDateUtc,
+                CurrencyCode: "USD", Lines: [new(fixture.ItemId, fixture.UnitId, 1, 10), new(fixture.ItemId, fixture.UnitId, 2, 10)])
+                { ExpectedVersion = ConcurrencyToken.FromBytes(current.RowVersion) }, Cancellation).ConfigureAwait(true);
+            var posted = await service.PostInvoiceAsync(s.CompanyA, s.BranchA1, fixture.InvoiceId, s.Actor, new PostSalesInvoiceCommand("detail-" + detailed), Cancellation).ConfigureAwait(true);
+            var lines = await context.JournalLines.AsNoTracking().Where(l => l.JournalId == posted.JournalEntryId).ToListAsync(Cancellation).ConfigureAwait(true);
+            Assert.Equal(expectedRevenueLines, lines.Count(l => l.BaseCredit > 0 && l.Description == "إيراد البيع"));
+            Assert.Equal(30m, lines.Where(l => l.AccountId == fixture.ReceivableId).Sum(l => l.BaseDebit));
+            Assert.Equal(lines.Sum(l => l.BaseDebit), lines.Sum(l => l.BaseCredit));
+        }
+    }
+
     /// <summary>Marks the cash and customer roles as not enforced, which is what lets a document name its own account.</summary>
     private static List<PatternAccountMapping> Overridable(bool allow, List<PatternAccountMapping> mappings) =>
         allow ? mappings.Select(m => m.Role is "Cash" or "Customer" ? m with { AllowOverride = true } : m).ToList() : mappings;
 
-    private static async Task<Fixture> CreateAsync(SqlTestDatabase database, PaymentMethod paymentMethod = PaymentMethod.Credit, bool includeCashMapping = true, bool allowAccountOverride = false)
+    private static async Task<Fixture> CreateAsync(SqlTestDatabase database, PaymentMethod paymentMethod = PaymentMethod.Credit, bool includeCashMapping = true, bool allowAccountOverride = false, bool detailedJournalLines = false)
 
     {
 
@@ -776,7 +801,9 @@ public sealed partial class SalesPostingSqlTests
 
                         new(){Role="Discount",AccountId=discount.Id},new(){Role="Tax",AccountId=tax.Id}]),
 
-                NumberingPolicy = new() { Prefix = "SI-", MinimumDigits = 4 }
+                NumberingPolicy = new() { Prefix = "SI-", MinimumDigits = 4 },
+
+                EntryPolicy = new() { DetailedJournalLines = detailedJournalLines }
 
             }
 

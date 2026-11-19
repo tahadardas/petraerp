@@ -20,7 +20,7 @@ ACC-09,Cost Centers Directory,/cost-centers,DONE,cost_centers.view,GET /ledger/c
 ACC-10,Fiscal Periods,/settings/periods,DONE,admin.periods,GET /workspaces/fiscal-years,FiscalYearsScreen.tsx / Vite Build
 ACC-11,Batch Posting Manager,/posting/batches,DONE,posting.manage,GET/POST /posting-batches,BatchPostingScreen.tsx / Vite Build
 ACC-12,Opening Balances,/accounting/opening-balances,DONE,opening_balances.manage,GET/POST /opening-balances,OpeningBalancesScreen.tsx / Vite Build
-ACC-13,Fiscal Year Rollover,/admin/rollover,SCHEDULED,admin.rollover,POST /workspaces/rollover/preview,OpenAPI Defined
+ACC-13,Fiscal Year Rollover,/admin/rollover,DONE,admin.rollover,POST /workspaces/rollover/preview,FiscalYearRolloverScreen.tsx / Vite Build
 ACC-14,Account Reconciliation,/accounting/reconciliation,DONE,reconciliation.view,GET /reconciliation,ReconciliationScreen.tsx / Vite Build
 PARTY-01,Parties Directory,/parties,DONE,parties.view;parties.manage,GET /parties,PartiesScreen.tsx / Vitest
 PARTY-02,Customer Statement,/parties/customer-statement,DONE,parties.view,GET /reports/parties/{id}/statement,PartyStatementScreen.tsx
@@ -31,9 +31,9 @@ INV-02,Quick Item Directory,/inventory/lookup,DONE,inventory.view,GET /inventory
 INV-03,Units & Conversions,/inventory/units,DONE,inventory.manage,GET/POST /inventory/units,UnitsScreen.tsx / Vite Build
 INV-04,Warehouses Directory,/inventory/warehouses,DONE,inventory.manage,GET/POST /inventory/warehouses,WarehousesScreen.tsx / Vite Build
 INV-05,Inventory Operations,/inventory/operations,DONE,inventory.operations,GET/POST /inventory/documents,InventoryOperationsScreen.tsx / Vite Build
-INV-06,Stocktaking,/inventory/stocktaking,SCHEDULED,inventory.stocktake,POST /inventory/adjustments,OpenAPI Defined
-INV-07,Item Price Tool,/inventory/prices,SCHEDULED,inventory.pricing,POST /inventory/price-adjustments,OpenAPI Defined
-INV-08,Item Limits,/inventory/limits,SCHEDULED,inventory.manage,GET /inventory/items/{id}/stock,OpenAPI Defined
+INV-06,Stocktaking,/inventory/stocktaking,DONE,inventory.stocktake,POST /inventory/adjustments,StocktakingScreen.tsx / Vite Build
+INV-07,Item Price Tool,/inventory/prices,DONE,inventory.pricing,POST /inventory/price-adjustments,ItemPricingAndLimitsScreen.tsx / Vite Build
+INV-08,Item Limits,/inventory/limits,DONE,inventory.manage,GET /inventory/items/{id}/stock,ItemPricingAndLimitsScreen.tsx / Vite Build
 INV-09,Assembly & Disassembly,/inventory/assembly,FROZEN_OR_BLOCKED,inventory.assembly,None,SRS INV-09 Blocked Explicitly
 PAT-01,Document Pattern Manager,/patterns,DONE,patterns.view;patterns.manage,GET /document-patterns,PatternManagerScreen.tsx
 PAT-02,Pattern Card Screen,/patterns/:id,DONE,patterns.manage,GET /document-patterns/{id}/effective,PatternCardScreen.tsx
@@ -58,7 +58,7 @@ REP-06,Movements & Valuation Reports,/reports/movements,DONE,reports.view,GET /r
 ADM-01,Users Administration,/admin/users,DONE,admin.users,GET/POST /admin/users,UsersScreen.tsx / Vite Build
 ADM-02,Roles & Permissions,/admin/roles,DONE,admin.roles,GET/POST /admin/roles,RolesScreen.tsx / Vite Build
 ADM-03,Security Audit Log,/admin/audit,DONE,admin.audit,GET /audit/security-events,SecurityAuditScreen.tsx / Vite Build
-ADM-04,Document Number Maintenance,/admin/document-numbers,SCHEDULED,admin.numbering,GET /document-numbers/audit,OpenAPI Defined
+ADM-04,Document Number Maintenance,/admin/document-numbers,DONE,admin.numbering,GET /document-numbers/audit,DocumentNumbersScreen.tsx / Vite Build
 ADM-05,Branches Tree & Setup,/admin/branches,DONE,admin.branches,GET/POST /branch-admin/tree,BranchesScreen.tsx
 ADM-06,Branch Comparison,/reports/branch-comparison,DONE,reports.branches,GET /branch-reports/trial-balance,BranchComparisonScreen.tsx / Vite Build
 ADM-07,Inter-Company Settlement,/admin/inter-company,DONE,admin.intercompany,GET /inter-company/links,InterCompanyScreen.tsx / Vite Build

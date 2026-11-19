@@ -183,7 +183,7 @@ public sealed partial class SqlPurchaseInvoiceService
 
                 var journal = await CreateJournalAsync(companyId, branchId, userId, date, $"فاتورة مشتريات {number} — {supplier}",
 
-                    BuildJournal(invoice, lines, amounts, validation, isReturn: false, resolver: resolver), invoice.Notes ?? "ترحيل فاتورة مشتريات", cancellationToken).ConfigureAwait(false);
+                    BuildJournal(invoice, lines, amounts, validation, isReturn: false, resolver: resolver, detailed: config.EntryPolicy.DetailedJournalLines), invoice.Notes ?? "ترحيل فاتورة مشتريات", cancellationToken).ConfigureAwait(false);
 
 
 
@@ -225,7 +225,7 @@ public sealed partial class SqlPurchaseInvoiceService
 
     private static List<JournalDraftLineInput> BuildJournal(PurchaseInvoiceRow header, IReadOnlyList<PurchaseInvoiceLineRow> lines,
 
-        PurchaseBaseAmounts amounts, PurchaseValidation validation, bool isReturn, List<decimal>? stockCosts = null, Guid? varianceAccountId = null, ItemAccountResolver? resolver = null)
+        PurchaseBaseAmounts amounts, PurchaseValidation validation, bool isReturn, List<decimal>? stockCosts = null, Guid? varianceAccountId = null, ItemAccountResolver? resolver = null, bool detailed = false)
 
     {
 
@@ -269,7 +269,7 @@ public sealed partial class SqlPurchaseInvoiceService
 
             Cost: stockCosts is null ? amounts.LineCosts[index] : stockCosts[index]))
 
-            .GroupBy(x => (x.CostCenterId, x.AccountId)))
+            .GroupForJournal(x => (x.CostCenterId, x.AccountId), detailed))
 
         {
 

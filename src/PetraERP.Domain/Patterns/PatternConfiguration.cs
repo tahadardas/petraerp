@@ -47,6 +47,13 @@ public sealed record PatternEntryPolicy
 {
     /// <summary>The document date is the day the document is added and cannot be edited (Al-Ameen "تثبيت تاريخ إضافة السند").</summary>
     public bool LockDocumentDate { get; init; }
+
+    /// <summary>
+    /// Al-Ameen journal detail: one revenue/discount/tax (sales) or inventory (purchases) line per document line inside the single
+    /// document journal, instead of lines merged per account and cost center. Totals and balances are identical either way;
+    /// default false keeps existing patterns posting exactly as before.
+    /// </summary>
+    public bool DetailedJournalLines { get; init; }
 }
 
 public sealed record PatternPricingPolicy

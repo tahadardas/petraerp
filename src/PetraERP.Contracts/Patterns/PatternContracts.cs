@@ -108,6 +108,9 @@ public sealed record PatternEntryPolicyDto
 {
     /// <summary>The document date is the day it is added and cannot be edited.</summary>
     public bool LockDocumentDate { get; init; }
+
+    /// <summary>One journal line per document line (Al-Ameen detail) instead of lines merged per account and cost center.</summary>
+    public bool DetailedJournalLines { get; init; }
 }
 
 public sealed record PatternPricingPolicyDto

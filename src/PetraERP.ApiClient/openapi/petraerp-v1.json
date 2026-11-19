@@ -44476,6 +44476,9 @@
         "properties": {
           "lockDocumentDate": {
             "type": "boolean"
+          },
+          "detailedJournalLines": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false

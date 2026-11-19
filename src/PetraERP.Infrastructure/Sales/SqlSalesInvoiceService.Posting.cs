@@ -339,19 +339,19 @@ public sealed partial class SqlSalesInvoiceService
             Add(ResolveControl(), subtotal - discount + tax + additions, 0, "ذمم/نقد البيع", center);
         }
 
-        foreach (var group in invoice.Lines.GroupBy(line => (AccountId: resolver.Resolve(line.ItemId, "Revenue"), CostCenterId: line.CostCenterId ?? invoice.CostCenterId)))
+        foreach (var group in invoice.Lines.GroupForJournal(line => (AccountId: resolver.Resolve(line.ItemId, "Revenue"), CostCenterId: line.CostCenterId ?? invoice.CostCenterId), config.EntryPolicy.DetailedJournalLines))
         {
             var subtotal = group.Sum(line => Math.Round(line.Quantity * line.UnitPrice, 4, MidpointRounding.AwayFromZero));
             Add(group.Key.AccountId, 0, subtotal, "إيراد البيع", group.Key.CostCenterId);
         }
 
-        foreach (var group in invoice.Lines.Where(l => l.DiscountAmount > 0).GroupBy(line => (AccountId: resolver.Resolve(line.ItemId, "Discount"), CostCenterId: line.CostCenterId ?? invoice.CostCenterId)))
+        foreach (var group in invoice.Lines.Where(l => l.DiscountAmount > 0).GroupForJournal(line => (AccountId: resolver.Resolve(line.ItemId, "Discount"), CostCenterId: line.CostCenterId ?? invoice.CostCenterId), config.EntryPolicy.DetailedJournalLines))
         {
             var discount = group.Sum(line => line.DiscountAmount);
             Add(group.Key.AccountId, discount, 0, "حسم البيع", group.Key.CostCenterId);
         }
 
-        foreach (var group in invoice.Lines.Where(l => l.TaxAmount > 0).GroupBy(line => (AccountId: resolver.Resolve(line.ItemId, "Tax"), CostCenterId: line.CostCenterId ?? invoice.CostCenterId)))
+        foreach (var group in invoice.Lines.Where(l => l.TaxAmount > 0).GroupForJournal(line => (AccountId: resolver.Resolve(line.ItemId, "Tax"), CostCenterId: line.CostCenterId ?? invoice.CostCenterId), config.EntryPolicy.DetailedJournalLines))
         {
             var tax = group.Sum(line => line.TaxAmount);
             Add(group.Key.AccountId, 0, tax, "ضريبة البيع", group.Key.CostCenterId);
