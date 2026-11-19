@@ -10,7 +10,9 @@ export interface ApiProviderProps {
   fetch?: typeof fetch;
 }
 
-export function ApiProvider({ baseUrl = "http://localhost:5000", children, fetch: fetchImpl }: ApiProviderProps) {
+const DEFAULT_BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) || "https://localhost:17483";
+
+export function ApiProvider({ baseUrl = DEFAULT_BASE_URL, children, fetch: fetchImpl }: ApiProviderProps) {
   const api = useMemo(() => {
     return createApi({
       baseUrl,

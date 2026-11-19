@@ -3,6 +3,7 @@ import { useApi } from "@/services/api/ApiContext";
 import { useSession } from "@/app/permissions";
 import { useWorkspace } from "@/workspace/workspaceStore";
 import { PetraButton, PetraLoadingSkeleton, PetraEmptyState, PetraErrorDetails, PetraField } from "@/components/ui";
+import AuthScreen from "@/features/auth/AuthScreen";
 
 interface AccountItem {
   id: string;
@@ -32,9 +33,16 @@ export default function AccountsScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<{ status?: number; message?: string } | null>(null);
   const [search, setSearch] = useState("");
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   const loadAccounts = async () => {
-    if (!companyId || !branchId) return;
+    if (!companyId || !branchId) {
+      setError({
+        status: 401,
+        message: "يرجى تسجيل الدخول واختيار مساحة العمل (الشركة والفرع) لعرض دليل الحسابات",
+      });
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -44,7 +52,10 @@ export default function AccountsScreen() {
       });
 
       if (res.error) {
-        setError({ status: res.response.status, message: "فشل تحميل دليل الحسابات" });
+        setError({
+          status: res.response.status,
+          message: `فشل تحميل دليل الحسابات (رمز الاستجابة: ${res.response.status}) — تأكد من تشغيل خادم API والاتصال بالشبكة`,
+        });
       } else if (res.data) {
         const items = res.data as AccountItem[];
         setAccounts(items);
@@ -54,7 +65,9 @@ export default function AccountsScreen() {
         }
       }
     } catch (err) {
-      setError({ message: err instanceof Error ? err.message : "خطأ غير متوقع" });
+      setError({
+        message: `تعذر الاتصال بخادم API: ${err instanceof Error ? err.message : "خطأ غير متوقع"}`,
+      });
     } finally {
       setLoading(false);
     }
@@ -87,6 +100,78 @@ export default function AccountsScreen() {
       params: { accountId: account.id, accountCode: account.code, accountName: account.nameArabic },
     });
   };
+
+  if (!companyId || !branchId) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100%",
+          padding: "var(--space-6)",
+          background: "var(--bg-app)",
+        }}
+      >
+        <div
+          style={{
+            background: "var(--bg-surface)",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--radius)",
+            padding: "var(--space-6)",
+            maxWidth: 480,
+            textAlign: "center",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+          }}
+        >
+          <div style={{ fontSize: 40, marginBottom: "var(--space-2)" }}>🔒</div>
+          <h3 style={{ margin: "0 0 var(--space-2) 0", fontSize: 18, fontWeight: 700 }}>
+            دليل الحسابات يتطلب تحديد مساحة العمل
+          </h3>
+          <p
+            style={{
+              color: "var(--text-muted)",
+              fontSize: "var(--fs-body)",
+              lineHeight: 1.6,
+              margin: "0 0 var(--space-4) 0",
+            }}
+          >
+            يرجى تسجيل الدخول واختيار الشركة والفرع والسنة المالية النشطة لتحميل شجرة الحسابات الحقيقية من الخادم.
+          </p>
+          <div style={{ display: "flex", gap: "var(--space-2)", justifyContent: "center" }}>
+            <PetraButton variant="primary" onClick={() => setAuthModalOpen(true)}>
+              تسجيل الدخول واختيار مساحة العمل 🔑
+            </PetraButton>
+          </div>
+        </div>
+
+        {authModalOpen ? (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0, 0, 0, 0.5)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 10000,
+            }}
+            onClick={() => setAuthModalOpen(false)}
+          >
+            <div onClick={(e) => e.stopPropagation()} style={{ width: 440 }}>
+              <AuthScreen
+                onSuccess={() => {
+                  setAuthModalOpen(false);
+                  loadAccounts();
+                }}
+              />
+            </div>
+          </div>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "var(--bg-app)" }}>

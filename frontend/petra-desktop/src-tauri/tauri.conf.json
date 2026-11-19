@@ -19,11 +19,12 @@
         "minWidth": 1024,
         "minHeight": 640,
         "resizable": true,
-        "maximized": true
+        "maximized": false,
+        "center": true
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; connect-src 'self' ipc: http://ipc.localhost https://localhost:17483"
+      "csp": "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: http: https: ws: wss:; connect-src * ipc: http://ipc.localhost https://localhost:17483"
     }
   },
   "bundle": {

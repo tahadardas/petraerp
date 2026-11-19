@@ -13,7 +13,7 @@ export default function AuthScreen({ onSuccess }: AuthScreenProps) {
   const signIn = useSession((s) => s.signIn);
   const selectWorkspace = useSession((s) => s.selectWorkspace);
   const [userName, setUserName] = useState("admin");
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState("Try!NsfRGISWtqD+8sTWjJmC");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -205,6 +205,22 @@ export default function AuthScreen({ onSuccess }: AuthScreenProps) {
               }}
             />
           </PetraField>
+
+          <div
+            style={{
+              padding: "var(--space-2)",
+              background: "var(--bg-sunken)",
+              borderRadius: "var(--radius)",
+              fontSize: "var(--fs-caption)",
+              color: "var(--text-muted)",
+              marginTop: "var(--space-2)",
+              lineHeight: 1.5,
+            }}
+          >
+            💡 بيانات بيئة المعاينة التجريبية:
+            <br />
+            المستخدم: <strong style={{ color: "var(--text)" }}>admin</strong> &nbsp;|&nbsp; المرور: <strong style={{ color: "var(--text)" }}>Try!NsfRGISWtqD+8sTWjJmC</strong>
+          </div>
 
           <div style={{ marginTop: "var(--space-6)" }}>
             <PetraButton

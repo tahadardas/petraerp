@@ -30,7 +30,12 @@ function Save-PreviewState {
 function Get-PreviewProcess($Identity, [string]$ExpectedPath, [switch]$Api) {
     if ($null -eq $Identity) { return $null }
     $process = Get-Process -Id $Identity.Id -ErrorAction SilentlyContinue
-    if ($null -eq $process -or $process.StartTime.ToUniversalTime().Ticks.ToString() -ne $Identity.StartTicks) { return $null }
+    if ($null -eq $process) { return $null }
+    try {
+        if ($process.StartTime.ToUniversalTime().Ticks.ToString() -ne $Identity.StartTicks) { return $null }
+    } catch {
+        return $null
+    }
     if ($Api) {
         $command = (Get-CimInstance Win32_Process -Filter "ProcessId=$($process.Id)" -ErrorAction Stop).CommandLine
         $expectedCommand = '^(?:"[^"]+"|\S+)\s+"?' + [regex]::Escape($ExpectedPath) + '"?(?:\s|$)'
