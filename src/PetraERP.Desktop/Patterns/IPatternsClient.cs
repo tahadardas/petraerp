@@ -16,6 +16,8 @@ public interface IPatternsClient
     Task<DocumentPatternResponse> PublishRevisionAsync(Guid companyId, Guid branchId, Guid patternId, PublishPatternRevisionRequest request, CancellationToken cancellationToken);
     Task<DocumentPatternResponse> RetirePatternAsync(Guid companyId, Guid branchId, Guid patternId, RetirePatternRequest request, CancellationToken cancellationToken);
     Task<IReadOnlyList<DocumentPatternSummaryResponse>> GetRunnablePatternsAsync(Guid companyId, Guid branchId, CancellationToken cancellationToken);
+    /// <summary>What the branch runs: the active published revision with the voucher settings resolved by the server.</summary>
+    Task<EffectivePatternResponse> GetEffectivePatternAsync(Guid companyId, Guid branchId, Guid patternId, CancellationToken cancellationToken);
     Task<NextNumberResponse> GenerateNextNumberAsync(Guid companyId, Guid branchId, Guid patternId, Guid? fiscalYearId, CancellationToken cancellationToken);
 
     /// <summary>

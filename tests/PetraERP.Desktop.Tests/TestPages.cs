@@ -307,6 +307,17 @@ internal sealed class AccountingFixture : IChartOfAccountsClient, IFiscalCalenda
         return Task.FromResult(pattern);
     }
 
+    public Task<EffectivePatternResponse> GetEffectivePatternAsync(Guid companyId, Guid branchId, Guid patternId, CancellationToken cancellationToken)
+    {
+        var pattern = Patterns.Single(p => p.Id == patternId);
+        var revision = pattern.ActiveRevision ?? throw new InvalidOperationException("The pattern has no active revision.");
+        return Task.FromResult(new EffectivePatternResponse
+        {
+            PatternId = patternId, RevisionId = revision.Id, RevisionNumber = revision.RevisionNumber, OperationKind = pattern.OperationKind,
+            Code = pattern.Code, Configuration = revision.Configuration,
+        });
+    }
+
     public Task<IReadOnlyList<DocumentPatternSummaryResponse>> GetRunnablePatternsAsync(Guid companyId, Guid branchId, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<DocumentPatternSummaryResponse>>(
             Patterns.Where(p => p.IsActive == true && p.IsRunnable == true)

@@ -45,6 +45,9 @@ public sealed class PatternsClient(DesktopSession session) : IPatternsClient
         session.CachedAsync(branchId, PatternCategory, $"runnable:{companyId:N}",
             ct => session.Api.GetRunnableDocumentPatternsAsync(companyId, branchId, ct), PatternTtl, cancellationToken);
 
+    public Task<EffectivePatternResponse> GetEffectivePatternAsync(Guid companyId, Guid branchId, Guid patternId, CancellationToken cancellationToken) =>
+        session.Api.GetEffectiveDocumentPatternAsync(companyId, branchId, patternId, cancellationToken);
+
     public Task<NextNumberResponse> GenerateNextNumberAsync(Guid companyId, Guid branchId, Guid patternId, Guid? fiscalYearId, CancellationToken cancellationToken) =>
         session.Api.GenerateNextPatternNumberAsync(companyId, branchId, patternId, fiscalYearId, cancellationToken: cancellationToken);
 

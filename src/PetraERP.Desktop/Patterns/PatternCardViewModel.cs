@@ -166,6 +166,7 @@ public sealed partial class PatternCardViewModel : EntityCardViewModel
     partial void OnDraftOperationKindChanged(BusinessOperationKind value)
     {
         DraftChanged();
+        NotifyVoucherKind();
         if (IsNewMode && Pattern is null)
         {
             ApplyDefaultPatternSettingsForKind(value);
@@ -279,6 +280,9 @@ public sealed partial class PatternCardViewModel : EntityCardViewModel
             PatternId = open.PatternId;
             await LoadLookupsAsync(cancellationToken).ConfigureAwait(true);
             await LoadPatternAsync(cancellationToken).ConfigureAwait(true);
+            // Opening a record in view mode: the draft fields (shown read-only) must hold what was just read, not the constructor defaults.
+            // Later reloads (after creating a revision) deliberately keep what the user typed, as before.
+            LoadDraft(EntityCardMode.View);
         }
         else if (parameter is NewPatternCardRequest newReq)
         {
@@ -465,6 +469,7 @@ public sealed partial class PatternCardViewModel : EntityCardViewModel
         }
 
         DraftLockDocumentDate = config.EntryPolicy?.LockDocumentDate ?? false;
+        ApplyVoucherToDraft(config);
         if (config.NumberingPolicy is not null)
         {
             DraftInitialSequence = config.NumberingPolicy.InitialSequence ?? 1;
@@ -505,7 +510,8 @@ public sealed partial class PatternCardViewModel : EntityCardViewModel
 
         return new PatternConfigurationDto
         {
-            SchemaVersion = 1,
+            SchemaVersion = 2,
+            Voucher = BuildVoucherFromDraft(),
             DefaultWarehouseId = Guid.TryParse(DraftDefaultWarehouse, out var warehouse) ? warehouse : preservedConfiguration?.DefaultWarehouseId,
             AllowedWarehouseIds = preservedConfiguration?.AllowedWarehouseIds,
             OptionOverridesWhitelist = preservedConfiguration?.OptionOverridesWhitelist,
@@ -561,6 +567,7 @@ public sealed partial class PatternCardViewModel : EntityCardViewModel
             DraftFieldRules.Add(new PatternFieldRuleDto { FieldName = "Notes", IsVisible = true, IsRequired = false, DisplayOrder = 5 });
 
             preservedConfiguration = null;
+            ResetVoucherDraft();
             DraftInitialSequence = 1; DraftAllowManualNumbering = false; DraftLockDocumentDate = false;
             DraftRequiresApproval = false;
             DraftThresholdAmount = null;

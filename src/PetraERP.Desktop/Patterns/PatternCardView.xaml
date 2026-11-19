@@ -340,6 +340,85 @@
                                 </WrapPanel>
                             </StackPanel>
                         </Border>
+
+                        <!-- القسم الثالث: إعدادات السند (للسندات فقط؛ يطبّقها الخادم) -->
+                        <Border Style="{StaticResource Panel.Card}" Padding="12" Margin="0,12,0,0" Visibility="{Binding IsVoucherOperation, Converter={StaticResource Visible}}">
+                            <StackPanel>
+                                <TextBlock Text="إعدادات السند" Style="{StaticResource Text.Section}" Margin="0,0,0,4"/>
+                                <TextBlock Text="تُحفظ مع النسخة وتُطبَّق على الخادم؛ لا خيارات شكلية. الخيارات غير المفعَّلة بعد (قيد لكل قلم، ترحيل لحظة الاعتماد، قبض/دفع متعدد الطرق) غير معروضة." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                                <WrapPanel Margin="0,0,0,8">
+                                    <StackPanel Style="{StaticResource Field}" Width="300" Margin="0,0,16,8">
+                                        <TextBlock Text="عناوين الأعمدة" Style="{StaticResource Text.Label}"/>
+                                        <ComboBox ItemsSource="{Binding CaptionModeChoices}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding DraftCaptionMode, Mode=TwoWay}" IsEnabled="{Binding IsEditing}"/>
+                                    </StackPanel>
+                                    <StackPanel Style="{StaticResource Field}" Width="300" Margin="0,0,16,8">
+                                        <TextBlock Text="الترحيل عند الحفظ والمعالجة" Style="{StaticResource Text.Label}"/>
+                                        <ComboBox ItemsSource="{Binding PostingModeChoices}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding DraftPostingMode, Mode=TwoWay}" IsEnabled="{Binding IsEditing}"/>
+                                        <TextBlock Text="النمط لا يتجاوز سياسة الشركة؛ يستطيع أن يكون أشد فقط." Style="{StaticResource Text.Caption}" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Style="{StaticResource Field}" Width="260" Margin="0,0,0,8">
+                                        <TextBlock Text="تاريخ تثبيت السندات (قطع)" Style="{StaticResource Text.Label}"/>
+                                        <DockPanel>
+                                            <Button DockPanel.Dock="Right" Content="مسح" Command="{Binding ClearCutoffCommand}" Margin="6,0,0,0"/>
+                                            <DatePicker SelectedDate="{Binding DraftCutoffDate, Mode=TwoWay}" IsEnabled="{Binding IsEditing}"/>
+                                        </DockPanel>
+                                        <TextBlock Text="سند بتاريخ ≤ هذا اليوم لا يُنشأ ولا يُعدَّل ولا يُحذف ولا يُرحَّل ولا يُعكس." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </WrapPanel>
+
+                                <TextBlock Text="الحسابات المسموحة في الأسطر (حساب وما تحته)" Style="{StaticResource Text.Label}" Margin="0,4,0,4"/>
+                                <DockPanel Margin="0,0,0,4">
+                                    <Button DockPanel.Dock="Right" Content="إضافة" Command="{Binding AddEligibleAccountCommand}" Margin="6,0,0,0"/>
+                                    <ux:LookupPicker ItemsSource="{Binding AccountLookups}" SelectedId="{Binding AccountToAdd, Mode=TwoWay}" IsReadOnly="{Binding IsViewMode}" IsArabic="{Binding Localization.IsRightToLeft}"/>
+                                </DockPanel>
+                                <ItemsControl ItemsSource="{Binding EligibleAccountItems}" Margin="0,0,0,8">
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Style="{StaticResource Panel.Card}" Padding="8,3" Margin="0,0,6,6">
+                                                <DockPanel>
+                                                    <Button DockPanel.Dock="Right" Content="✕" Margin="6,0,0,0" Padding="4,0"
+                                                            Command="{Binding DataContext.RemoveEligibleAccountCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding Id}"/>
+                                                    <TextBlock><Run Text="{Binding Code, Mode=OneWay}"/> <Run Text="{Binding NameArabic, Mode=OneWay}"/></TextBlock>
+                                                </DockPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock Text="بلا اختيار = كل حسابات الترحيل المسموحة بقواعد الشركة." Style="{StaticResource Text.Caption}" Margin="0,0,0,8"/>
+
+                                <TextBlock Text="مراكز الكلفة المسموحة" Style="{StaticResource Text.Label}" Margin="0,4,0,4"/>
+                                <DockPanel Margin="0,0,0,4">
+                                    <Button DockPanel.Dock="Right" Content="إضافة" Command="{Binding AddEligibleCostCenterCommand}" Margin="6,0,0,0"/>
+                                    <ux:LookupPicker ItemsSource="{Binding CostCenterLookups}" SelectedId="{Binding CostCenterToAdd, Mode=TwoWay}" IsReadOnly="{Binding IsViewMode}" IsArabic="{Binding Localization.IsRightToLeft}"/>
+                                </DockPanel>
+                                <ItemsControl ItemsSource="{Binding EligibleCostCenterItems}" Margin="0,0,0,8">
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Style="{StaticResource Panel.Card}" Padding="8,3" Margin="0,0,6,6">
+                                                <DockPanel>
+                                                    <Button DockPanel.Dock="Right" Content="✕" Margin="6,0,0,0" Padding="4,0"
+                                                            Command="{Binding DataContext.RemoveEligibleCostCenterCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding Id}"/>
+                                                    <TextBlock><Run Text="{Binding Code, Mode=OneWay}"/> <Run Text="{Binding NameArabic, Mode=OneWay}"/></TextBlock>
+                                                </DockPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <Border Background="{DynamicResource Surface.Sunken}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,8,0,0"
+                                        Visibility="{Binding HasActiveRevision, Converter={StaticResource Visible}}">
+                                    <StackPanel>
+                                        <DockPanel Margin="0,0,0,6">
+                                            <Button DockPanel.Dock="Right" Content="قراءة من الخادم" Command="{Binding LoadEffectivePreviewCommand}"/>
+                                            <TextBlock Text="المعاينة الفعلية: ما يشغّله الخادم الآن للنسخة المنشورة" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        </DockPanel>
+                                        <TextBlock Text="{Binding EffectivePreviewText}" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
