@@ -17793,6 +17793,7 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
                 cursor?: string;
+                sources?: string;
             };
             header?: never;
             path: {

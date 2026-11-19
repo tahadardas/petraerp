@@ -7,7 +7,9 @@
 
 ---
 
-## 1. فجوة فلترة المصادر في دفتر الأستاذ (Account Ledger Sources Filter)
+## 1. [مُغلقة 19 نوفمبر 2026] فجوة فلترة المصادر في دفتر الأستاذ (Account Ledger Sources Filter)
+
+> أُضيف المعامل `sources` (قائمة مفصولة بفواصل: JOURNAL, SALES_INVOICE, PURCHASE_INVOICE, VOUCHER) إلى المسار؛ جدّدوا `api:generate`.
 
 - **المسار الحالي:**  
   `GET /api/v1/companies/{companyId}/branches/{branchId}/ledger/reports/account-ledger/{accountId}`

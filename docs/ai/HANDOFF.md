@@ -4,6 +4,13 @@
 المواصفة التنفيذية: `srs/PetraERP_Next_React_TypeScript_SRS_MASTER_v2_6_AR.md`.
 الهوية: Petra Calm Enterprise (RTL افتراضي، كثافة محاسبية، ألوان: ترويسة `#17334C`، إجراء رئيسي `#087E87`، خلفية `#EEF3F8`، نص `#253447`).
 
+## تدقيق الباك إند (19 نوفمبر 2026، Claude Code)
+- **فلتر المصادر في كشف الحساب:** `GET .../ledger/reports/account-ledger/{accountId}?sources=JOURNAL,SALES_INVOICE,PURCHASE_INVOICE,VOUCHER` (نفس قيم ميزان المراجعة؛ قيمة مجهولة = خطأ 400 لا تجاهل صامت). الفلتر يشمل الرصيد الافتتاحي والإجماليات، والمؤشر (cursor) مرتبط بالفلتر ويُرفض مع فلتر آخر. الملفات: `LedgerReportEndpoints.cs`, `LedgerReportModels.cs`, `SqlLedgerQueryService.AccountLedger.cs/.Balances.cs`.
+- **عقد التجميع/التفكيك:** حوّلت أعضاء `decimal` في `Contracts/Inventory/AssemblyContracts.cs` إلى نص عشري ثابت (ADR-0002)؛ لا يستخدمها أي endpoint بعد (INV-09 محجوب)، وبذلك نجح اختبار `ContractsExposeNoBinaryFloatingPointOrRawDecimalMembers`.
+- **OpenAPI والعميل:** جُدّد `petraerp-v1.json` و`PetraApiClient.g.cs` و`schema.d.ts`؛ عُدّل مستدعي WPF الوحيد (`AccountingClients.cs`) ليبني.
+- **التحقق:** بناء Backend.slnx وDesktop بنجاح (0 تحذير)، `PetraERP.Api.Tests` كاملة ناجحة، واختبار SQL الجديد `SourceFilterRestrictsLinesOpeningAndBindsTheCursor` + اختبارا المؤشر ناجحة.
+- **لم يُتحقق منه:** مطابقة منطق الأمين 10 بالكامل (القيد لكل سطر، أنماط متعددة الطرق) ما زالت معلّقة على نتيجة اختبار المطابقة المحاسبي؛ لم تُشغَّل بقية اختبارات SQL الصريحة (Explicit).
+
 ## تقارير وتوثيق الواجهة الأمامية الشاملة (19 نوفمبر 2026)
 - **ملف حالة التنفيذ:** `docs/ai/FRONTEND_EXECUTION_STATE.md`
 - **مصفوفة الشاشات الكاملة (59+ شاشة):** `docs/ai/FRONTEND_SCREEN_MATRIX.csv`

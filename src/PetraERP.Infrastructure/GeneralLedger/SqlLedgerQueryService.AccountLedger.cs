@@ -21,7 +21,11 @@ public sealed partial class SqlLedgerQueryService
     private sealed record LedgerCursorState(
         int Version, long IssuedAtUnixSeconds, string Workspace, Guid ActorUserId, Guid CompanyId, Guid BranchId, bool Consolidated, Guid AccountId, DateOnly? From, DateOnly? To,
         long Watermark, DateOnly LastDate, long LastSequence, Guid LastJournalId, Guid LastLineId,
-        decimal Running, decimal Opening, decimal PeriodDebit, decimal PeriodCredit, long TotalCount, int IncludedAccounts);
+        decimal Running, decimal Opening, decimal PeriodDebit, decimal PeriodCredit, long TotalCount, int IncludedAccounts, string? SourcesKey = null);
+
+    /// <summary>Canonical form of the source restriction, so a cursor is only valid for the filter it was issued under.</summary>
+    private static string? SourcesKeyOf(IReadOnlyCollection<string>? sources) =>
+        sources is not { Count: > 0 } || TrialBalanceSources.All.All(sources.Contains) ? null : string.Join(',', sources.Distinct().Order(StringComparer.Ordinal));
 
     public async Task<AccountLedgerDto> GetAccountLedgerAsync(LedgerReportScope scope, AccountLedgerQuery query, CancellationToken cancellationToken)
     {
@@ -39,7 +43,7 @@ public sealed partial class SqlLedgerQueryService
         var watermark = cursor?.Watermark
             ?? await LatestPostingSequenceAsync(scope, cancellationToken).ConfigureAwait(false)
             ?? 0L;
-        var snapshot = posted.Where(l => (l.Journal!.PostingSequence ?? 0L) <= watermark);
+        var snapshot = ApplySourceFilter(posted.Where(l => (l.Journal!.PostingSequence ?? 0L) <= watermark), scope.CompanyId, query.Sources);
 
         var period = snapshot;
         if (query.From is { } start) period = period.Where(l => l.Journal!.AccountingDate >= start);
@@ -119,7 +123,7 @@ public sealed partial class SqlLedgerQueryService
             var last = rows[^1];
             var state = new LedgerCursorState(2, DateTimeOffset.UtcNow.ToUnixTimeSeconds(), WorkspaceKey(), scope.ActorUserId, scope.CompanyId, scope.BranchId, scope.Consolidated,
                 account.Id, query.From, query.To, watermark, last.AccountingDate, last.PostingSequence ?? 0L, last.JournalId, last.Id,
-                running, opening, periodDebit, periodCredit, totalCount, included.Length);
+                running, opening, periodDebit, periodCredit, totalCount, included.Length, SourcesKeyOf(query.Sources));
             next = cursorSigner.Protect(JsonSerializer.SerializeToUtf8Bytes(state, CursorJson));
         }
 
@@ -187,7 +191,8 @@ public sealed partial class SqlLedgerQueryService
         if (!string.Equals(state.Workspace, WorkspaceKey(), StringComparison.Ordinal) || state.ActorUserId != scope.ActorUserId)
             throw new RequestValidationException("ledger.cursor_mismatch", "The paging cursor belongs to a different workspace or user.", "cursor");
         if (state.CompanyId != scope.CompanyId || state.BranchId != scope.BranchId || state.Consolidated != scope.Consolidated
-            || state.AccountId != query.AccountId || state.From != query.From || state.To != query.To)
+            || state.AccountId != query.AccountId || state.From != query.From || state.To != query.To
+            || !string.Equals(state.SourcesKey, SourcesKeyOf(query.Sources), StringComparison.Ordinal))
             throw new RequestValidationException("ledger.cursor_mismatch", "The paging cursor belongs to a different ledger request.", "cursor");
         return state;
     }

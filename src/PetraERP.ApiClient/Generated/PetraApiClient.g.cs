@@ -865,7 +865,7 @@ namespace PetraERP.ApiClient
         /// </summary>
         /// <returns>OK</returns>
         /// <exception cref="PetraApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<AccountLedgerResponse> GetAccountLedgerAsync(System.Guid companyId, System.Guid branchId, System.Guid accountId, System.DateOnly? from = null, System.DateOnly? to = null, bool? consolidated = null, int? page = null, int? pageSize = null, string? cursor = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task<AccountLedgerResponse> GetAccountLedgerAsync(System.Guid companyId, System.Guid branchId, System.Guid accountId, System.DateOnly? from = null, System.DateOnly? to = null, bool? consolidated = null, int? page = null, int? pageSize = null, string? cursor = null, string? sources = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -18603,7 +18603,7 @@ namespace PetraERP.ApiClient
         /// </summary>
         /// <returns>OK</returns>
         /// <exception cref="PetraApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<AccountLedgerResponse> GetAccountLedgerAsync(System.Guid companyId, System.Guid branchId, System.Guid accountId, System.DateOnly? from = null, System.DateOnly? to = null, bool? consolidated = null, int? page = null, int? pageSize = null, string? cursor = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        public virtual async System.Threading.Tasks.Task<AccountLedgerResponse> GetAccountLedgerAsync(System.Guid companyId, System.Guid branchId, System.Guid accountId, System.DateOnly? from = null, System.DateOnly? to = null, bool? consolidated = null, int? page = null, int? pageSize = null, string? cursor = null, string? sources = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
         {
             if (companyId == null)
                 throw new System.ArgumentNullException("companyId");
@@ -18656,6 +18656,10 @@ namespace PetraERP.ApiClient
                     if (cursor != null)
                     {
                         urlBuilder_.Append(System.Uri.EscapeDataString("cursor")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(cursor, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (sources != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("sources")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(sources, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 

@@ -46,11 +46,24 @@ internal static class LedgerReportEndpoints
     }
 
     private static async Task<IResult> AccountLedgerAsync(Guid companyId, Guid branchId, Guid accountId, DateOnly? from, DateOnly? to, bool? consolidated,
-        int? page, int? pageSize, string? cursor, ILedgerQueryService service, HttpContext http, CancellationToken cancellationToken)
+        int? page, int? pageSize, string? cursor, string? sources, ILedgerQueryService service, HttpContext http, CancellationToken cancellationToken)
     {
         var result = await service.GetAccountLedgerAsync(Scope(companyId, branchId, consolidated, http),
-            new AccountLedgerQuery(accountId, from, to, PageRequest.Create(page, pageSize), cursor), cancellationToken).ConfigureAwait(false);
+            new AccountLedgerQuery(accountId, from, to, PageRequest.Create(page, pageSize), cursor) { Sources = ParseSources(sources) }, cancellationToken).ConfigureAwait(false);
         return TypedResults.Ok(result.ToResponse());
+    }
+
+    /// <summary>Comma-separated document sources (case-insensitive); unknown values are a client error, never silently ignored.</summary>
+    private static List<string>? ParseSources(string? sources)
+    {
+        var list = string.IsNullOrWhiteSpace(sources) ? null
+            : sources.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(s => s.ToUpperInvariant()).Distinct().ToList();
+        if (list is not null && list.Exists(s => !TrialBalanceSources.All.Contains(s)))
+        {
+            throw new RequestValidationException(LedgerMasterErrorCodes.ReportRangeInvalid, "Unknown ledger source.", "sources");
+        }
+
+        return list;
     }
 
     private static async Task<IResult> TrialBalanceAsync(Guid companyId, Guid branchId, DateOnly? from, DateOnly? to, Guid? periodId, AccountType? accountType,
@@ -68,12 +81,7 @@ internal static class LedgerReportEndpoints
             throw new RequestValidationException(LedgerMasterErrorCodes.ReportRangeInvalid, "fromJournalNumber must not exceed toJournalNumber.", "fromJournalNumber");
         }
 
-        var sourceList = string.IsNullOrWhiteSpace(sources) ? null
-            : sources.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(s => s.ToUpperInvariant()).Distinct().ToList();
-        if (sourceList is not null && sourceList.Exists(s => !TrialBalanceSources.All.Contains(s)))
-        {
-            throw new RequestValidationException(LedgerMasterErrorCodes.ReportRangeInvalid, "Unknown trial balance source.", "sources");
-        }
+        var sourceList = ParseSources(sources);
 
         if (to is null && periodId is null)
         {

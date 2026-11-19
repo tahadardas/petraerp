@@ -112,7 +112,7 @@ public sealed class LedgerReportsClient(DesktopSession session) : ILedgerReports
     }
 
     public Task<AccountLedgerResponse> GetAccountLedgerAsync(Guid companyId, Guid branchId, Guid accountId, DateOnly? from, DateOnly? until, bool consolidated, int page, int pageSize, string? cursor, CancellationToken cancellationToken) =>
-        session.Api.GetAccountLedgerAsync(companyId, branchId, accountId, from, until, consolidated, page, pageSize, cursor, cancellationToken);
+        session.Api.GetAccountLedgerAsync(companyId, branchId, accountId, from, until, consolidated, page, pageSize, cursor, null, cancellationToken);
 
     public Task<TrialBalanceResponse> GetTrialBalanceAsync(Guid companyId, Guid branchId, TrialBalanceFilter filter, CancellationToken cancellationToken)
     {

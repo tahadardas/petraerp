@@ -98,7 +98,11 @@ public sealed record GeneralJournalDto(IReadOnlyList<GeneralJournalLineDto> Line
 /// past the last row of the previous one, so every page costs the same however deep it is. Without a cursor the first page is
 /// returned (or an offset page when <c>Page</c> &gt; 1, kept for random access).
 /// </summary>
-public sealed record AccountLedgerQuery(Guid AccountId, DateOnly? From, DateOnly? To, PageRequest Page, string? Cursor = null);
+public sealed record AccountLedgerQuery(Guid AccountId, DateOnly? From, DateOnly? To, PageRequest Page, string? Cursor = null)
+{
+    /// <summary>Optional document-source restriction (see <see cref="TrialBalanceSources"/>); null means every source.</summary>
+    public IReadOnlyList<string>? Sources { get; init; }
+}
 
 public sealed record AccountLedgerLineDto
 {

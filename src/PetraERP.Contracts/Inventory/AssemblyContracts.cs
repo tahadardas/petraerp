@@ -1,4 +1,4 @@
-namespace PetraERP.Contracts.Inventory;
+﻿namespace PetraERP.Contracts.Inventory;
 
 /// <summary>
 /// Mode of the manufacturing/assembly operation:
@@ -32,14 +32,19 @@ public sealed record AssemblyDocumentLineDto
     public string ItemName { get; init; } = string.Empty;
     public Guid? UnitId { get; init; }
     public string UnitName { get; init; } = string.Empty;
-    public decimal StandardQuantity { get; init; }
-    public decimal TotalQuantity { get; init; }
-    public decimal UnitCost { get; init; }
-    public decimal TotalCost { get; init; }
+    /// <summary>Invariant decimal string, never a binary floating-point number.</summary>
+    public string StandardQuantity { get; init; } = "0";
+    /// <summary>Invariant decimal string, never a binary floating-point number.</summary>
+    public string TotalQuantity { get; init; } = "0";
+    /// <summary>Invariant decimal string, never a binary floating-point number.</summary>
+    public string UnitCost { get; init; } = "0";
+    /// <summary>Invariant decimal string, never a binary floating-point number.</summary>
+    public string TotalCost { get; init; } = "0";
     public bool IsFlexible { get; init; } = true;
     public bool IsMandatory { get; init; }
     public string? AlternateGroupId { get; init; }
-    public decimal CostPercentage { get; init; }
+    /// <summary>Invariant decimal string, never a binary floating-point number.</summary>
+    public string CostPercentage { get; init; } = "0";
 }
 
 public sealed record AssemblyDocumentExpenseDto
@@ -48,7 +53,8 @@ public sealed record AssemblyDocumentExpenseDto
     public Guid AccountId { get; init; }
     public string AccountCode { get; init; } = string.Empty;
     public string AccountName { get; init; } = string.Empty;
-    public decimal Amount { get; init; }
+    /// <summary>Invariant decimal string, never a binary floating-point number.</summary>
+    public string Amount { get; init; } = "0";
     public string? Notes { get; init; }
 }
 
@@ -65,7 +71,8 @@ public sealed record AssemblyDocumentDto
     public Guid AssembledItemId { get; init; }
     public string AssembledItemCode { get; init; } = string.Empty;
     public string AssembledItemName { get; init; } = string.Empty;
-    public decimal Quantity { get; init; }
+    /// <summary>Invariant decimal string, never a binary floating-point number.</summary>
+    public string Quantity { get; init; } = "0";
     public Guid? UnitId { get; init; }
     public string UnitName { get; init; } = string.Empty;
     public Guid? SourceWarehouseId { get; init; }
@@ -76,10 +83,14 @@ public sealed record AssemblyDocumentDto
     public Guid? VarianceAccountId { get; init; }
     public List<AssemblyDocumentLineDto> Lines { get; init; } = [];
     public List<AssemblyDocumentExpenseDto> Expenses { get; init; } = [];
-    public decimal TotalMaterialCost { get; init; }
-    public decimal TotalExpenses { get; init; }
-    public decimal GrandTotal { get; init; }
-    public decimal UnitCost { get; init; }
+    /// <summary>Invariant decimal string, never a binary floating-point number.</summary>
+    public string TotalMaterialCost { get; init; } = "0";
+    /// <summary>Invariant decimal string, never a binary floating-point number.</summary>
+    public string TotalExpenses { get; init; } = "0";
+    /// <summary>Invariant decimal string, never a binary floating-point number.</summary>
+    public string GrandTotal { get; init; } = "0";
+    /// <summary>Invariant decimal string, never a binary floating-point number.</summary>
+    public string UnitCost { get; init; } = "0";
     public string TafqeetArabic { get; init; } = string.Empty;
     public InventoryDocumentState State { get; init; } = InventoryDocumentState.Draft;
 }

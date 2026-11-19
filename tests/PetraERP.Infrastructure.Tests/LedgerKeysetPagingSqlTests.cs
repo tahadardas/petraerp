@@ -100,6 +100,50 @@ public sealed class LedgerKeysetPagingSqlTests
     }
 
     [Fact(Explicit = true)]
+    [Trait("Category", "SqlServer")]
+    public async Task SourceFilterRestrictsLinesOpeningAndBindsTheCursor()
+    {
+        var database = await SqlTestDatabase.CreateAsync().ConfigureAwait(true);
+        await using (database.ConfigureAwait(true))
+        {
+            var s = await LedgerScenario.CreateAsync(database).ConfigureAwait(true);
+            var cash = await s.AccountAsync(s.CompanyA, "1101", AccountTypeCode.Assets, true).ConfigureAwait(true);
+            var sales = await s.AccountAsync(s.CompanyA, "4101", AccountTypeCode.Revenue, true).ConfigureAwait(true);
+            for (var i = 0; i < 6; i++)
+            {
+                await s.JournalAsync(s.CompanyA, s.BranchA1, new DateOnly(2026, 1, 1 + i), "USD", true,
+                    (cash.Id, 100m, 0m), (sales.Id, 0m, 100m)).ConfigureAwait(true);
+            }
+
+            var scope = LedgerReportScope.Create(s.CompanyA, s.BranchA1, s.Actor, false);
+            using var context = database.Context();
+            var reports = new SqlLedgerQueryService(context, new TestSigner());
+
+            // Manual journals are the JOURNAL source: they are visible under it and under "all", never under another source.
+            var manual = await reports.GetAccountLedgerAsync(scope, new AccountLedgerQuery(cash.Id, new DateOnly(2026, 1, 3), null, PageRequest.Create(1, 100))
+                { Sources = [TrialBalanceSources.Journal] }, Cancellation).ConfigureAwait(true);
+            var all = await reports.GetAccountLedgerAsync(scope, new AccountLedgerQuery(cash.Id, new DateOnly(2026, 1, 3), null, PageRequest.Create(1, 100)), Cancellation).ConfigureAwait(true);
+            Assert.Equal(4, manual.Lines.Count);
+            Assert.Equal(all.OpeningBalance, manual.OpeningBalance);
+            Assert.Equal(all.ClosingBalance, manual.ClosingBalance);
+
+            var sold = await reports.GetAccountLedgerAsync(scope, new AccountLedgerQuery(cash.Id, new DateOnly(2026, 1, 3), null, PageRequest.Create(1, 100))
+                { Sources = [TrialBalanceSources.SalesInvoice] }, Cancellation).ConfigureAwait(true);
+            Assert.Empty(sold.Lines);
+            Assert.Equal(0m, sold.OpeningBalance);
+            Assert.Equal(0m, sold.ClosingBalance);
+
+            // A cursor issued under one source filter is refused under another.
+            var firstPage = await reports.GetAccountLedgerAsync(scope, new AccountLedgerQuery(cash.Id, null, null, PageRequest.Create(1, 2))
+                { Sources = [TrialBalanceSources.Journal] }, Cancellation).ConfigureAwait(true);
+            Assert.NotNull(firstPage.NextCursor);
+            await Assert.ThrowsAsync<RequestValidationException>(() => reports.GetAccountLedgerAsync(scope,
+                new AccountLedgerQuery(cash.Id, null, null, PageRequest.Create(1, 2), firstPage.NextCursor)
+                    { Sources = [TrialBalanceSources.SalesInvoice] }, Cancellation)).ConfigureAwait(true);
+        }
+    }
+
+    [Fact(Explicit = true)]
     [Trait("Category", "SqlServerBenchmark")]
     public async Task MeasureDeepPageByNumberVersusByCursor()
     {

@@ -210,7 +210,12 @@ public sealed partial class SqlLedgerQueryService
         if (options.CostCenterId is { } center) lines = lines.Where(l => l.CostCenterId == center);
         if (options.FromJournalNumber is { } fromNumber) lines = lines.Where(l => l.Journal!.PostingSequence >= fromNumber);
         if (options.ToJournalNumber is { } toNumber) lines = lines.Where(l => l.Journal!.PostingSequence <= toNumber);
-        var sources = options.Sources;
+        return ApplySourceFilter(lines, companyId, options.Sources);
+    }
+
+    /// <summary>Restricts journal lines to the chosen originating document kinds; null/empty/all-selected means no restriction.</summary>
+    private IQueryable<JournalLineRow> ApplySourceFilter(IQueryable<JournalLineRow> lines, Guid companyId, IReadOnlyCollection<string>? sources)
+    {
         if (sources is not { Count: > 0 } || TrialBalanceSources.All.All(sources.Contains)) return lines;
         var wantJournal = sources.Contains(TrialBalanceSources.Journal);
         var wantSales = sources.Contains(TrialBalanceSources.SalesInvoice);

@@ -12164,6 +12164,13 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "sources",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
