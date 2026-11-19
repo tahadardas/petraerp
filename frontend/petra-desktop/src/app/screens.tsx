@@ -12,4 +12,6 @@ type ScreenLoader = LazyExoticComponent<ComponentType<ScreenProps>>;
  */
 export const screens: Readonly<Record<string, ScreenLoader>> = {
   home: lazy(() => import("@/features/home/HomeScreen")),
+  // Development gallery of the input engine (opened from the header in dev builds only).
+  gallery: lazy(() => import("@/features/gallery/GalleryScreen")),
 };

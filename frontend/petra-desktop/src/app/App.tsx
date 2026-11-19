@@ -57,6 +57,9 @@ export function App() {
                 </button>
               ))}
           </nav>
+          {import.meta.env.DEV ? (
+            <button type="button" onClick={() => open({ key: "gallery", screen: "gallery", title: "Components" })}>Components</button>
+          ) : null}
           <label>
             {t("pref.theme")}{" "}
             <select value={theme} onChange={(e) => setTheme(e.target.value === "dark" ? "dark" : "light")}>
