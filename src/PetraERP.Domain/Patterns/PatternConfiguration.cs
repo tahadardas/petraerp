@@ -54,6 +54,18 @@ public sealed record PatternEntryPolicy
     /// default false keeps existing patterns posting exactly as before.
     /// </summary>
     public bool DetailedJournalLines { get; init; }
+
+    /// <summary>
+    /// Al-Ameen sales shape: a line-level discount is its own movement on the customer/cash account (debit the gross, credit the discount)
+    /// instead of being netted into one debit. Customer balances and totals are identical; the party statement shows the discount as a movement.
+    /// </summary>
+    public bool SeparateDiscountMovement { get; init; }
+
+    /// <summary>
+    /// Al-Ameen voucher shape: every voucher row books its own pair (row account, cash/main account) so the main account repeats per row
+    /// (n rows give 2n lines) instead of one merged main-account line. Applies to account rows; balances are identical.
+    /// </summary>
+    public bool PairedVoucherLines { get; init; }
 }
 
 public sealed record PatternPricingPolicy

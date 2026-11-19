@@ -336,7 +336,8 @@ public sealed partial class SqlSalesInvoiceService
             var discount = group.Sum(line => line.DiscountAmount);
             var tax = group.Sum(line => line.TaxAmount);
             var additions = group.Sum(line => line.PumpCost + line.TransportCost);
-            Add(ResolveControl(), subtotal - discount + tax + additions, 0, "ذمم/نقد البيع", center);
+            // Al-Ameen shape (pattern option): the control account is debited the gross and the discount is credited back below as its own movement.
+            Add(ResolveControl(), (config.EntryPolicy.SeparateDiscountMovement ? subtotal : subtotal - discount) + tax + additions, 0, "ذمم/نقد البيع", center);
         }
 
         foreach (var group in invoice.Lines.GroupForJournal(line => (AccountId: resolver.Resolve(line.ItemId, "Revenue"), CostCenterId: line.CostCenterId ?? invoice.CostCenterId), config.EntryPolicy.DetailedJournalLines))
@@ -349,6 +350,12 @@ public sealed partial class SqlSalesInvoiceService
         {
             var discount = group.Sum(line => line.DiscountAmount);
             Add(group.Key.AccountId, discount, 0, "حسم البيع", group.Key.CostCenterId);
+        }
+
+        if (config.EntryPolicy.SeparateDiscountMovement)
+        {
+            foreach (var group in invoice.Lines.Where(l => l.DiscountAmount > 0).GroupBy(line => line.CostCenterId ?? invoice.CostCenterId))
+                Add(ResolveControl(), 0, group.Sum(line => line.DiscountAmount), "تخفيض الذمة/النقد بحسم الأسطر", group.Key);
         }
 
         foreach (var group in invoice.Lines.Where(l => l.TaxAmount > 0).GroupForJournal(line => (AccountId: resolver.Resolve(line.ItemId, "Tax"), CostCenterId: line.CostCenterId ?? invoice.CostCenterId), config.EntryPolicy.DetailedJournalLines))

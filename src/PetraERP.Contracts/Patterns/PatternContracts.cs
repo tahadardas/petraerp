@@ -111,6 +111,12 @@ public sealed record PatternEntryPolicyDto
 
     /// <summary>One journal line per document line (Al-Ameen detail) instead of lines merged per account and cost center.</summary>
     public bool DetailedJournalLines { get; init; }
+
+    /// <summary>Line-level sales discount is a separate movement on the customer/cash account (Al-Ameen).</summary>
+    public bool SeparateDiscountMovement { get; init; }
+
+    /// <summary>Each voucher row books its own pair with the main account (Al-Ameen).</summary>
+    public bool PairedVoucherLines { get; init; }
 }
 
 public sealed record PatternPricingPolicyDto

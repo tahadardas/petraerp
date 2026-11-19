@@ -114,7 +114,7 @@ internal static class PatternMapping
                 RequiresApproval = config.ApprovalPolicy.RequiresApproval,
                 ThresholdAmount = config.ApprovalPolicy.ThresholdAmount?.ToString(System.Globalization.CultureInfo.InvariantCulture),
             },
-            EntryPolicy = new PatternEntryPolicyDto { LockDocumentDate = config.EntryPolicy.LockDocumentDate, DetailedJournalLines = config.EntryPolicy.DetailedJournalLines },
+            EntryPolicy = new PatternEntryPolicyDto { LockDocumentDate = config.EntryPolicy.LockDocumentDate, DetailedJournalLines = config.EntryPolicy.DetailedJournalLines, SeparateDiscountMovement = config.EntryPolicy.SeparateDiscountMovement, PairedVoucherLines = config.EntryPolicy.PairedVoucherLines },
             PricingPolicy = new PatternPricingPolicyDto
             {
                 AllowManualPriceOverride = config.PricingPolicy.AllowManualPriceOverride,
@@ -177,7 +177,7 @@ internal static class PatternMapping
                 RequiresApproval = dto.ApprovalPolicy.RequiresApproval,
                 ThresholdAmount = decimal.TryParse(dto.ApprovalPolicy.ThresholdAmount, System.Globalization.CultureInfo.InvariantCulture, out var t) ? t : null,
             },
-            EntryPolicy = new DomainPattern.PatternEntryPolicy { LockDocumentDate = dto.EntryPolicy?.LockDocumentDate ?? false, DetailedJournalLines = dto.EntryPolicy?.DetailedJournalLines ?? false },
+            EntryPolicy = new DomainPattern.PatternEntryPolicy { LockDocumentDate = dto.EntryPolicy?.LockDocumentDate ?? false, DetailedJournalLines = dto.EntryPolicy?.DetailedJournalLines ?? false, SeparateDiscountMovement = dto.EntryPolicy?.SeparateDiscountMovement ?? false, PairedVoucherLines = dto.EntryPolicy?.PairedVoucherLines ?? false },
             PricingPolicy = dto.PricingPolicy is null ? new() : new DomainPattern.PatternPricingPolicy
             {
                 AllowManualPriceOverride = dto.PricingPolicy.AllowManualPriceOverride,

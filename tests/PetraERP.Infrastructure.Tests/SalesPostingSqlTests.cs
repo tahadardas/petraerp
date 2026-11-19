@@ -719,11 +719,38 @@ public sealed partial class SalesPostingSqlTests
         }
     }
 
+    /// <summary>Al-Ameen sales shape: the line discount is its own credit on the receivable; the customer's net movement is unchanged.</summary>
+    [Theory(Explicit = true)]
+    [Trait("Category", "SqlServer")]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SeparateDiscountMovementDebitsTheGrossAndCreditsTheDiscountOnTheReceivable(bool separate)
+    {
+        var database = await SqlTestDatabase.CreateAsync().ConfigureAwait(true);
+        await using (database.ConfigureAwait(true))
+        {
+            var fixture = await CreateAsync(database, separateDiscountMovement: separate).ConfigureAwait(true); var s = fixture.Scenario;
+            using var context = database.Context();
+            var service = Service(context);
+            var current = await service.GetInvoiceAsync(s.CompanyA, s.BranchA1, fixture.InvoiceId, Cancellation).ConfigureAwait(true);
+            await service.UpdateInvoiceAsync(s.CompanyA, s.BranchA1, fixture.InvoiceId, new UpdateSalesInvoiceCommand(current.CustomerId, current.WarehouseId, current.InvoiceDateUtc,
+                CurrencyCode: "USD", Lines: [new(fixture.ItemId, fixture.UnitId, 1, 10, DiscountAmount: 2m)])
+                { ExpectedVersion = ConcurrencyToken.FromBytes(current.RowVersion) }, Cancellation).ConfigureAwait(true);
+            var posted = await service.PostInvoiceAsync(s.CompanyA, s.BranchA1, fixture.InvoiceId, s.Actor, new PostSalesInvoiceCommand("disc-" + separate), Cancellation).ConfigureAwait(true);
+            var lines = await context.JournalLines.AsNoTracking().Where(l => l.JournalId == posted.JournalEntryId).ToListAsync(Cancellation).ConfigureAwait(true);
+            var receivable = lines.Where(l => l.AccountId == fixture.ReceivableId).ToArray();
+            Assert.Equal(separate ? 2 : 1, receivable.Length);
+            Assert.Equal(8m, receivable.Sum(l => l.BaseDebit - l.BaseCredit));
+            Assert.Equal(separate ? 10m : 8m, receivable.Sum(l => l.BaseDebit));
+            Assert.Equal(lines.Sum(l => l.BaseDebit), lines.Sum(l => l.BaseCredit));
+        }
+    }
+
     /// <summary>Marks the cash and customer roles as not enforced, which is what lets a document name its own account.</summary>
     private static List<PatternAccountMapping> Overridable(bool allow, List<PatternAccountMapping> mappings) =>
         allow ? mappings.Select(m => m.Role is "Cash" or "Customer" ? m with { AllowOverride = true } : m).ToList() : mappings;
 
-    private static async Task<Fixture> CreateAsync(SqlTestDatabase database, PaymentMethod paymentMethod = PaymentMethod.Credit, bool includeCashMapping = true, bool allowAccountOverride = false, bool detailedJournalLines = false)
+    private static async Task<Fixture> CreateAsync(SqlTestDatabase database, PaymentMethod paymentMethod = PaymentMethod.Credit, bool includeCashMapping = true, bool allowAccountOverride = false, bool detailedJournalLines = false, bool separateDiscountMovement = false)
 
     {
 
@@ -803,7 +830,7 @@ public sealed partial class SalesPostingSqlTests
 
                 NumberingPolicy = new() { Prefix = "SI-", MinimumDigits = 4 },
 
-                EntryPolicy = new() { DetailedJournalLines = detailedJournalLines }
+                EntryPolicy = new() { DetailedJournalLines = detailedJournalLines, SeparateDiscountMovement = separateDiscountMovement }
 
             }
 

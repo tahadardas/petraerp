@@ -33,13 +33,16 @@ public sealed partial class SqlTreasuryVoucherService
     {
         var lines=new List<JournalDraftLineInput>();
         var receipt=voucher.Kind==(byte)VoucherKind.Receipt;
-        lines.Add(MoneyLine(validation.SettlementAccountId,voucher.CurrencyCode,validation.BaseCurrency,voucher.ExchangeRate,voucher.Amount,receipt,receipt?"مقبوضات":"مدفوعات"));
+        var paired=validation.ReceivableAccountId is null && validation.Configuration.EntryPolicy.PairedVoucherLines;
+        if (!paired) lines.Add(MoneyLine(validation.SettlementAccountId,voucher.CurrencyCode,validation.BaseCurrency,voucher.ExchangeRate,voucher.Amount,receipt,receipt?"مقبوضات":"مدفوعات"));
         if (validation.ReceivableAccountId is not { } partyAccount)
         {
             decimal debited=0;
             var rows=voucher.Lines.OrderBy(l=>l.DisplayOrder).ToArray();
             for(var i=0;i<rows.Length;i++)
             {
+                // Al-Ameen shape (pattern option): the main account is booked once per row, right after the row's own line.
+                if (paired) lines.Add(MoneyLine(validation.SettlementAccountId,voucher.CurrencyCode,validation.BaseCurrency,voucher.ExchangeRate,rows[i].Amount,receipt,receipt?"مقبوضات":"مدفوعات"));
                 lines.Add(MoneyLine(validation.LineTargets[i],voucher.CurrencyCode,validation.BaseCurrency,voucher.ExchangeRate,rows[i].Amount,true,rows[i].Description??"مدفوعات",rows[i].CostCenterId));
                 debited+=DocumentCurrencyPolicy.ToBase(rows[i].Amount,voucher.ExchangeRate);
             }

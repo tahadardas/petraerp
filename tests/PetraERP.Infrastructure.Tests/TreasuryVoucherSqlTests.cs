@@ -26,7 +26,7 @@ public sealed partial class SalesPostingSqlTests
         public Guid DateLockedReceipt { get; init; }
     }
 
-    private static async Task<VoucherSetup> VoucherSetupAsync(Fixture fixture)
+    private static async Task<VoucherSetup> VoucherSetupAsync(Fixture fixture, bool pairedVoucherLines = false)
     {
         var s = fixture.Scenario;
         using var context = s.Database.Context();
@@ -49,7 +49,7 @@ public sealed partial class SalesPostingSqlTests
                 {
                     AccountMappings = roles.Select(r => new PatternAccountMapping { Role = r.Key, AccountId = r.Value }).ToList(),
                     NumberingPolicy = new() { Prefix = code + "-", MinimumDigits = 4 },
-                    EntryPolicy = new() { LockDocumentDate = lockDate }
+                    EntryPolicy = new() { LockDocumentDate = lockDate, PairedVoucherLines = pairedVoucherLines }
                 }
             }, Cancellation).ConfigureAwait(true);
             var published = await patterns.PublishRevisionAsync(scope, created.Id, new PublishPatternRevisionCommand
@@ -189,6 +189,33 @@ public sealed partial class SalesPostingSqlTests
             var deletable = await treasury.CreateDraftAsync(s.CompanyA, s.BranchA1, s.Actor, command, Cancellation).ConfigureAwait(true);
             await treasury.DeleteDraftAsync(s.CompanyA, s.BranchA1, deletable.Id, ConcurrencyToken.FromBytes(deletable.RowVersion), Cancellation).ConfigureAwait(true);
             Assert.False(await context.Vouchers.AnyAsync(v => v.Id == deletable.Id, Cancellation).ConfigureAwait(true));
+        }
+    }
+
+    /// <summary>Al-Ameen voucher shape: with the option on, every row books its own pair with the bank (2 credit lines); off, one merged bank line.</summary>
+    [Theory(Explicit = true)]
+    [Trait("Category", "SqlServer")]
+    [InlineData(false, 1)]
+    [InlineData(true, 2)]
+    public async Task PairedVoucherLinesRepeatTheMainAccountPerRow(bool paired, int expectedBankLines)
+    {
+        var database = await SqlTestDatabase.CreateAsync().ConfigureAwait(true);
+        await using (database.ConfigureAwait(true))
+        {
+            var fixture = await CreateAsync(database).ConfigureAwait(true); var s = fixture.Scenario;
+            var setup = await VoucherSetupAsync(fixture, paired).ConfigureAwait(true);
+            using var context = database.Context();
+            var treasury = Treasury(context);
+            var command = new SaveVoucherCommand(VoucherKind.Payment, setup.Payment, setup.Supplier, SettlementMethod.Bank,
+                new DateTimeOffset(2026, 10, 19, 0, 0, 0, TimeSpan.Zero), "USD", 1m, 100m, "دفع للمورد",
+                [], [new(setup.Supplier, null, 70m, Description: "دفعة مورد"), new(null, setup.Expense, 30m, Description: "مصاريف")]) { ActorUserId = s.Actor };
+            var draft = await treasury.CreateDraftAsync(s.CompanyA, s.BranchA1, s.Actor, command, Cancellation).ConfigureAwait(true);
+            var posted = await treasury.PostAsync(s.CompanyA, s.BranchA1, draft.Id, s.Actor, new(ConcurrencyToken.FromBytes(draft.RowVersion), "paired-" + paired), Cancellation).ConfigureAwait(true);
+            var lines = await context.JournalLines.AsNoTracking().Where(l => l.JournalId == posted.JournalEntryId).ToListAsync(Cancellation).ConfigureAwait(true);
+            var bank = lines.Where(l => l.AccountId == setup.Bank).ToArray();
+            Assert.Equal(expectedBankLines, bank.Length);
+            Assert.Equal(100m, bank.Sum(l => l.TransactionCredit));
+            Assert.Equal(lines.Sum(l => l.BaseDebit), lines.Sum(l => l.BaseCredit));
         }
     }
 

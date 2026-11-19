@@ -44479,6 +44479,12 @@
           },
           "detailedJournalLines": {
             "type": "boolean"
+          },
+          "separateDiscountMovement": {
+            "type": "boolean"
+          },
+          "pairedVoucherLines": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
