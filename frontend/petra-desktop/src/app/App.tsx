@@ -45,6 +45,8 @@ export function App() {
   const commandItems: CommandItem[] = useMemo(() => [
     { id: "cmd-accounts", title: "دليل الحسابات", category: "المحاسبة", screen: "accounts", shortcut: "F3" },
     { id: "cmd-cost-centers", title: "دليل مراكز الكلفة", category: "المحاسبة", screen: "cost-centers" },
+    { id: "cmd-opening-balances", title: "قيد الأرصدة الافتتاحية", category: "المحاسبة", screen: "opening-balances" },
+    { id: "cmd-fiscal-years", title: "السنوات والفترات المالية", category: "الإعدادات", screen: "fiscal-years" },
     { id: "cmd-journals", title: "القيود اليومية العامة", category: "المحاسبة", screen: "journals" },
     { id: "cmd-new-journal", title: "قيد يومية جديد", category: "المحاسبة", screen: "journal-entry", shortcut: "Ctrl+N" },
     { id: "cmd-parties", title: "دليل الأطراف الموحد (الزبائن والموردون)", category: "الأطراف", screen: "parties" },

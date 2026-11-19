@@ -21,6 +21,7 @@ export const topMenus: readonly MenuItem[] = [
     children: [
       { id: "accounts", label: "menu.accounts", screen: "accounts" },
       { id: "cost-centers", label: "menu.cost_centers", screen: "cost-centers" },
+      { id: "opening-balances", label: "menu.opening_balances", screen: "opening-balances" },
       { id: "journals", label: "menu.journals", screen: "journals" },
       { id: "new-journal", label: "menu.journals", screen: "journal-entry" },
       { id: "parties", label: "menu.parties", screen: "parties" },
@@ -82,6 +83,7 @@ export const topMenus: readonly MenuItem[] = [
     id: "settings",
     label: "menu.settings",
     children: [
+      { id: "fiscal-years", label: "menu.fiscal_years", screen: "fiscal-years" },
       { id: "branches", label: "menu.branches", screen: "branches" },
       { id: "currencies", label: "menu.currencies", screen: "currencies" },
       { id: "users", label: "menu.users", screen: "users" },

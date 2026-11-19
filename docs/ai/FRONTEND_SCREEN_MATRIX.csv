@@ -4,7 +4,7 @@ AUTH-01,Company Login,/auth/login,DONE,Public,POST /api/v1/auth/login,AuthScreen
 WS-01,Workspace Context Modal,/workspace/switch,DONE,Authenticated,GET /api/v1/me/companies,WorkspaceContextModal.tsx
 DR-01,Disaster Recovery Wizard,/recovery/wizard,BLOCKED_BY_BACKEND,Admin,POST /api/v1/administration/backups/test-restore,SEC-DR-SRS Pending v2
 WS-02,Company Creation Wizard,/workspace/companies/new,SCHEDULED,Admin,POST /api/v1/workspaces/companies,OpenAPI Defined
-WS-03,Fiscal Year Manager,/workspace/fiscal-years,SCHEDULED,Admin,GET/POST /api/v1/workspaces/fiscal-years,OpenAPI Defined
+WS-03,Fiscal Year Manager,/workspace/fiscal-years,DONE,Admin,GET/POST /api/v1/workspaces/fiscal-years,FiscalYearsScreen.tsx / Vite Build
 WS-04,Main Workspace Shell,/workspace,DONE,Authenticated,Local State + Session,WorkspaceShell.tsx / App.tsx
 WS-05,Command Palette & Favorites,/workspace/palette,DONE,Authenticated,Ctrl+K Local Registry,PetraCommandPalette.tsx
 WS-06,User Preferences,/settings/preferences,SCHEDULED,Authenticated,/workspace/preferences,OpenAPI Defined
@@ -17,9 +17,9 @@ ACC-06,Account Ledger,/reports/account-ledger,DONE,ledger.view,GET /ledger/repor
 ACC-07,Trial Balance,/reports/trial-balance,DONE,trial_balance.view,GET /ledger/reports/trial-balance,TrialBalanceScreen.tsx
 ACC-08,Currency Balance,/reports/currency-balance,SCHEDULED,reports.view,GET /currencies/rates/effective,OpenAPI Defined
 ACC-09,Cost Centers Directory,/cost-centers,DONE,cost_centers.view,GET /ledger/chart/cost-centers/tree,CostCentersScreen.tsx / Vite Build
-ACC-10,Fiscal Periods,/settings/periods,SCHEDULED,admin.periods,GET /workspaces/fiscal-years,OpenAPI Defined
+ACC-10,Fiscal Periods,/settings/periods,DONE,admin.periods,GET /workspaces/fiscal-years,FiscalYearsScreen.tsx / Vite Build
 ACC-11,Batch Posting Manager,/posting/batches,SCHEDULED,posting.manage,GET/POST /posting-batches,OpenAPI Defined
-ACC-12,Opening Balances,/accounting/opening-balances,SCHEDULED,opening_balances.manage,GET/POST /opening-balances,OpenAPI Defined
+ACC-12,Opening Balances,/accounting/opening-balances,DONE,opening_balances.manage,GET/POST /opening-balances,OpeningBalancesScreen.tsx / Vite Build
 ACC-13,Fiscal Year Rollover,/admin/rollover,SCHEDULED,admin.rollover,POST /workspaces/rollover/preview,OpenAPI Defined
 ACC-14,Account Reconciliation,/accounting/reconciliation,SCHEDULED,reconciliation.view,GET /reconciliation,OpenAPI Defined
 PARTY-01,Parties Directory,/parties,DONE,parties.view;parties.manage,GET /parties,PartiesScreen.tsx / Vitest

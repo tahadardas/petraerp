@@ -18,6 +18,8 @@ export const screens: Readonly<Record<string, ScreenLoader>> = {
   // Chart of Accounts & General Ledger
   accounts: lazy(() => import("@/features/accounts/AccountsScreen")),
   "cost-centers": lazy(() => import("@/features/costcenters/CostCentersScreen")),
+  "opening-balances": lazy(() => import("@/features/accounting/OpeningBalancesScreen")),
+  "fiscal-years": lazy(() => import("@/features/calendar/FiscalYearsScreen")),
   journals: lazy(() => import("@/features/journals/JournalsScreen")),
   "journal-entry": lazy(() => import("@/features/journals/JournalEntryScreen")),
   // Unified Parties (Customers/Suppliers)
