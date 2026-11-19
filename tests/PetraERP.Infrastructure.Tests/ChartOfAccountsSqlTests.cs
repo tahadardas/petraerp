@@ -34,7 +34,8 @@ public sealed class ChartOfAccountsSqlTests
             var linked = await request.Parties.AsNoTracking().SingleAsync(p => p.Id == both.Id, Cancellation).ConfigureAwait(true);
             Assert.NotNull(linked.ReceivableAccountId);
             Assert.NotNull(linked.PayableAccountId);
-            Assert.NotEqual(linked.ReceivableAccountId, linked.PayableAccountId);
+            // One party, one ledger account (owner decision): the roles share the single account created for the party.
+            Assert.Equal(linked.ReceivableAccountId, linked.PayableAccountId);
             Assert.Contains(tree, a => a.Id == linked.ReceivableAccountId && a.NameArabic == "طرف زبون ومورد");
             Assert.Contains(tree, a => a.Id == linked.PayableAccountId && a.NameArabic == "طرف زبون ومورد");
         }

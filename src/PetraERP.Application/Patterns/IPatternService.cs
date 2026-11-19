@@ -56,6 +56,13 @@ public interface IPatternService
         GetNextPatternNumberCommand command,
         CancellationToken cancellationToken);
 
+    /// <summary>The active published revision of a pattern this branch may run, voucher block resolved; not found otherwise.</summary>
+    Task<EffectivePatternDto> GetEffectivePatternAsync(PatternScope scope, Guid patternId, CancellationToken cancellationToken);
+
+    /// <summary>Posting accounts the pattern's lines may use (its lookup restriction applied), searched by code prefix or name.</summary>
+    Task<IReadOnlyList<PatternAccountLookupItemDto>> SearchEligibleAccountsAsync(PatternScope scope, Guid patternId, string? search, int take,
+        CancellationToken cancellationToken);
+
     Task<IReadOnlyList<DocumentPatternSummaryDto>> GetRunnablePatternsForBranchAsync(
         PatternScope scope,
         CancellationToken cancellationToken);

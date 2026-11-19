@@ -68,6 +68,60 @@ public sealed class PartyAccountPolicySqlTests
         }
     }
 
+    /// <summary>Owner decision (AMN-VPAT, option A): a party that is customer and supplier has ONE ledger account.</summary>
+    [Fact(Explicit = true)]
+    [Trait("Category", "SqlServer")]
+    public async Task ACustomerAndSupplierPartyHasOneAccountForNewPartiesAndNeverChangesAnExistingPair()
+    {
+        var database = await SqlTestDatabase.CreateAsync().ConfigureAwait(true);
+        await using (database.ConfigureAwait(true))
+        {
+            var scenario = await LedgerScenario.CreateAsync(database).ConfigureAwait(true);
+            var one = await scenario.AccountAsync(scenario.CompanyA, "1170", AccountTypeCode.Assets, true).ConfigureAwait(true);
+            var other = await scenario.AccountAsync(scenario.CompanyA, "2170", AccountTypeCode.Liabilities, true).ConfigureAwait(true);
+            using var context = database.Context();
+            var parties = new SqlPartyService(context);
+            CreatePartyCommand Command(string code, PartyRole role, Guid? receivable = null, Guid? payable = null) =>
+                new(code, "طرف " + code, null, role, ReceivableAccountId: receivable, PayableAccountId: payable)
+                { ChangedByUserId = scenario.Actor, ChangedInBranchId = scenario.BranchA1 };
+
+            // New party without accounts: exactly one new account serves both roles.
+            var both = await parties.CreatePartyAsync(scenario.CompanyA, Command("B-1", PartyRole.Both), Cancellation).ConfigureAwait(true);
+            Assert.NotNull(both.ReceivableAccountId);
+            Assert.Equal(both.ReceivableAccountId, both.PayableAccountId);
+            // One account carries the party's name (a heading may be created beside it the first time), not one per role.
+            Assert.Equal(1, await context.Accounts.AsNoTracking().CountAsync(a => a.CompanyId == scenario.CompanyA && a.NameArabic == "طرف B-1", Cancellation).ConfigureAwait(true));
+            var heading = await context.Accounts.AsNoTracking().SingleAsync(a => a.Id == both.ReceivableAccountId, Cancellation).ConfigureAwait(true);
+            Assert.Contains("الزبائن", (await context.Accounts.AsNoTracking().SingleAsync(a => a.Id == heading.ParentId, Cancellation).ConfigureAwait(true)).NameArabic);
+
+            // The same explicit account for both roles is accepted; two different accounts are refused for a new party.
+            var same = await parties.CreatePartyAsync(scenario.CompanyA, Command("B-2", PartyRole.Both, one.Id, one.Id), Cancellation).ConfigureAwait(true);
+            Assert.Equal(one.Id, same.ReceivableAccountId); Assert.Equal(one.Id, same.PayableAccountId);
+            var refused = await Assert.ThrowsAsync<BusinessRuleException>(() => parties.CreatePartyAsync(scenario.CompanyA,
+                Command("B-3", PartyRole.Both, one.Id, other.Id), Cancellation)).ConfigureAwait(true);
+            Assert.Equal("parties.unified_account_required", refused.Code);
+            context.ChangeTracker.Clear();
+
+            // Customers and suppliers alone are unchanged: each keeps its own side.
+            var customer = await parties.CreatePartyAsync(scenario.CompanyA, Command("C-9", PartyRole.Customer), Cancellation).ConfigureAwait(true);
+            Assert.NotNull(customer.ReceivableAccountId); Assert.Null(customer.PayableAccountId);
+
+            // A customer who becomes customer-and-supplier gets the account it already has for payables as well (no movement exists on the missing side).
+            var promoted = await parties.UpdatePartyAsync(scenario.CompanyA, customer.Id, new UpdatePartyCommand(customer.NameArabic, null, PartyRole.Both,
+                ReceivableAccountId: customer.ReceivableAccountId) { ExpectedVersion = customer.VersionToken, ChangedByUserId = scenario.Actor, ChangedInBranchId = scenario.BranchA1 },
+                Cancellation).ConfigureAwait(true);
+            Assert.Equal(customer.ReceivableAccountId, promoted.PayableAccountId);
+
+            // An existing pair of different accounts (legacy) is left untouched by an update that carries it and by the missing-accounts sync.
+            await context.Parties.Where(p => p.Id == both.Id)
+                .ExecuteUpdateAsync(u => u.SetProperty(p => p.ReceivableAccountId, one.Id).SetProperty(p => p.PayableAccountId, other.Id), Cancellation).ConfigureAwait(true);
+            context.ChangeTracker.Clear();
+            await parties.SyncMissingPartyAccountsAsync(scenario.CompanyA, Cancellation).ConfigureAwait(true);
+            var legacy = await context.Parties.AsNoTracking().SingleAsync(p => p.Id == both.Id, Cancellation).ConfigureAwait(true);
+            Assert.Equal(one.Id, legacy.ReceivableAccountId); Assert.Equal(other.Id, legacy.PayableAccountId);
+        }
+    }
+
     [Fact(Explicit = true)]
     [Trait("Category", "SqlServer")]
     public async Task ASharedAccountKeepsItsNameWhenOneOfItsPartiesIsRenamed()

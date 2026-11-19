@@ -68,6 +68,11 @@ internal static class PatternMapping
             {
                 FormKind = (VoucherFormKind)config.Voucher.FormKind,
                 CaptionMode = (VoucherCaptionMode)config.Voucher.CaptionMode,
+                Lookup = new PatternLookupPolicyDto
+                {
+                    EligibleAccountRootIds = [.. config.Voucher.Lookup?.EligibleAccountRootIds ?? []],
+                    EligibleCostCenterIds = [.. config.Voucher.Lookup?.EligibleCostCenterIds ?? []],
+                },
                 DenyMutationsOnOrBefore = config.Voucher.DenyMutationsOnOrBefore,
                 PerLineJournal = config.Voucher.PerLineJournal,
                 AutoPost = config.Voucher.AutoPost,
@@ -125,6 +130,11 @@ internal static class PatternMapping
             {
                 FormKind = (DomainPattern.VoucherFormKind)dto.Voucher.FormKind,
                 CaptionMode = (DomainPattern.VoucherCaptionMode)dto.Voucher.CaptionMode,
+                Lookup = new DomainPattern.PatternLookupPolicy
+                {
+                    EligibleAccountRootIds = [.. dto.Voucher.Lookup?.EligibleAccountRootIds ?? []],
+                    EligibleCostCenterIds = [.. dto.Voucher.Lookup?.EligibleCostCenterIds ?? []],
+                },
                 DenyMutationsOnOrBefore = dto.Voucher.DenyMutationsOnOrBefore,
                 PerLineJournal = dto.Voucher.PerLineJournal,
                 AutoPost = dto.Voucher.AutoPost,

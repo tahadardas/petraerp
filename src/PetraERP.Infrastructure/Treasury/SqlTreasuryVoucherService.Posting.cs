@@ -52,6 +52,7 @@ public sealed partial class SqlTreasuryVoucherService
                 var save = ToCommand(voucher);
                 var validation = await ValidateAsync(companyId, branchId, save, cancellationToken).ConfigureAwait(false);
                 var date = DateOnly.FromDateTime(voucher.VoucherDateUtc.UtcDateTime.Date);
+                EnforceCutoff(validation.Configuration, voucher.VoucherDateUtc);
                 var fiscalYear = await RequireOpenPeriodAsync(companyId, date, cancellationToken).ConfigureAwait(false);
                 if(validation.Prepared.Count>0)
                     await VerifyTreasuryAsync(companyId,branchId,userId,PetraERP.Application.Security.PermissionCatalog.TreasuryVouchersAllocate,cancellationToken).ConfigureAwait(false);
@@ -138,6 +139,7 @@ public sealed partial class SqlTreasuryVoucherService
                 if (voucher.Status != (byte)VoucherStatus.Posted || voucher.JournalEntryId is null)
                     throw new BusinessRuleException("treasury.voucher_not_posted", "Only a posted voucher can be reversed.");
                 if (!command.ExpectedVersion.Matches(voucher.RowVersion)) throw new ConcurrencyConflictException("voucher");
+                await EnforceStoredCutoffAsync(voucher, cancellationToken).ConfigureAwait(false);
                 var now = timeProvider.GetUtcNow(); var date = DateOnly.FromDateTime(now.UtcDateTime.Date);
                 await RequireOpenPeriodAsync(companyId, date, cancellationToken).ConfigureAwait(false);
 

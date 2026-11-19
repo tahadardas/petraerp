@@ -236,8 +236,36 @@ public sealed partial class SqlPartyService
         return accountId;
     }
 
+    /// <summary>
+    /// A party that is both customer and supplier has ONE ledger account (owner decision, AMN-VPAT, option A). Only a missing side is ever
+    /// filled in, from the side that exists or with one new account under the customers heading: a side that already has an account
+    /// may carry posted movement and is never touched here. An existing pair of different accounts is left as it is until a reviewed
+    /// merge (backup, restore rehearsal and a linked transfer entry) is approved.
+    /// </summary>
+    private async Task EnsureUnifiedAccountAsync(Guid companyId, PartyRow row, CancellationToken cancellationToken)
+    {
+        if (row.Role != (int)PartyRole.Both) return;
+        if (row.ReceivableAccountId is null && row.PayableAccountId is null)
+        {
+            var account = await EnsureCustomerAccountAsync(companyId, row.NameArabic, row.NameEnglish, cancellationToken).ConfigureAwait(false);
+            row.ReceivableAccountId = account;
+            row.PayableAccountId = account;
+        }
+        else if (row.ReceivableAccountId is null) row.ReceivableAccountId = row.PayableAccountId;
+        else if (row.PayableAccountId is null) row.PayableAccountId = row.ReceivableAccountId;
+    }
+
     public async Task SyncMissingPartyAccountsAsync(Guid companyId, CancellationToken cancellationToken)
     {
+        var incompleteBoth = await context.Parties
+            .Where(p => p.CompanyId == companyId && p.IsActive && !p.IsCashCustomer && p.Role == (int)PartyRole.Both
+                && (p.ReceivableAccountId == null || p.PayableAccountId == null))
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+        foreach (var party in incompleteBoth)
+            await EnsureUnifiedAccountAsync(companyId, party, cancellationToken).ConfigureAwait(false);
+        if (incompleteBoth.Count > 0)
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
         var unlinkedCustomers = await context.Parties
             .Where(p => p.CompanyId == companyId && p.IsActive && !p.IsCashCustomer
                 && (p.Role == (int)PartyRole.Customer || p.Role == (int)PartyRole.Both)

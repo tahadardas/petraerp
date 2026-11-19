@@ -89,11 +89,59 @@ public class VoucherPatternSchemaTests
     }
 
     [Fact]
+    public void TheCutoffIsStoredAndFreezesOnlyDocumentsOnOrBeforeIt()
+    {
+        var normalized = PatternAccountRoles.Normalize(BusinessOperationKind.CashReceipt, new PatternConfiguration
+        { Voucher = new PatternVoucherPolicy { DenyMutationsOnOrBefore = new DateOnly(2026, 10, 31) } });
+        Assert.True(VoucherPatternRules.IsFrozen(normalized, new DateOnly(2026, 10, 30)));
+        Assert.True(VoucherPatternRules.IsFrozen(normalized, new DateOnly(2026, 10, 31)));
+        Assert.False(VoucherPatternRules.IsFrozen(normalized, new DateOnly(2026, 11, 1)));
+        Assert.False(VoucherPatternRules.IsFrozen(new PatternConfiguration(), new DateOnly(2000, 1, 1)));
+        Assert.Equal(VoucherPatternRules.CutoffInvalid, CodeOf(() => PatternAccountRoles.Normalize(BusinessOperationKind.CashReceipt,
+            new PatternConfiguration { Voucher = new PatternVoucherPolicy { DenyMutationsOnOrBefore = new DateOnly(1999, 12, 31) } })));
+    }
+
+    [Fact]
+    public void LookupRestrictionSelectsASubtreeAndRejectsEmptyOrTooManyIds()
+    {
+        Guid root = Guid.NewGuid(), child = Guid.NewGuid(), grand = Guid.NewGuid(), other = Guid.NewGuid();
+        var parents = new Dictionary<Guid, Guid?> { [root] = null, [child] = root, [grand] = child, [other] = null };
+        var eligible = VoucherPatternRules.EligibleAccounts(new PatternLookupPolicy { EligibleAccountRootIds = [child] }, parents);
+        Assert.Equal(new[] { child, grand }.Order(), eligible.Order());
+        Assert.Empty(VoucherPatternRules.EligibleAccounts(new PatternLookupPolicy { EligibleAccountRootIds = [Guid.NewGuid()] }, parents));
+        // A cycle in bad data cannot loop forever.
+        var loop = new Dictionary<Guid, Guid?> { [root] = child, [child] = root };
+        Assert.Empty(VoucherPatternRules.EligibleAccounts(new PatternLookupPolicy { EligibleAccountRootIds = [other] }, loop));
+
+        Assert.Equal(VoucherPatternRules.LookupInvalid, CodeOf(() => VoucherPatternRules.NormalizeLookup(new PatternLookupPolicy { EligibleAccountRootIds = [Guid.Empty] })));
+        Assert.Equal(VoucherPatternRules.LookupInvalid, CodeOf(() => VoucherPatternRules.NormalizeLookup(new PatternLookupPolicy
+        { EligibleCostCenterIds = Enumerable.Range(0, 201).Select(_ => Guid.NewGuid()).ToList() })));
+        Assert.Single(VoucherPatternRules.NormalizeLookup(new PatternLookupPolicy { EligibleAccountRootIds = [root, root] }).EligibleAccountRootIds);
+    }
+
+    [Fact]
+    public void RequiredVisibleFieldsMustBeFilledAndHiddenFieldsMustStayEmpty()
+    {
+        var config = new PatternConfiguration
+        {
+            LineFields =
+            [
+                new() { FieldName = "CostCenter", IsVisible = true, IsRequired = true },
+                new() { FieldName = "Description", IsVisible = false },
+                new() { FieldName = "Amount", IsVisible = false }, // not a field the rules check: ignored
+            ],
+        };
+        Assert.Null(VoucherPatternRules.CheckLineFields(config, hasCostCenter: true, hasDescription: false));
+        Assert.Equal((VoucherPatternRules.LineFieldRequired, "CostCenter"), VoucherPatternRules.CheckLineFields(config, false, false));
+        Assert.Equal((VoucherPatternRules.LineFieldHidden, "Description"), VoucherPatternRules.CheckLineFields(config, true, true));
+        Assert.Null(VoucherPatternRules.CheckLineFields(new PatternConfiguration(), false, false));
+    }
+
+    [Fact]
     public void OptionsTheServerDoesNotEnforceYetCannotBeStored()
     {
         foreach (var policy in new[]
         {
-            new PatternVoucherPolicy { DenyMutationsOnOrBefore = new DateOnly(2026, 10, 31) },
             new PatternVoucherPolicy { PerLineJournal = true },
             new PatternVoucherPolicy { AutoPost = true },
         })

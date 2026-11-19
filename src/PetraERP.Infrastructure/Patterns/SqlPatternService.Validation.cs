@@ -52,6 +52,20 @@ public sealed partial class SqlPatternService
             normalized = normalized with { DefaultCurrencyCode = currency };
         }
 
+        if (normalized.Voucher is { } voucher)
+        {
+            var roots = voucher.Lookup.EligibleAccountRootIds;
+            if (roots.Count > 0
+                && await context.Accounts.AsNoTracking().CountAsync(a => a.CompanyId == companyId && a.IsActive && roots.Contains(a.Id), cancellationToken).ConfigureAwait(false) != roots.Count)
+                throw new BusinessRuleException(VoucherPatternRules.LookupInvalid, "Every eligible account root must be an active account of this company.",
+                    "configuration.voucher.lookup.eligibleAccountRootIds");
+            var centers = voucher.Lookup.EligibleCostCenterIds;
+            if (centers.Count > 0
+                && await context.CostCenters.AsNoTracking().CountAsync(c => c.CompanyId == companyId && c.IsActive && centers.Contains(c.Id), cancellationToken).ConfigureAwait(false) != centers.Count)
+                throw new BusinessRuleException(VoucherPatternRules.LookupInvalid, "Every eligible cost center must be an active cost center of this company.",
+                    "configuration.voucher.lookup.eligibleCostCenterIds");
+        }
+
         if (normalized.AllowedWarehouseIds is { Count: > 0 })
         {
             var distinct = normalized.AllowedWarehouseIds.Distinct().ToList();

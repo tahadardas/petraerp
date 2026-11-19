@@ -34,6 +34,20 @@ internal static class PatternEndpoints
             .Produces<IReadOnlyList<DocumentPatternSummaryResponse>>()
             .ProducesStandardProblems();
 
+        patterns.MapGet("/{patternId:guid}/effective", GetEffectivePatternAsync)
+            .WithName("GetEffectiveDocumentPattern")
+            .WithSummary("Gets the active published revision this branch runs, with the voucher settings resolved.")
+            .RequireAuthorization(view)
+            .Produces<EffectivePatternResponse>()
+            .ProducesStandardProblems();
+
+        patterns.MapGet("/{patternId:guid}/eligible-accounts", SearchEligibleAccountsAsync)
+            .WithName("SearchPatternEligibleAccounts")
+            .WithSummary("Searches the posting accounts the pattern's lines may use (its lookup restriction applied).")
+            .RequireAuthorization(view)
+            .Produces<IReadOnlyList<PatternAccountLookupItemResponse>>()
+            .ProducesStandardProblems();
+
         patterns.MapPost(string.Empty, CreatePatternAsync)
             .WithName("CreateDocumentPattern")
             .WithSummary("Creates a new document pattern with an initial draft revision.")
@@ -135,6 +149,32 @@ internal static class PatternEndpoints
             .ConfigureAwait(false);
 
         return TypedResults.Ok(result.Select(PatternMapping.ToResponse).ToList());
+    }
+
+    private static async Task<IResult> GetEffectivePatternAsync(
+        Guid companyId, Guid branchId, Guid patternId, IPatternService service, HttpContext httpContext, CancellationToken cancellationToken)
+    {
+        var scope = PatternScope.Create(companyId, branchId, httpContext.RequireSession().UserId);
+        var effective = await service.GetEffectivePatternAsync(scope, patternId, cancellationToken).ConfigureAwait(false);
+        return TypedResults.Ok(new EffectivePatternResponse
+        {
+            PatternId = effective.PatternId, RevisionId = effective.RevisionId, RevisionNumber = effective.RevisionNumber,
+            OperationKind = (BusinessOperationKind)effective.OperationKind, Code = effective.Code,
+            Configuration = effective.Configuration.ToDto(),
+        });
+    }
+
+    private static async Task<IResult> SearchEligibleAccountsAsync(
+        Guid companyId, Guid branchId, Guid patternId, [FromQuery] string? search, [FromQuery] int? take,
+        IPatternService service, HttpContext httpContext, CancellationToken cancellationToken)
+    {
+        var scope = PatternScope.Create(companyId, branchId, httpContext.RequireSession().UserId);
+        var items = await service.SearchEligibleAccountsAsync(scope, patternId, search is { Length: > 100 } ? search[..100] : search, take ?? 50, cancellationToken)
+            .ConfigureAwait(false);
+        return TypedResults.Ok(items.Select(i => new PatternAccountLookupItemResponse
+        {
+            Id = i.Id, Code = i.Code, NameArabic = i.NameArabic, NameEnglish = i.NameEnglish,
+        }).ToList());
     }
 
     private static async Task<IResult> CreatePatternAsync(

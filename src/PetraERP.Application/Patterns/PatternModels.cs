@@ -120,6 +120,22 @@ public sealed record DocumentPatternDetailsDto
     public IReadOnlyList<PatternRevisionDto> Revisions { get; init; } = [];
 }
 
+/// <summary>
+/// What a branch actually runs: the active published revision with the voucher block resolved (defaults filled in). The client never
+/// decides fields, accounts or captions from a name or a colour: it reads this.
+/// </summary>
+public sealed record EffectivePatternDto
+{
+    public required Guid PatternId { get; init; }
+    public required Guid RevisionId { get; init; }
+    public required int RevisionNumber { get; init; }
+    public required BusinessOperationKind OperationKind { get; init; }
+    public required string Code { get; init; }
+    public required PatternConfiguration Configuration { get; init; }
+}
+
+public sealed record PatternAccountLookupItemDto(Guid Id, string Code, string NameArabic, string? NameEnglish);
+
 public sealed record PatternRevisionDto
 {
     public required Guid Id { get; init; }

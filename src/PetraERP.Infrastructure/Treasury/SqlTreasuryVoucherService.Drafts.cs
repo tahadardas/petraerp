@@ -24,6 +24,7 @@ public sealed partial class SqlTreasuryVoucherService
         var validation = await ValidateAsync(companyId, branchId, command, cancellationToken).ConfigureAwait(false);
         var now = timeProvider.GetUtcNow();
         EnforceDateLock(validation.Configuration, command.VoucherDateUtc, now);
+        EnforceCutoff(validation.Configuration, command.VoucherDateUtc);
         var row = new VoucherRow
         {
             Id = command.DocumentId ?? Guid.NewGuid(), CompanyId = companyId, BranchId = branchId, Kind = (byte)command.Kind,
@@ -54,6 +55,9 @@ public sealed partial class SqlTreasuryVoucherService
             throw new BusinessRuleException("treasury.kind_immutable", "A voucher cannot change between receipt and payment.", "kind");
         var validation = await ValidateAsync(companyId, branchId, command, cancellationToken).ConfigureAwait(false);
         EnforceDateLock(validation.Configuration, command.VoucherDateUtc, row.CreatedAtUtc);
+        // Neither the stored document nor its new date may sit in the frozen period.
+        EnforceCutoff(validation.Configuration, row.VoucherDateUtc);
+        EnforceCutoff(validation.Configuration, command.VoucherDateUtc);
         context.VoucherAllocationPlans.RemoveRange(row.AllocationPlans); row.AllocationPlans.Clear();
         row.ApprovedBy = null; row.ApprovedAtUtc = null; row.ApprovalReason = null;
         context.VoucherAllocations.RemoveRange(row.Allocations);
@@ -70,6 +74,7 @@ public sealed partial class SqlTreasuryVoucherService
     {
         ArgumentNullException.ThrowIfNull(expectedVersion);
         var row = await LoadDraftAsync(companyId, branchId, voucherId, expectedVersion, cancellationToken).ConfigureAwait(false);
+        await EnforceStoredCutoffAsync(row, cancellationToken).ConfigureAwait(false);
         context.Vouchers.Remove(row);
         await SaveVersionedAsync(cancellationToken).ConfigureAwait(false);
     }
@@ -185,10 +190,25 @@ public sealed partial class SqlTreasuryVoucherService
             throw new BusinessRuleException("treasury.party_invalid", "The payee must be an active party of this company.", "partyId");
         Rule(() => VoucherRules.RequireBalancedLines(command.Amount, lines.Select(l => l.Amount).ToList()), "lines");
         var targets = new List<Guid>();
+        var lookup = VoucherPatternRules.Effective(config).Lookup;
+        HashSet<Guid>? eligibleAccounts = null;
+        if (lookup.RestrictsAccounts && lines.Any(l => l.AccountId.HasValue))
+        {
+            var chart = await context.Accounts.AsNoTracking().Where(a => a.CompanyId == companyId)
+                .Select(a => new { a.Id, a.ParentId }).ToListAsync(cancellationToken).ConfigureAwait(false);
+            eligibleAccounts = VoucherPatternRules.EligibleAccounts(lookup, chart.ToDictionary(a => a.Id, a => a.ParentId));
+        }
         foreach (var line in lines)
         {
             if (line.PartyId.HasValue == line.AccountId.HasValue)
                 throw new BusinessRuleException("treasury.line_target_invalid", "Each payment line targets exactly one supplier or account.", "lines");
+            if (VoucherPatternRules.CheckLineFields(config, line.CostCenterId.HasValue, !string.IsNullOrWhiteSpace(line.Description)) is { } fieldViolation)
+                throw new BusinessRuleException("treasury." + fieldViolation.Code,
+                    $"The pattern's rules for the line field '{fieldViolation.Field}' are not met ({fieldViolation.Code}).", "lines");
+            if (line.AccountId is { } restrictedAccount && eligibleAccounts is not null && !eligibleAccounts.Contains(restrictedAccount))
+                throw new BusinessRuleException("treasury.account_not_eligible", "The pattern does not allow this account on its lines.", "lines");
+            if (line.CostCenterId is { } restrictedCenter && lookup.RestrictsCostCenters && !lookup.EligibleCostCenterIds.Contains(restrictedCenter))
+                throw new BusinessRuleException("treasury.cost_center_not_eligible", "The pattern does not allow this cost center on its lines.", "lines");
             if (line.PartyId is { } supplierId)
             {
                 var supplier = await context.Parties.AsNoTracking().SingleOrDefaultAsync(p => p.Id == supplierId && p.CompanyId == companyId, cancellationToken).ConfigureAwait(false);
@@ -218,6 +238,25 @@ public sealed partial class SqlTreasuryVoucherService
         if (!configuration.EntryPolicy.LockDocumentDate) return;
         if (Math.Abs((voucherDate.UtcDateTime.Date - addedAt.UtcDateTime.Date).Days) > 1)
             throw new BusinessRuleException("treasury.document_date_locked", "The pattern fixes the voucher date to the day it is added.", "voucherDateUtc");
+    }
+
+    /// <summary>
+    /// A pattern that froze a period ("تاريخ تثبيت السندات") refuses to create, edit, delete, post or reverse a voucher dated on or before
+    /// the cut-off day. This is not <see cref="EnforceDateLock"/>, which only fixes a NEW voucher's date to the day it is added.
+    /// </summary>
+    private static void EnforceCutoff(PatternConfiguration configuration, DateTimeOffset voucherDate)
+    {
+        if (VoucherPatternRules.IsFrozen(configuration, DateOnly.FromDateTime(voucherDate.UtcDateTime.Date)))
+            throw new BusinessRuleException("treasury.voucher_date_cutoff", "The pattern froze vouchers dated on or before its cut-off date.", "voucherDateUtc");
+    }
+
+    /// <summary>Same rule for an existing voucher, read through the revision it was saved with.</summary>
+    private async Task EnforceStoredCutoffAsync(VoucherRow voucher, CancellationToken cancellationToken)
+    {
+        var json = await context.PatternRevisions.AsNoTracking().Where(r => r.Id == voucher.PatternRevisionId)
+            .Select(r => r.ConfigurationJson).SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+        if (json is null) return;
+        EnforceCutoff(JsonSerializer.Deserialize<PatternConfiguration>(json) ?? new(), voucher.VoucherDateUtc);
     }
 
     private static void Rule(Action action, string field) => Rule(() => { action(); return 0; }, field);

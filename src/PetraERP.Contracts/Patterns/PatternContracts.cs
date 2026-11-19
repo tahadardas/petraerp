@@ -55,11 +55,20 @@ public enum VoucherCaptionMode
 /// Voucher settings of a revision (schema version 2). Absent = defaults: GenericVoucher, DebitCredit. Options the server does not
 /// enforce yet are rejected unless left at their default.
 /// </summary>
+public sealed record PatternLookupPolicyDto
+{
+    /// <summary>Accounts the lines may use: each listed account and everything under it. Empty = no restriction.</summary>
+    public List<Guid> EligibleAccountRootIds { get; init; } = [];
+    /// <summary>Cost centers the lines may use. Empty = no restriction.</summary>
+    public List<Guid> EligibleCostCenterIds { get; init; } = [];
+}
+
 public sealed record PatternVoucherPolicyDto
 {
+    public PatternLookupPolicyDto? Lookup { get; init; }
     public VoucherFormKind FormKind { get; init; } = VoucherFormKind.GenericVoucher;
     public VoucherCaptionMode CaptionMode { get; init; } = VoucherCaptionMode.DebitCredit;
-    /// <summary>Reserved; rejected when set until it is enforced.</summary>
+    /// <summary>Vouchers of this pattern dated on or before this day cannot be created, edited, deleted, posted or reversed.</summary>
     public DateOnly? DenyMutationsOnOrBefore { get; init; }
     /// <summary>Reserved; rejected when true until it is enforced.</summary>
     public bool PerLineJournal { get; init; }
@@ -134,6 +143,25 @@ public sealed record PatternApprovalPolicyDto
     public bool RequiresApproval { get; init; }
     [RegularExpression(FinancialDecimalText.MoneyPattern)]
     public string? ThresholdAmount { get; init; }
+}
+
+/// <summary>The active published revision a branch runs, with the voucher block resolved. Clients read this; they never infer fields or accounts from names.</summary>
+public sealed record EffectivePatternResponse
+{
+    public Guid PatternId { get; init; }
+    public Guid RevisionId { get; init; }
+    public int RevisionNumber { get; init; }
+    public BusinessOperationKind OperationKind { get; init; }
+    public string Code { get; init; } = string.Empty;
+    public PatternConfigurationDto Configuration { get; init; } = new();
+}
+
+public sealed record PatternAccountLookupItemResponse
+{
+    public Guid Id { get; init; }
+    public string Code { get; init; } = string.Empty;
+    public string NameArabic { get; init; } = string.Empty;
+    public string? NameEnglish { get; init; }
 }
 
 public sealed record DocumentPatternSummaryResponse

@@ -465,6 +465,50 @@ public sealed partial class SqlPatternService(FinancialDbContext context) : IPat
         return (pattern, activeRev, config.NumberingPolicy);
     }
 
+    public async Task<EffectivePatternDto> GetEffectivePatternAsync(PatternScope scope, Guid patternId, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        var pattern = await context.DocumentPatterns.AsNoTracking().Include(p => p.Revisions).Include(p => p.BranchGrants)
+            .FirstOrDefaultAsync(p => p.Id == patternId && p.CompanyId == scope.CompanyId, cancellationToken).ConfigureAwait(false);
+        var revision = pattern?.Revisions.FirstOrDefault(r => r.Id == pattern.ActiveRevisionId);
+        // Same visibility as the runnable list, and one answer for "unknown", "inactive", "other branch" and "not published":
+        // the endpoint never tells a caller which of them it was.
+        if (pattern is null || revision is null || !pattern.IsActive || revision.State != (int)PatternRevisionState.Published
+            || !BusinessOperationCatalog.IsRunnable((BusinessOperationKind)pattern.OperationKind)
+            || pattern.BranchGrants.Count != 0 && !pattern.BranchGrants.Any(g => g.BranchId == scope.BranchId))
+            throw new ResourceNotFoundException("Pattern");
+
+        var kind = (BusinessOperationKind)pattern.OperationKind;
+        var configuration = PatternConfigurationUpgrader.ToCurrent(JsonSerializer.Deserialize<PatternConfiguration>(revision.ConfigurationJson, JsonOptions) ?? new());
+        if (VoucherPatternRules.IsVoucherOperation(kind))
+            configuration = configuration with { Voucher = VoucherPatternRules.Effective(configuration) };
+        return new EffectivePatternDto
+        {
+            PatternId = pattern.Id, RevisionId = revision.Id, RevisionNumber = revision.RevisionNumber, OperationKind = kind,
+            Code = pattern.Code, Configuration = configuration,
+        };
+    }
+
+    public async Task<IReadOnlyList<PatternAccountLookupItemDto>> SearchEligibleAccountsAsync(PatternScope scope, Guid patternId, string? search, int take,
+        CancellationToken cancellationToken)
+    {
+        var effective = await GetEffectivePatternAsync(scope, patternId, cancellationToken).ConfigureAwait(false);
+        var lookup = VoucherPatternRules.Effective(effective.Configuration).Lookup;
+        var accounts = await context.Accounts.AsNoTracking().Where(a => a.CompanyId == scope.CompanyId && a.IsActive)
+            .Select(a => new { a.Id, a.ParentId, a.Code, a.NameArabic, a.NameEnglish, a.PostingAllowed }).ToListAsync(cancellationToken).ConfigureAwait(false);
+        var eligible = lookup.RestrictsAccounts
+            ? VoucherPatternRules.EligibleAccounts(lookup, accounts.ToDictionary(a => a.Id, a => a.ParentId))
+            : null;
+        var text = search?.Trim();
+        return accounts
+            .Where(a => a.PostingAllowed && (eligible is null || eligible.Contains(a.Id)))
+            .Where(a => string.IsNullOrEmpty(text) || a.Code.StartsWith(text, StringComparison.OrdinalIgnoreCase)
+                || a.NameArabic.Contains(text, StringComparison.OrdinalIgnoreCase)
+                || a.NameEnglish is not null && a.NameEnglish.Contains(text, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(a => a.Code, StringComparer.Ordinal).Take(Math.Clamp(take, 1, 100))
+            .Select(a => new PatternAccountLookupItemDto(a.Id, a.Code, a.NameArabic, a.NameEnglish)).ToList();
+    }
+
     public async Task<IReadOnlyList<DocumentPatternSummaryDto>> GetRunnablePatternsForBranchAsync(
         PatternScope scope,
         CancellationToken cancellationToken)

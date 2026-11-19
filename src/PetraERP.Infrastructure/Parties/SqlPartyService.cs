@@ -332,6 +332,11 @@ public sealed partial class SqlPartyService(FinancialDbContext context) : IParty
             UpdatedAtUtc = DateTimeOffset.UtcNow
         };
 
+        if (row.Role == (int)PartyRole.Both && command.ReceivableAccountId.HasValue && command.PayableAccountId.HasValue
+            && command.ReceivableAccountId != command.PayableAccountId)
+            throw new BusinessRuleException("parties.unified_account_required",
+                "الطرف الذي هو زبون ومورد له حساب أستاذ واحد؛ اترك الحساب فارغاً أو اختر الحساب نفسه للدورين / A customer-and-supplier party has ONE ledger account: leave it empty or choose the same account for both roles.");
+        await EnsureUnifiedAccountAsync(companyId, row, cancellationToken).ConfigureAwait(false);
         if ((row.Role == (int)PartyRole.Customer || row.Role == (int)PartyRole.Both) && row.ReceivableAccountId == null)
         {
             row.ReceivableAccountId = await EnsureCustomerAccountAsync(companyId, row.NameArabic, row.NameEnglish, cancellationToken).ConfigureAwait(false);
@@ -418,6 +423,7 @@ public sealed partial class SqlPartyService(FinancialDbContext context) : IParty
         row.DefaultCurrencyCode = string.IsNullOrWhiteSpace(command.DefaultCurrencyCode) ? null : command.DefaultCurrencyCode.Trim().ToUpperInvariant();
         row.ReceivableAccountId = command.ReceivableAccountId;
         row.PayableAccountId = command.PayableAccountId;
+        await EnsureUnifiedAccountAsync(companyId, row, cancellationToken).ConfigureAwait(false);
         if ((row.Role == (int)PartyRole.Customer || row.Role == (int)PartyRole.Both) && row.ReceivableAccountId == null)
         {
             row.ReceivableAccountId = await EnsureCustomerAccountAsync(companyId, row.NameArabic, row.NameEnglish, cancellationToken).ConfigureAwait(false);
