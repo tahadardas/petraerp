@@ -51,7 +51,7 @@ public sealed partial class IndependentAccountingSqlTests
             Assert.True(await annual.Database.SqlQueryRaw<int>("SELECT COUNT(*) AS [Value] FROM sys.foreign_keys WHERE referenced_object_id=OBJECT_ID(N'audit.ActorReferences')").SingleAsync(Cancellation).ConfigureAwait(true) > 10);
             await annual.Database.MigrateAsync(Cancellation).ConfigureAwait(true);
             Assert.Equal(5, await annual.Accounts.CountAsync(Cancellation).ConfigureAwait(true));
-            var resolved = await fixture.Resolver.ResolveAsync(result.WorkspaceId, Cancellation).ConfigureAwait(true);
+            var resolved = await fixture.Resolver.ResolveFreshAsync(result.WorkspaceId, Cancellation).ConfigureAwait(true);
             Assert.Equal(result.CompanyId, resolved.CompanyId);
             Assert.Equal(result.FiscalYearId, resolved.FiscalYearId);
             var registration = await fixture.System.FiscalDatabases.SingleAsync(r => r.Id == result.WorkspaceId, Cancellation).ConfigureAwait(true);
@@ -77,7 +77,7 @@ public sealed partial class IndependentAccountingSqlTests
                 registry.CompanyId = await fixture.System.Companies.Where(c => c.Id != result.CompanyId).Select(c => c.Id).SingleAsync(Cancellation).ConfigureAwait(true);
             else registry.FiscalYearId = Guid.NewGuid();
             await fixture.System.SaveChangesAsync(Cancellation).ConfigureAwait(true);
-            var error = await Assert.ThrowsAsync<BusinessRuleException>(() => fixture.Resolver.ResolveAsync(result.WorkspaceId, Cancellation)).ConfigureAwait(true);
+            var error = await Assert.ThrowsAsync<BusinessRuleException>(() => fixture.Resolver.ResolveFreshAsync(result.WorkspaceId, Cancellation)).ConfigureAwait(true);
             Assert.Equal("workspace.scope_mismatch", error.Code);
         }
     }
@@ -182,7 +182,7 @@ public sealed partial class IndependentAccountingSqlTests
                 UPDATE inventory.Warehouses SET BranchId={unknown} WHERE CompanyId={result.CompanyId}
                 """, Cancellation)).ConfigureAwait(true);
             await annual.Database.ExecuteSqlRawAsync("DISABLE TRIGGER [audit].[TR_ActorReferences_Immutable] ON [audit].[ActorReferences]", Cancellation).ConfigureAwait(true);
-            var rejected = await Assert.ThrowsAsync<BusinessRuleException>(() => fixture.Resolver.ResolveAsync(result.WorkspaceId, Cancellation)).ConfigureAwait(true);
+            var rejected = await Assert.ThrowsAsync<BusinessRuleException>(() => fixture.Resolver.ResolveFreshAsync(result.WorkspaceId, Cancellation)).ConfigureAwait(true);
             Assert.Equal("workspace.schema_mismatch", rejected.Code);
         }
     }

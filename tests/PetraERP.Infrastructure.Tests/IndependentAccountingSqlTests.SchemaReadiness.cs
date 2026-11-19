@@ -27,7 +27,7 @@ public sealed partial class IndependentAccountingSqlTests
             using var annual = await fixture.Factory.CreateDbContextAsync(result.WorkspaceId, Cancellation).ConfigureAwait(true);
             await annual.Database.ExecuteSqlRawAsync(tamperingSql, Cancellation).ConfigureAwait(true);
             Assert.Equal(AccountingSchema.ApprovedMigrations, await annual.Database.GetAppliedMigrationsAsync(Cancellation).ConfigureAwait(true));
-            var denied = await Assert.ThrowsAsync<BusinessRuleException>(() => fixture.Resolver.ResolveAsync(result.WorkspaceId, Cancellation)).ConfigureAwait(true);
+            var denied = await Assert.ThrowsAsync<BusinessRuleException>(() => fixture.Resolver.ResolveFreshAsync(result.WorkspaceId, Cancellation)).ConfigureAwait(true);
             Assert.Equal("workspace.schema_mismatch", denied.Code);
         }
     }
@@ -50,7 +50,7 @@ public sealed partial class IndependentAccountingSqlTests
                     THROW 51020, 'Accounting audit and posted movement history is immutable.', 1;
                 end;
                 """, Cancellation).ConfigureAwait(true);
-            var resolved = await fixture.Resolver.ResolveAsync(result.WorkspaceId, Cancellation).ConfigureAwait(true);
+            var resolved = await fixture.Resolver.ResolveFreshAsync(result.WorkspaceId, Cancellation).ConfigureAwait(true);
             Assert.Equal(result.CompanyId, resolved.CompanyId);
         }
     }
@@ -77,7 +77,7 @@ public sealed partial class IndependentAccountingSqlTests
                     INSERT system.Branches(Id,CompanyId,Code,NameArabic,IsActive)
                     VALUES(NEWID(),{result.CompanyId},N'FORGED',N'فرع غير مسجل',1)
                     """, Cancellation).ConfigureAwait(true);
-            var denied = await Assert.ThrowsAsync<BusinessRuleException>(() => fixture.Resolver.ResolveAsync(result.WorkspaceId, Cancellation)).ConfigureAwait(true);
+            var denied = await Assert.ThrowsAsync<BusinessRuleException>(() => fixture.Resolver.ResolveFreshAsync(result.WorkspaceId, Cancellation)).ConfigureAwait(true);
             Assert.Equal("workspace.scope_mismatch", denied.Code);
             Assert.Equal("USD", (await fixture.System.Companies.SingleAsync(c => c.Id == result.CompanyId, Cancellation).ConfigureAwait(true)).BaseCurrencyCode);
         }
@@ -101,14 +101,14 @@ public sealed partial class IndependentAccountingSqlTests
             var cached = new PetraERP.Infrastructure.Workspaces.SqlFiscalDatabaseResolver(fixture.System, configuration, Microsoft.Extensions.Options.Options.Create(
                 new PetraERP.Infrastructure.Persistence.FiscalDatabaseOptions
                 { CompatibilityLevel = fixture.Database.CompatibilityLevel, DatabaseNamePrefix = fixture.Database.DatabaseName, ReadinessCacheSeconds = 2 }));
-            await cached.ResolveAsync(result.WorkspaceId, Cancellation).ConfigureAwait(true);
+            await cached.ResolveFreshAsync(result.WorkspaceId, Cancellation).ConfigureAwait(true);
             using (var annual = await fixture.Factory.CreateDbContextAsync(result.WorkspaceId, Cancellation).ConfigureAwait(true))
                 await annual.Database.ExecuteSqlRawAsync("ALTER TABLE ledger.AccountAudit ADD CacheWindowDrift int NULL", Cancellation).ConfigureAwait(true);
-            await cached.ResolveAsync(result.WorkspaceId, Cancellation).ConfigureAwait(true); // inside the window: still trusted
+            await cached.ResolveFreshAsync(result.WorkspaceId, Cancellation).ConfigureAwait(true); // inside the window: still trusted
             await Task.Delay(TimeSpan.FromSeconds(2.5), Cancellation).ConfigureAwait(true);
-            var denied = await Assert.ThrowsAsync<BusinessRuleException>(() => cached.ResolveAsync(result.WorkspaceId, Cancellation)).ConfigureAwait(true);
+            var denied = await Assert.ThrowsAsync<BusinessRuleException>(() => cached.ResolveFreshAsync(result.WorkspaceId, Cancellation)).ConfigureAwait(true);
             Assert.Equal("workspace.schema_mismatch", denied.Code);
-            await Assert.ThrowsAsync<BusinessRuleException>(() => fixture.Resolver.ResolveAsync(result.WorkspaceId, Cancellation)).ConfigureAwait(true); // cache off: immediate
+            await Assert.ThrowsAsync<BusinessRuleException>(() => fixture.Resolver.ResolveFreshAsync(result.WorkspaceId, Cancellation)).ConfigureAwait(true); // cache off: immediate
         }
     }
 
@@ -127,12 +127,12 @@ public sealed partial class IndependentAccountingSqlTests
             var cached = new PetraERP.Infrastructure.Workspaces.SqlFiscalDatabaseResolver(fixture.System, configuration, Microsoft.Extensions.Options.Options.Create(
                 new PetraERP.Infrastructure.Persistence.FiscalDatabaseOptions
                 { CompatibilityLevel = fixture.Database.CompatibilityLevel, DatabaseNamePrefix = fixture.Database.DatabaseName, ReadinessCacheSeconds = 60 }));
-            await cached.ResolveAsync(result.WorkspaceId, Cancellation).ConfigureAwait(true);
+            await cached.ResolveFreshAsync(result.WorkspaceId, Cancellation).ConfigureAwait(true);
             using (var annual = await fixture.Factory.CreateDbContextAsync(result.WorkspaceId, Cancellation).ConfigureAwait(true))
                 await annual.Database.ExecuteSqlRawAsync("ALTER TABLE ledger.AccountAudit ADD InvalidationDrift int NULL", Cancellation).ConfigureAwait(true);
-            await cached.ResolveAsync(result.WorkspaceId, Cancellation).ConfigureAwait(true); // a minute-long window still trusts it
+            await cached.ResolveFreshAsync(result.WorkspaceId, Cancellation).ConfigureAwait(true); // a minute-long window still trusts it
             PetraERP.Infrastructure.Workspaces.SqlFiscalDatabaseResolver.InvalidateReadiness();
-            var denied = await Assert.ThrowsAsync<BusinessRuleException>(() => cached.ResolveAsync(result.WorkspaceId, Cancellation)).ConfigureAwait(true);
+            var denied = await Assert.ThrowsAsync<BusinessRuleException>(() => cached.ResolveFreshAsync(result.WorkspaceId, Cancellation)).ConfigureAwait(true);
             Assert.Equal("workspace.schema_mismatch", denied.Code);
         }
     }

@@ -9,6 +9,7 @@
 - **عقد التجميع/التفكيك:** حوّلت أعضاء `decimal` في `Contracts/Inventory/AssemblyContracts.cs` إلى نص عشري ثابت (ADR-0002)؛ لا يستخدمها أي endpoint بعد (INV-09 محجوب)، وبذلك نجح اختبار `ContractsExposeNoBinaryFloatingPointOrRawDecimalMembers`.
 - **OpenAPI والعميل:** جُدّد `petraerp-v1.json` و`PetraApiClient.g.cs` و`schema.d.ts`؛ عُدّل مستدعي WPF الوحيد (`AccountingClients.cs`) ليبني.
 - **التحقق:** بناء Backend.slnx وDesktop بنجاح (0 تحذير)، `PetraERP.Api.Tests` كاملة ناجحة، واختبار SQL الجديد `SourceFilterRestrictsLinesOpeningAndBindsTheCursor` + اختبارا المؤشر ناجحة.
+- **تشغيل SQL الصريح الكامل (419 اختباراً، عدا المقاييس):** 403 ناجح و16 فاشل؛ 15 منها اختبارات قديمة لا عيوب باك إند: (أ) رقم الهجرات المثبّت 49→52، (ب) الاختبارات تعدّل السجل داخل نطاق واحد بعد أن صار الحلّ يُحفظ لكل نطاق (`ResolveFreshAsync` الآن). أُعيد تشغيل المجموعات المعدّلة: ناجحة (27 + 2). المتبقي: `Dardas_FastCutover_LoadsAndReconciles` يحتاج `PETRAERP_ALAMEEN_TRIAL_SOURCE` (بيانات الأمين الفعلية) فلم يُشغَّل.
 - **لم يُتحقق منه:** مطابقة منطق الأمين 10 بالكامل (القيد لكل سطر، أنماط متعددة الطرق) ما زالت معلّقة على نتيجة اختبار المطابقة المحاسبي؛ لم تُشغَّل بقية اختبارات SQL الصريحة (Explicit).
 
 ## تقارير وتوثيق الواجهة الأمامية الشاملة (19 نوفمبر 2026)

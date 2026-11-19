@@ -34,8 +34,8 @@ public sealed class OrganizationSqlTests
             await context.Database.MigrateAsync(Cancellation).ConfigureAwait(true);
             // Phase 2 policies must also apply through the reviewed, idempotent SQL script.
             var applied = (await context.Database.GetAppliedMigrationsAsync(Cancellation).ConfigureAwait(true)).ToArray();
-            Assert.Equal(49, applied.Length);
-            Assert.Equal("20261112005712_InvoiceAccountAndPartyParents", applied[^1]);
+            Assert.Equal(52, applied.Length);
+            Assert.Equal("20261116112328_LedgerCoveringIndexes", applied[^1]);
             context.ChangeTracker.Clear();
             await context.GetService<IMigrator>().MigrateAsync(Migration.InitialDatabase, Cancellation).ConfigureAwait(true);
             Assert.Empty(await context.Database.GetAppliedMigrationsAsync(Cancellation).ConfigureAwait(true));
