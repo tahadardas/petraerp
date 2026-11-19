@@ -77,6 +77,9 @@ export const topMenus: readonly MenuItem[] = [
       { id: "inventory-valuation", label: "menu.inventory_valuation", screen: "inventory-valuation" },
       { id: "inventory-movements", label: "menu.inventory_movements", screen: "inventory-movements" },
       { id: "branch-comparison", label: "menu.branch_comparison", screen: "branch-comparison" },
+      { id: "currency-balance", label: "menu.currency_balance", screen: "currency-balance" },
+      { id: "document-print", label: "menu.document_print", screen: "document-print" },
+      { id: "executive-dashboard", label: "menu.executive_dashboard", screen: "executive-dashboard" },
       { id: "reports-catalog", label: "menu.reports_catalog", screen: "reports-catalog" },
     ],
   },
@@ -86,12 +89,14 @@ export const topMenus: readonly MenuItem[] = [
     children: [
       { id: "security-audit", label: "menu.security_audit", screen: "security-audit" },
       { id: "document-numbers", label: "menu.document_numbers", screen: "document-numbers" },
+      { id: "alameen-migration", label: "menu.alameen_migration", screen: "alameen-migration" },
     ],
   },
   {
     id: "settings",
     label: "menu.settings",
     children: [
+      { id: "company-wizard", label: "menu.company_wizard", screen: "company-wizard" },
       { id: "fiscal-years", label: "menu.fiscal_years", screen: "fiscal-years" },
       { id: "branches", label: "menu.branches", screen: "branches" },
       { id: "inter-company", label: "menu.inter_company", screen: "inter-company" },

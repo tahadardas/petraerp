@@ -49,6 +49,9 @@ export const screens: Readonly<Record<string, ScreenLoader>> = {
   "inventory-movements": lazy(() => import("@/features/reports/InventoryMovementsScreen")),
   "reports-catalog": lazy(() => import("@/features/reports/ReportsCatalogScreen")),
   "branch-comparison": lazy(() => import("@/features/admin/BranchComparisonScreen")),
+  "currency-balance": lazy(() => import("@/features/reports/CurrencyBalanceReportScreen")),
+  "document-print": lazy(() => import("@/features/reports/DocumentPrintPreviewScreen")),
+  "executive-dashboard": lazy(() => import("@/features/reports/ExecutiveDashboardScreen")),
   // Inventory
   items: lazy(() => import("@/features/inventory/ItemsScreen")),
   warehouses: lazy(() => import("@/features/inventory/WarehousesScreen")),
@@ -70,6 +73,8 @@ export const screens: Readonly<Record<string, ScreenLoader>> = {
   roles: lazy(() => import("@/features/admin/RolesScreen")),
   "security-audit": lazy(() => import("@/features/admin/SecurityAuditScreen")),
   preferences: lazy(() => import("@/features/settings/PreferencesScreen")),
+  "company-wizard": lazy(() => import("@/features/admin/CompanyCreationWizardScreen")),
+  "alameen-migration": lazy(() => import("@/features/migration/AlAmeenMigrationScreen")),
   // Development gallery of the input engine (opened from the header in dev builds only).
   gallery: lazy(() => import("@/features/gallery/GalleryScreen")),
 };

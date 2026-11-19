@@ -7203,6 +7203,8 @@ export type components = {
         PatternEntryPolicyDto: {
             lockDocumentDate?: boolean;
             detailedJournalLines?: boolean;
+            separateDiscountMovement?: boolean;
+            pairedVoucherLines?: boolean;
         };
         PatternFieldRuleDto: {
             fieldName?: string;

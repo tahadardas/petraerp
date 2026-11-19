@@ -3,7 +3,7 @@ AUTH-00,Company Picker,/auth/companies,DONE,Public,GET /api/v1/me/workspaces,Aut
 AUTH-01,Company Login,/auth/login,DONE,Public,POST /api/v1/auth/login,AuthScreen.tsx / Vitest
 WS-01,Workspace Context Modal,/workspace/switch,DONE,Authenticated,GET /api/v1/me/companies,WorkspaceContextModal.tsx
 DR-01,Disaster Recovery Wizard,/recovery/wizard,BLOCKED_BY_BACKEND,Admin,POST /api/v1/administration/backups/test-restore,SEC-DR-SRS Pending v2
-WS-02,Company Creation Wizard,/workspace/companies/new,SCHEDULED,Admin,POST /api/v1/workspaces/companies,OpenAPI Defined
+WS-02,Company Creation Wizard,/workspace/companies/new,DONE,Admin,POST /api/v1/workspaces/companies,OpenAPI Defined
 WS-03,Fiscal Year Manager,/workspace/fiscal-years,DONE,Admin,GET/POST /api/v1/workspaces/fiscal-years,FiscalYearsScreen.tsx / Vite Build
 WS-04,Main Workspace Shell,/workspace,DONE,Authenticated,Local State + Session,WorkspaceShell.tsx / App.tsx
 WS-05,Command Palette & Favorites,/workspace/palette,DONE,Authenticated,Ctrl+K Local Registry,PetraCommandPalette.tsx
@@ -15,7 +15,7 @@ ACC-04,Daily Voucher,/daily-vouchers,DONE,journals.view,POST /ledger/journals,Jo
 ACC-05,General Journal Book,/reports/general-journal,DONE,reports.view,GET /ledger/reports/general-journal,GeneralJournalScreen.tsx
 ACC-06,Account Ledger,/reports/account-ledger,DONE,ledger.view,GET /ledger/reports/account-ledger/{id},AccountLedgerScreen.tsx
 ACC-07,Trial Balance,/reports/trial-balance,DONE,trial_balance.view,GET /ledger/reports/trial-balance,TrialBalanceScreen.tsx
-ACC-08,Currency Balance,/reports/currency-balance,SCHEDULED,reports.view,GET /currencies/rates/effective,OpenAPI Defined
+ACC-08,Currency Balance,/reports/currency-balance,DONE,reports.view,GET /currencies/rates/effective,OpenAPI Defined
 ACC-09,Cost Centers Directory,/cost-centers,DONE,cost_centers.view,GET /ledger/chart/cost-centers/tree,CostCentersScreen.tsx / Vite Build
 ACC-10,Fiscal Periods,/settings/periods,DONE,admin.periods,GET /workspaces/fiscal-years,FiscalYearsScreen.tsx / Vite Build
 ACC-11,Batch Posting Manager,/posting/batches,DONE,posting.manage,GET/POST /posting-batches,BatchPostingScreen.tsx / Vite Build
@@ -40,7 +40,7 @@ PAT-02,Pattern Card Screen,/patterns/:id,DONE,patterns.manage,GET /document-patt
 SALES-01,Sales Invoices List,/sales/invoices,DONE,sales.view;sales.create,GET /sales/invoices,SalesInvoicesScreen.tsx
 SALES-02,Sales Invoice Card,/sales/invoices/:id,DONE,sales.create;sales.post,POST /sales/invoices; /post; /reverse,SalesInvoiceCardScreen.tsx
 PURCHASE-01,Purchase Invoices List & Card,/purchases/invoices,DONE,purchases.view;purchases.create,GET/POST /purchases/invoices,PurchaseInvoicesScreen.tsx / PurchaseInvoiceCardScreen.tsx
-INVOICE-PRINT,Document Print Preview,/print/preview,SCHEDULED,documents.print,GET /reporting/execute,OpenAPI Defined
+INVOICE-PRINT,Document Print Preview,/print/preview,DONE,documents.print,GET /reporting/execute,OpenAPI Defined
 TR-01,Treasury Receipts List & Card,/treasury/receipts,DONE,treasury.receipt,GET/POST /treasury/vouchers,TreasuryVouchersScreen.tsx
 TR-02,Treasury Payments List & Card,/treasury/payments,DONE,treasury.payment,GET/POST /treasury/vouchers,TreasuryVouchersScreen.tsx
 TR-03,Commercial Cheques,/treasury/cheques,DONE,treasury.cheques,GET/POST /treasury/commercial-papers,CommercialPapersScreen.tsx
@@ -50,7 +50,7 @@ FX-01,Currencies Manager,/currencies,DONE,currencies.manage,GET /currencies,Curr
 FX-02,Exchange Rate Bulletin,/currencies/rates,DONE,currencies.rates,GET/POST /currencies/rates/bulletin,CurrenciesScreen.tsx / Vite Build
 FX-03,FX Revaluation,/currencies/revaluation,DONE,currencies.revaluation,POST /currencies/fx-revaluation/preview,FxRevaluationScreen.tsx / Vite Build
 REP-01,Home Overview Dashboard,/home,DONE,Authenticated,Client Shell KPIs,HomeScreen.tsx
-REP-02,Executive Dashboard,/reports/executive,SCHEDULED,reports.executive,GET /reporting/execute,OpenAPI Defined
+REP-02,Executive Dashboard,/reports/executive,DONE,reports.executive,GET /reporting/execute,OpenAPI Defined
 REP-03,Financial Reports Center,/reports/financial,DONE,reports.financial,GET /reports/financial/income-statement,FinancialStatementsScreen.tsx
 REP-04,Reports Center Catalog,/reports,DONE,reports.view,GET /reporting/catalog,ReportsCatalogScreen.tsx / Vite Build
 REP-05,Analytical Reports,/reports/analytical,DONE,reports.view,GET /reports/sales-analysis; /reports/purchase-analysis,SalesAnalysisScreen.tsx / PurchaseAnalysisScreen.tsx / AgingReportScreen.tsx
@@ -63,7 +63,7 @@ ADM-05,Branches Tree & Setup,/admin/branches,DONE,admin.branches,GET/POST /branc
 ADM-06,Branch Comparison,/reports/branch-comparison,DONE,reports.branches,GET /branch-reports/trial-balance,BranchComparisonScreen.tsx / Vite Build
 ADM-07,Inter-Company Settlement,/admin/inter-company,DONE,admin.intercompany,GET /inter-company/links,InterCompanyScreen.tsx / Vite Build
 ADM-08,Encrypted Backups & Disaster Recovery,/admin/backups,BLOCKED_BY_BACKEND,admin.backups,GET/POST /administration/backups,Blocked by SRS SEC-DR-SRS
-ADM-09,Al-Ameen Migration Import,/migration/alameen,SCHEDULED,admin.migration,POST /migration/alameen/preview,OpenAPI Defined
+ADM-09,Al-Ameen Migration Import,/migration/alameen,DONE,admin.migration,POST /migration/alameen/preview,OpenAPI Defined
 ADM-10,Company Policies & Options,/admin/company-options,DONE,admin.settings,GET /workspace/preferences,PreferencesScreen.tsx / Vite Build
-ADM-11,Print Template Designer,/admin/print-templates,SCHEDULED,admin.print,None,API Contract Pending
+ADM-11,Print Template Designer,/admin/print-templates,BLOCKED_BY_BACKEND,admin.print,None,API Contract Pending
 ADM-12,Multi-Window Manager,/workspace/windows,DONE,Authenticated,Local Tab/Window Shell,WorkspaceShell.tsx

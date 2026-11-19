@@ -560,9 +560,33 @@
   - بناء الإنتاج (Vite): **55 ملف chunk** جاهزة ونظيفة دون أي تحذير (`built in 806ms`).
   - إجمالي الشاشات المكتملة في المصفوفة: **59 شاشة من أصل 68** (86.8%).
 - **المهمة التالية:**
-  - متابعة تنفيذ الشاشات المتبقية:
+  - تم تنفيذ الشاشات المتبقية بنجاح في المرحلة S:
     - `WS-02`: Company Creation Wizard (`/workspace/companies/new`)
     - `ACC-08`: Currency Balance Report (`/reports/currency-balance`)
     - `INVOICE-PRINT`: Document Print Preview (`/print/preview`)
     - `REP-02`: Executive Dashboard (`/reports/executive`)
     - `ADM-09`: Al-Ameen Migration Import (`/migration/alameen`)
+
+---
+
+## تنفيذ Antigravity التلقائي لواجهات React + Tauri 2 (المرحلة S — 19 نوفمبر 2026)
+- **الفرع:** `feature/frontend-react-tauri-antigravity`
+- **الشاشات المنفذة في هذه الدفعة:**
+  1. `WS-02` (`CompanyCreationWizardScreen.tsx`): معالج إنشاء وتأسيس الشركة القانونية الجديدة، تهيئة قاعدة البيانات المستقلة، تحديد السنة المالية الأولى والعملة الأساسية، وتطبيق قوالب شجرة الحسابات والأنماط التلقائية (`POST /api/v1/workspaces/companies`).
+  2. `ACC-08` (`CurrencyBalanceReportScreen.tsx`): ميزان العملات الأجنبية والمعادل المحلي بسعر الصرف المعتمد (`ProfessionalReportKind: "CurrencyBalance"` عبر `/api/v1/.../reporting/execute`)، إخفاء الحسابات الصفرية، عرض الأرصدة والعملات وحركات الفترة، تصدير TSV فوري، والانتقال المباشر لدفتر الأستاذ.
+  3. `INVOICE-PRINT` (`DocumentPrintPreviewScreen.tsx`): محرك ومعاينة طباعة المستندات المحاسبية A4 القياسية (فواتير بيع وشراء، قيود يومية، سندات قبض وصرف) مع ترويسة الشركة، التفقيط التلقائي للمبالغ بالحروف العربية، جدول السطور، ملخص الضرائب والخصومات، توقيعات الاعتماد، وزر طباعة فوري `window.print()` بتنسيق A4 المعتمد.
+  4. `REP-02` (`ExecutiveDashboardScreen.tsx`): لوحة المؤشرات التنفيذية للقيادة المالية، بطاقات الأداء المالي (الإيرادات، المصروفات، صافي الدخل، تقييم بضاعة المخزون، ذمم العملاء المستحقة، ذمم الموردين المستحقة)، مؤشرات التوزيع، والتنقل بنقرة واحدة للقوائم المالية ودفاتر الأستاذ.
+  5. `ADM-09` (`AlAmeenMigrationScreen.tsx`): معالج هجرة واستيراد بيانات الأمين 10 المعزول المتكامل من 4 خطوات: فحص ومعاينة قاعدة بيانات الأمين (`POST /migration/alameen/preview`)، تنفيذ الهجرة المعزولة لقاعدة مؤقتة (`POST /migration/alameen/execute`)، فحص المطابقة المحاسبية الآلي عبر 14 طبقة للتأكد من صفر فوارق (`GET /migration/alameen/{migrationRunId}/reconciliation`)، وتفعيل مساحة العمل الرسمية (`POST /migration/alameen/activate`).
+- **التسجيل والربط الكامل:**
+  - تسجيل كافة الشاشات الـ 5 في `src/app/screens.tsx`.
+  - إضافة عناصر التنقل في القوائم العلوية `src/app/menu.ts`.
+  - تسجيل أوامر الاختصارات في لوحة الأوامر السريعة `Ctrl+K` في `src/app/App.tsx`.
+  - إضافة مفاتيح الترجمة العربية والإنجليزية في `src/i18n/messages.ts`.
+- **نتائج التحقق:**
+  - `npm run typecheck`: **0 أخطاء** تحت `strict: true` و `exactOptionalPropertyTypes: true`.
+  - Vitest: **60/60 ناجح** (100% من 11 ملف اختبار).
+  - بناء الإنتاج (Vite): **60 ملف chunk** جاهزة ونظيفة دون أي أخطاء (`built in 795ms`).
+  - إجمالي الشاشات المكتملة في المصفوفة: **64 شاشة من أصل 68** (94.1%).
+  - الشاشات المجدولة المتبقية: **0 شاشة** (اكتملت 100% من كافة الشاشات القابلة للتنفيذ بعقود API الحالية).
+  - الشاشات المحجوبة بانتظار الخادم: 4 شاشات (`DR-01`, `ADM-08`, `ADM-11`, `INV-09`).
+
