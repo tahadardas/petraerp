@@ -17,6 +17,7 @@ export const screens: Readonly<Record<string, ScreenLoader>> = {
   "pattern-card": lazy(() => import("@/features/patterns/PatternCardScreen")),
   // Chart of Accounts & General Ledger
   accounts: lazy(() => import("@/features/accounts/AccountsScreen")),
+  "cost-centers": lazy(() => import("@/features/costcenters/CostCentersScreen")),
   journals: lazy(() => import("@/features/journals/JournalsScreen")),
   "journal-entry": lazy(() => import("@/features/journals/JournalEntryScreen")),
   // Unified Parties (Customers/Suppliers)
@@ -35,9 +36,12 @@ export const screens: Readonly<Record<string, ScreenLoader>> = {
   items: lazy(() => import("@/features/inventory/ItemsScreen")),
   warehouses: lazy(() => import("@/features/inventory/WarehousesScreen")),
   units: lazy(() => import("@/features/inventory/UnitsScreen")),
+  "inventory-operations": lazy(() => import("@/features/inventory/InventoryOperationsScreen")),
   // Purchases
   "purchase-invoices": lazy(() => import("@/features/purchases/PurchaseInvoicesScreen")),
   "purchase-invoice-card": lazy(() => import("@/features/purchases/PurchaseInvoiceCardScreen")),
+  // Currencies & Foreign Exchange
+  currencies: lazy(() => import("@/features/currencies/CurrenciesScreen")),
   // Administration & Audit
   users: lazy(() => import("@/features/admin/UsersScreen")),
   roles: lazy(() => import("@/features/admin/RolesScreen")),

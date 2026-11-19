@@ -20,6 +20,7 @@ export const topMenus: readonly MenuItem[] = [
     label: "menu.accounting",
     children: [
       { id: "accounts", label: "menu.accounts", screen: "accounts" },
+      { id: "cost-centers", label: "menu.cost_centers", screen: "cost-centers" },
       { id: "journals", label: "menu.journals", screen: "journals" },
       { id: "new-journal", label: "menu.journals", screen: "journal-entry" },
       { id: "parties", label: "menu.parties", screen: "parties" },
@@ -49,6 +50,7 @@ export const topMenus: readonly MenuItem[] = [
       { id: "items", label: "menu.items", screen: "items" },
       { id: "warehouses-list", label: "menu.warehouses_list", screen: "warehouses" },
       { id: "units", label: "menu.units", screen: "units" },
+      { id: "inventory-operations", label: "menu.inventory_operations", screen: "inventory-operations" },
     ],
   },
   {
@@ -70,6 +72,7 @@ export const topMenus: readonly MenuItem[] = [
     id: "settings",
     label: "menu.settings",
     children: [
+      { id: "currencies", label: "menu.currencies", screen: "currencies" },
       { id: "users", label: "menu.users", screen: "users" },
       { id: "roles", label: "menu.roles", screen: "roles" },
       { id: "patterns", label: "menu.patterns", screen: "pattern-manager" },

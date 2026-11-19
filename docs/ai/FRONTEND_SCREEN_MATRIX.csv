@@ -16,7 +16,7 @@ ACC-05,General Journal Book,/reports/general-journal,SCHEDULED,reports.view,GET 
 ACC-06,Account Ledger,/reports/account-ledger,DONE,ledger.view,GET /ledger/reports/account-ledger/{id},AccountLedgerScreen.tsx
 ACC-07,Trial Balance,/reports/trial-balance,DONE,trial_balance.view,GET /ledger/reports/trial-balance,TrialBalanceScreen.tsx
 ACC-08,Currency Balance,/reports/currency-balance,SCHEDULED,reports.view,GET /currencies/rates/effective,OpenAPI Defined
-ACC-09,Cost Centers Directory,/cost-centers,SCHEDULED,cost_centers.view,GET /ledger/chart/cost-centers/tree,OpenAPI Defined
+ACC-09,Cost Centers Directory,/cost-centers,DONE,cost_centers.view,GET /ledger/chart/cost-centers/tree,CostCentersScreen.tsx / Vite Build
 ACC-10,Fiscal Periods,/settings/periods,SCHEDULED,admin.periods,GET /workspaces/fiscal-years,OpenAPI Defined
 ACC-11,Batch Posting Manager,/posting/batches,SCHEDULED,posting.manage,GET/POST /posting-batches,OpenAPI Defined
 ACC-12,Opening Balances,/accounting/opening-balances,SCHEDULED,opening_balances.manage,GET/POST /opening-balances,OpenAPI Defined
@@ -30,7 +30,7 @@ INV-01,Items Directory & Card,/inventory/items,DONE,inventory.view;inventory.man
 INV-02,Quick Item Directory,/inventory/lookup,DONE,inventory.view,GET /inventory/items/lookup,LookupPicker.tsx
 INV-03,Units & Conversions,/inventory/units,DONE,inventory.manage,GET/POST /inventory/units,UnitsScreen.tsx / Vite Build
 INV-04,Warehouses Directory,/inventory/warehouses,DONE,inventory.manage,GET/POST /inventory/warehouses,WarehousesScreen.tsx / Vite Build
-INV-05,Inventory Operations,/inventory/operations,SCHEDULED,inventory.operations,GET/POST /inventory/documents,OpenAPI Defined
+INV-05,Inventory Operations,/inventory/operations,DONE,inventory.operations,GET/POST /inventory/documents,InventoryOperationsScreen.tsx / Vite Build
 INV-06,Stocktaking,/inventory/stocktaking,SCHEDULED,inventory.stocktake,POST /inventory/adjustments,OpenAPI Defined
 INV-07,Item Price Tool,/inventory/prices,SCHEDULED,inventory.pricing,POST /inventory/price-adjustments,OpenAPI Defined
 INV-08,Item Limits,/inventory/limits,SCHEDULED,inventory.manage,GET /inventory/items/{id}/stock,OpenAPI Defined
@@ -46,8 +46,8 @@ TR-02,Treasury Payments List & Card,/treasury/payments,DONE,treasury.payment,GET
 TR-03,Commercial Cheques,/treasury/cheques,SCHEDULED,treasury.cheques,None,API Contract Pending
 TR-04,Bank Reconciliation,/treasury/bank-reconciliation,SCHEDULED,treasury.reconcile,None,API Contract Pending
 TR-05,Open Items Settlement,/treasury/settlements,SCHEDULED,treasury.settle,GET /open-items,OpenAPI Defined
-FX-01,Currencies Manager,/currencies,SCHEDULED,currencies.manage,GET /currencies,OpenAPI Defined
-FX-02,Exchange Rate Bulletin,/currencies/rates,SCHEDULED,currencies.rates,GET /currencies/rates/bulletin,OpenAPI Defined
+FX-01,Currencies Manager,/currencies,DONE,currencies.manage,GET /currencies,CurrenciesScreen.tsx / Vite Build
+FX-02,Exchange Rate Bulletin,/currencies/rates,DONE,currencies.rates,GET/POST /currencies/rates/bulletin,CurrenciesScreen.tsx / Vite Build
 FX-03,FX Revaluation,/currencies/revaluation,SCHEDULED,currencies.revaluation,POST /currencies/fx-revaluation/preview,OpenAPI Defined
 REP-01,Home Overview Dashboard,/home,DONE,Authenticated,Client Shell KPIs,HomeScreen.tsx
 REP-02,Executive Dashboard,/reports/executive,SCHEDULED,reports.executive,GET /reporting/execute,OpenAPI Defined

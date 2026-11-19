@@ -44,6 +44,7 @@ export function App() {
 
   const commandItems: CommandItem[] = useMemo(() => [
     { id: "cmd-accounts", title: "دليل الحسابات", category: "المحاسبة", screen: "accounts", shortcut: "F3" },
+    { id: "cmd-cost-centers", title: "دليل مراكز الكلفة", category: "المحاسبة", screen: "cost-centers" },
     { id: "cmd-journals", title: "القيود اليومية العامة", category: "المحاسبة", screen: "journals" },
     { id: "cmd-new-journal", title: "قيد يومية جديد", category: "المحاسبة", screen: "journal-entry", shortcut: "Ctrl+N" },
     { id: "cmd-parties", title: "دليل الأطراف الموحد (الزبائن والموردون)", category: "الأطراف", screen: "parties" },
@@ -54,10 +55,12 @@ export function App() {
     { id: "cmd-items", title: "دليل المواد", category: "المستودعات", screen: "items" },
     { id: "cmd-warehouses", title: "دليل المستودعات", category: "المستودعات", screen: "warehouses" },
     { id: "cmd-units", title: "وحدات القياس", category: "المستودعات", screen: "units" },
+    { id: "cmd-inventory-operations", title: "حركات ومستندات المستودعات", category: "المستودعات", screen: "inventory-operations" },
     { id: "cmd-treasury-vouchers", title: "سندات الصندوق (القبض والدفع)", category: "السندات", screen: "treasury-vouchers" },
     { id: "cmd-new-receipt", title: "سند قبض جديد", category: "السندات", screen: "treasury-voucher", params: { kind: "Receipt" } },
     { id: "cmd-new-payment", title: "سند دفع جديد", category: "السندات", screen: "treasury-voucher", params: { kind: "Payment" } },
     { id: "cmd-patterns", title: "إدارة أنماط المستندات", category: "الإعدادات", screen: "pattern-manager" },
+    { id: "cmd-currencies", title: "إدارة العملات وأسعار الصرف", category: "الإعدادات", screen: "currencies" },
     { id: "cmd-users", title: "إدارة المستخدمين", category: "الإعدادات", screen: "users" },
     { id: "cmd-roles", title: "الأدوار والصلاحيات", category: "الإعدادات", screen: "roles" },
     { id: "cmd-security-audit", title: "سجل التدقيق والأمان", category: "الصيانة", screen: "security-audit" },
