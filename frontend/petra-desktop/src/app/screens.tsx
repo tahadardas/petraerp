@@ -29,9 +29,16 @@ export const screens: Readonly<Record<string, ScreenLoader>> = {
   // Treasury & Cash Operations
   "treasury-vouchers": lazy(() => import("@/features/treasury/TreasuryVouchersScreen")),
   "treasury-voucher": lazy(() => import("@/features/treasury/TreasuryVoucherCardScreen")),
+  "commercial-papers": lazy(() => import("@/features/treasury/CommercialPapersScreen")),
+  "bank-reconciliation": lazy(() => import("@/features/treasury/BankReconciliationScreen")),
+  "open-items": lazy(() => import("@/features/treasury/OpenItemsSettlementScreen")),
   // Core Accounting Reports
   "account-ledger": lazy(() => import("@/features/reports/AccountLedgerScreen")),
   "trial-balance": lazy(() => import("@/features/reports/TrialBalanceScreen")),
+  "financial-reports": lazy(() => import("@/features/reports/FinancialStatementsScreen")),
+  "aging-report": lazy(() => import("@/features/reports/AgingReportScreen")),
+  "sales-analysis": lazy(() => import("@/features/reports/SalesAnalysisScreen")),
+  "purchase-analysis": lazy(() => import("@/features/reports/PurchaseAnalysisScreen")),
   // Inventory
   items: lazy(() => import("@/features/inventory/ItemsScreen")),
   warehouses: lazy(() => import("@/features/inventory/WarehousesScreen")),
@@ -43,6 +50,7 @@ export const screens: Readonly<Record<string, ScreenLoader>> = {
   // Currencies & Foreign Exchange
   currencies: lazy(() => import("@/features/currencies/CurrenciesScreen")),
   // Administration & Audit
+  branches: lazy(() => import("@/features/admin/BranchesScreen")),
   users: lazy(() => import("@/features/admin/UsersScreen")),
   roles: lazy(() => import("@/features/admin/RolesScreen")),
   "security-audit": lazy(() => import("@/features/admin/SecurityAuditScreen")),

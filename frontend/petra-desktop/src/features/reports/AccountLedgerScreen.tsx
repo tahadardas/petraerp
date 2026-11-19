@@ -55,6 +55,7 @@ export default function AccountLedgerScreen({ params }: AccountLedgerScreenProps
   const [optionsOpen, setOptionsOpen] = useState(!initialAccountId);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const [sources, setSources] = useState("");
   const [consolidated, setConsolidated] = useState(false);
 
   const loadLedger = async (targetId: string = accountId) => {
@@ -74,6 +75,7 @@ export default function AccountLedgerScreen({ params }: AccountLedgerScreenProps
             pageSize: 500,
             ...(fromDate ? { from: fromDate } : {}),
             ...(toDate ? { to: toDate } : {}),
+            ...(sources ? { sources } : {}),
             ...(consolidated ? { consolidated: true } : {}),
           },
         },
@@ -195,6 +197,27 @@ export default function AccountLedgerScreen({ params }: AccountLedgerScreenProps
               />
             </PetraField>
           </div>
+
+          <PetraField label="مصدر الحركات (Source)">
+            <select
+              value={sources}
+              onChange={(e) => setSources(e.target.value)}
+              style={{
+                height: "var(--control-height)",
+                padding: "0 var(--space-2)",
+                borderRadius: "var(--radius)",
+                border: "1px solid var(--border)",
+                background: "var(--bg-input)",
+                color: "var(--text)",
+              }}
+            >
+              <option value="">جميع المصادر (All Sources)</option>
+              <option value="JOURNAL">القيود اليومية فقط (General Journals)</option>
+              <option value="SALES_INVOICE">فواتير المبيعات فقط (Sales Invoices)</option>
+              <option value="PURCHASE_INVOICE">فواتير المشتريات فقط (Purchase Invoices)</option>
+              <option value="VOUCHER">سندات الخزينة والصندوق (Treasury Vouchers)</option>
+            </select>
+          </PetraField>
 
           <label style={{ display: "flex", alignItems: "center", gap: "var(--space-2)", cursor: "pointer", fontSize: "var(--fs-body)" }}>
             <input

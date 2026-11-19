@@ -37,13 +37,13 @@
 
 ---
 
-## 3. فجوة الأوراق المالية والشيكات والتسوية البنكية (Cheques & Bank Reconciliation)
+## 3. [مُحدثة 19 نوفمبر 2026] الأوراق التجارية والتسوية البنكية (Commercial Papers & Bank Reconciliation)
 
-- **المسارات المفقودة:**  
-  - لا توجد مسارات `/api/v1/.../treasury/cheques` لإدارة دورة حياة الشيكات (استلام، برسم التحصيل، تحصيل، إرجاع).
-  - لا توجد مسارات `/api/v1/.../treasury/bank-reconciliation` لاستيراد كشوف البنك والمطابقة الآلية.
-- **إجراء الواجهة:**  
-  تم إدراج الشاشات كـ `SCHEDULED` في مصفوفة الشاشات مع تعليق التنفيذ حتى توفير عقود OpenAPI.
+- **المسارات الفعلية في OpenAPI:**  
+  - الأوراق التجارية والشيكات: `GET/POST /api/v1/companies/{companyId}/branches/{branchId}/treasury/commercial-papers`, `GET /alerts`, `POST /{paperId}/status`
+  - التسويات البنكية: `GET/POST /api/v1/companies/{companyId}/branches/{branchId}/treasury/bank-reconciliations`, `POST /{id}/lines`, `POST /{id}/complete`, `POST /{id}/discard`
+- **الحالة:**  
+  العقود الخادمية جاهزة في `schema.d.ts` ومتاحة للتنفيذ الأمامي في شاشات `TR-03` (Commercial Papers / Cheques) و `TR-04` (Bank Reconciliations).
 
 ---
 

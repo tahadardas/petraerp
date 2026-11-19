@@ -41,6 +41,9 @@ export const topMenus: readonly MenuItem[] = [
       { id: "treasury-vouchers", label: "menu.treasury", screen: "treasury-vouchers" },
       { id: "new-receipt", label: "menu.treasury", screen: "treasury-voucher", params: { kind: "Receipt" } },
       { id: "new-payment", label: "menu.treasury", screen: "treasury-voucher", params: { kind: "Payment" } },
+      { id: "commercial-papers", label: "menu.commercial_papers", screen: "commercial-papers" },
+      { id: "bank-reconciliation", label: "menu.bank_reconciliation", screen: "bank-reconciliation" },
+      { id: "open-items", label: "menu.open_items", screen: "open-items" },
     ],
   },
   {
@@ -59,6 +62,10 @@ export const topMenus: readonly MenuItem[] = [
     children: [
       { id: "trial-balance", label: "menu.trial_balance", screen: "trial-balance" },
       { id: "account-ledger", label: "menu.account_ledger", screen: "account-ledger" },
+      { id: "financial-reports", label: "menu.financial_reports", screen: "financial-reports" },
+      { id: "aging-report", label: "menu.aging_report", screen: "aging-report" },
+      { id: "sales-analysis", label: "menu.sales_analysis", screen: "sales-analysis" },
+      { id: "purchase-analysis", label: "menu.purchase_analysis", screen: "purchase-analysis" },
     ],
   },
   {
@@ -72,6 +79,7 @@ export const topMenus: readonly MenuItem[] = [
     id: "settings",
     label: "menu.settings",
     children: [
+      { id: "branches", label: "menu.branches", screen: "branches" },
       { id: "currencies", label: "menu.currencies", screen: "currencies" },
       { id: "users", label: "menu.users", screen: "users" },
       { id: "roles", label: "menu.roles", screen: "roles" },
