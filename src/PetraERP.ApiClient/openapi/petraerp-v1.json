@@ -44658,6 +44658,9 @@
           "perLineJournal": {
             "type": "boolean"
           },
+          "postingMode": {
+            "$ref": "#/components/schemas/VoucherPostingMode"
+          },
           "autoPost": {
             "type": "boolean"
           }
@@ -51878,6 +51881,12 @@
           }
         },
         "additionalProperties": false
+      },
+      "VoucherPostingMode": {
+        "enum": [
+          "InheritFromCompany",
+          "ManualOnly"
+        ]
       },
       "VoucherStatus": {
         "enum": [

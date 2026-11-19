@@ -44,6 +44,13 @@ public enum VoucherFormKind
     MultiMethodPayment = 3,
 }
 
+/// <summary>How the one-step save-and-process path posts a pattern's vouchers; a pattern can only be stricter than the company policy.</summary>
+public enum VoucherPostingMode
+{
+    InheritFromCompany = 0,
+    ManualOnly = 1,
+}
+
 /// <summary>Column captions only; never changes the direction of an entry.</summary>
 public enum VoucherCaptionMode
 {
@@ -72,7 +79,9 @@ public sealed record PatternVoucherPolicyDto
     public DateOnly? DenyMutationsOnOrBefore { get; init; }
     /// <summary>Reserved; rejected when true until it is enforced.</summary>
     public bool PerLineJournal { get; init; }
-    /// <summary>Reserved; rejected when true until it is enforced.</summary>
+    /// <summary>InheritFromCompany (default) or ManualOnly: hold this pattern's vouchers for a deliberate manual post.</summary>
+    public VoucherPostingMode PostingMode { get; init; } = VoucherPostingMode.InheritFromCompany;
+    /// <summary>Reserved; rejected when true (posting at approval time is not enforced).</summary>
     public bool AutoPost { get; init; }
 }
 

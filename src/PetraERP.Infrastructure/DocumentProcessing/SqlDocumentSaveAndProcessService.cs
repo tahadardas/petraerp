@@ -5,6 +5,7 @@ using PetraERP.Application.DocumentProcessing;
 using PetraERP.Application.GeneralLedger.Posting;
 using PetraERP.Application.Purchases;
 using PetraERP.Application.Sales;
+using PetraERP.Domain.Patterns;
 using PetraERP.Domain.Purchases;
 using PetraERP.Domain.Sales;
 using PetraERP.Domain.Primitives;
@@ -303,6 +304,13 @@ public sealed class SqlDocumentSaveAndProcessService(
         if (!permissions.CanPost)
             return Voucher(document, DocumentProcessingOutcome.PostingPermissionMissing, false, false, mode,
                 "تم حفظ السند ولم يُرحَّل: لا تملك صلاحية ترحيل السندات، ولم تُرفع صلاحياتك تلقائياً.");
+        // The pattern can only be stricter than the company: ManualOnly holds the voucher for a deliberate post.
+        VoucherPostingMode patternPosting;
+        await using (var policyRead = OpenPhase(AccountingOperation.ManageTreasuryVouchers, companyId, branchId, userId))
+            patternPosting = (await policyRead.Vouchers.GetVoucherPatternPolicyAsync(companyId, document.PatternRevisionId, cancellationToken).ConfigureAwait(false)).PostingMode;
+        if (patternPosting == VoucherPostingMode.ManualOnly)
+            return Voucher(document, document.Status == VoucherStatus.Draft ? DocumentProcessingOutcome.SavedDraft : DocumentProcessingOutcome.Approved,
+                false, false, mode, "نمط السند يشترط الترحيل اليدوي: بقي السند محفوظاً بانتظار ترحيله من الإجراء المخصص.");
         if (string.IsNullOrWhiteSpace(posting?.IdempotencyKey))
             throw new BusinessRuleException("document.posting_key_required", "The server needs the posting idempotency key before it can post this document.");
         try

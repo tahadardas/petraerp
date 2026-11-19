@@ -13,6 +13,20 @@ public enum VoucherFormKind
     MultiMethodPayment = 3,
 }
 
+/// <summary>
+/// How a pattern's vouchers are posted by the one-step "save and process" path. A pattern can only be STRICTER than the company policy
+/// (<c>DocumentPostingMode</c>): it can hold its vouchers for a manual post, never post what the company policy keeps for approval.
+/// Manual posting through the post action is always available to whoever holds the posting permission.
+/// </summary>
+public enum VoucherPostingMode
+{
+    /// <summary>Follow the company's document posting mode (the behavior of every pattern without a voucher block).</summary>
+    InheritFromCompany = 0,
+
+    /// <summary>Save (and approve where required) but never post automatically; posting is a deliberate manual action.</summary>
+    ManualOnly = 1,
+}
+
 /// <summary>Column captions only: "مدين/دائن" or "من/إلى". It never changes the direction of an entry.</summary>
 public enum VoucherCaptionMode
 {
@@ -46,7 +60,10 @@ public sealed record PatternVoucherPolicy
     /// <summary>Reserved (AMN-VPAT-GATE-003): one journal entry per voucher line instead of one grouped entry.</summary>
     public bool PerLineJournal { get; init; }
 
-    /// <summary>Reserved (AMN-VPAT-GATE-003): post right after approval. It will never bypass a required approval.</summary>
+    /// <summary>Whether the one-step save-and-process path may post this pattern's vouchers (see <see cref="VoucherPostingMode"/>).</summary>
+    public VoucherPostingMode PostingMode { get; init; } = VoucherPostingMode.InheritFromCompany;
+
+    /// <summary>Reserved: post by itself the moment an approval is recorded. Not enforced (needs an approval event hook); rejected when true.</summary>
     public bool AutoPost { get; init; }
 }
 
@@ -96,6 +113,17 @@ public static class VoucherPatternRules
         return policy.Lookup is null ? policy with { Lookup = new PatternLookupPolicy() } : policy;
     }
 
+    /// <summary>
+    /// The approval rule of a pattern for a document of <paramref name="amount"/>: approval is required when the pattern requires it and
+    /// the amount reaches the threshold (no threshold = every document). Same comparison the sales documents use, in document currency.
+    /// </summary>
+    public static bool ApprovalRequired(PatternConfiguration configuration, decimal amount)
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+        var approval = configuration.ApprovalPolicy ?? new PatternApprovalPolicy();
+        return approval.RequiresApproval && (approval.ThresholdAmount is not { } threshold || amount >= threshold);
+    }
+
     public const string LineFieldRequired = "line_field_required";
     public const string LineFieldHidden = "line_field_hidden";
 
@@ -129,8 +157,8 @@ public static class VoucherPatternRules
         if (policy is null) return null;
         if (!IsVoucherOperation(kind))
             throw RuleViolation.Create(BlockNotAllowed, $"Operation '{kind}' is not a voucher; it has no voucher settings.");
-        if (!Enum.IsDefined(policy.FormKind) || !Enum.IsDefined(policy.CaptionMode))
-            throw RuleViolation.Create(FormUnsupported, "The voucher form kind or caption mode is not defined.");
+        if (!Enum.IsDefined(policy.FormKind) || !Enum.IsDefined(policy.CaptionMode) || !Enum.IsDefined(policy.PostingMode))
+            throw RuleViolation.Create(FormUnsupported, "The voucher form kind, caption mode or posting mode is not defined.");
         if (policy.FormKind != VoucherFormKind.GenericVoucher)
             throw RuleViolation.Create(FormUnsupported, $"Voucher form '{policy.FormKind}' is not supported yet; only GenericVoucher runs.");
         if (policy.DenyMutationsOnOrBefore is { } cutoff && (cutoff.Year < 2000 || cutoff.Year > 2100))
@@ -138,7 +166,7 @@ public static class VoucherPatternRules
         if (policy.PerLineJournal)
             throw RuleViolation.Create(OptionNotEnforced, "One journal entry per line is not enforced yet and cannot be stored.");
         if (policy.AutoPost)
-            throw RuleViolation.Create(OptionNotEnforced, "Automatic posting by pattern is not enforced yet and cannot be stored.");
+            throw RuleViolation.Create(OptionNotEnforced, "Posting by itself at approval time is not enforced and cannot be stored; use PostingMode to hold vouchers for manual posting.");
         var lookup = NormalizeLookup(policy.Lookup);
         return policy with { Lookup = lookup };
     }

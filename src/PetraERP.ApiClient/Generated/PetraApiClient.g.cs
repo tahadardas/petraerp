@@ -54264,6 +54264,9 @@ namespace PetraERP.ApiClient
         [System.Text.Json.Serialization.JsonPropertyName("perLineJournal")]
         public bool? PerLineJournal { get; set; } = default!;
 
+        [System.Text.Json.Serialization.JsonPropertyName("postingMode")]
+        public VoucherPostingMode? PostingMode { get; set; } = default!;
+
         [System.Text.Json.Serialization.JsonPropertyName("autoPost")]
         public bool? AutoPost { get; set; } = default!;
 
@@ -59747,6 +59750,18 @@ namespace PetraERP.ApiClient
 
         [System.Text.Json.Serialization.JsonPropertyName("items")]
         public System.Collections.Generic.IReadOnlyList<VoucherSummaryDto>? Items { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum VoucherPostingMode
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"InheritFromCompany")]
+        InheritFromCompany = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ManualOnly")]
+        ManualOnly = 1,
 
     }
 

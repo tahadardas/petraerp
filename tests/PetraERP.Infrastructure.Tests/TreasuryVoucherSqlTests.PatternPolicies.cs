@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using PetraERP.Application.Common;
 using PetraERP.Application.GeneralLedger.ChartOfAccounts;
 using PetraERP.Application.Patterns;
@@ -14,7 +14,7 @@ namespace PetraERP.Infrastructure.Tests;
 public sealed partial class SalesPostingSqlTests
 {
     private static async Task<Guid> PublishedPaymentPatternAsync(SqlPatternService patterns, PatternScope scope, Guid branch, string code,
-        VoucherSetup setup, Guid cash, PatternVoucherPolicy? voucher, List<PatternFieldRule>? fields = null)
+        VoucherSetup setup, Guid cash, PatternVoucherPolicy? voucher, List<PatternFieldRule>? fields = null, PatternApprovalPolicy? approval = null)
     {
         var created = await patterns.CreatePatternAsync(scope, new CreateDocumentPatternCommand
         {
@@ -26,7 +26,7 @@ public sealed partial class SalesPostingSqlTests
                     new() { Role = "Cash", AccountId = cash }, new() { Role = "Bank", AccountId = setup.Bank }, new() { Role = "Payable", AccountId = setup.Payable },
                 ],
                 NumberingPolicy = new() { Prefix = code + "-", MinimumDigits = 4 },
-                Voucher = voucher, LineFields = fields ?? [],
+                Voucher = voucher, LineFields = fields ?? [], ApprovalPolicy = approval ?? new(),
             },
         }, Cancellation).ConfigureAwait(true);
         var published = await patterns.PublishRevisionAsync(scope, created.Id, new PublishPatternRevisionCommand
@@ -101,6 +101,73 @@ public sealed partial class SalesPostingSqlTests
                 new(PetraERP.Application.Common.ConcurrencyToken.FromBytes(toPost.RowVersion), "cut-post-2"), Cancellation)).ConfigureAwait(true);
             await AssertRuleAsync("treasury.voucher_date_cutoff", () => treasury.ReverseAsync(s.CompanyA, s.BranchA1, posted.Id, s.Actor,
                 new(PetraERP.Application.Common.ConcurrencyToken.FromBytes(posted.RowVersion), "تصحيح"), Cancellation)).ConfigureAwait(true);
+        }
+    }
+
+    [Fact(Explicit = true)]
+    [Trait("Category", "SqlServer")]
+    public async Task VoucherApprovalThresholdAndManualOnlyPostingFollowThePatternAndNeverExceedTheCompanyPolicy()
+    {
+        var database = await SqlTestDatabase.CreateAsync().ConfigureAwait(true);
+        await using (database.ConfigureAwait(true))
+        {
+            var fixture = await CreateAsync(database).ConfigureAwait(true); var s = fixture.Scenario;
+            var setup = await VoucherSetupAsync(fixture).ConfigureAwait(true);
+            using var context = database.Context();
+            await context.Database.ExecuteSqlInterpolatedAsync(
+                $"INSERT INTO [security].[RolePermissions]([RoleId],[PermissionCode]) SELECT [RoleId],{"Treasury.Vouchers.Approve"} FROM [security].[UserRoles] WHERE [UserId]={s.Actor}", Cancellation).ConfigureAwait(true);
+            var patterns = new SqlPatternService(context);
+            var scope = PatternScope.Create(s.CompanyA, s.BranchA1, s.Actor);
+            var treasury = Treasury(context);
+            var date = new DateTimeOffset(2026, 10, 19, 0, 0, 0, TimeSpan.Zero);
+
+            // Approval is required from 50 upward: 40 posts straight away, 100 needs an approval first.
+            var gated = await PublishedPaymentPatternAsync(patterns, scope, s.BranchA1, "PG", setup, fixture.CashId, null,
+                approval: new PatternApprovalPolicy { RequiresApproval = true, ThresholdAmount = 50m }).ConfigureAwait(true);
+            var small = await treasury.CreateDraftAsync(s.CompanyA, s.BranchA1, s.Actor, PaymentOn(setup, gated, date, new VoucherLineCommand(null, setup.Expense, 40m)), Cancellation).ConfigureAwait(true);
+            Assert.Equal(VoucherStatus.Posted, (await treasury.PostAsync(s.CompanyA, s.BranchA1, small.Id, s.Actor,
+                new(PetraERP.Application.Common.ConcurrencyToken.FromBytes(small.RowVersion), "thr-small"), Cancellation).ConfigureAwait(true)).Status);
+
+            var big = await treasury.CreateDraftAsync(s.CompanyA, s.BranchA1, s.Actor, PaymentOn(setup, gated, date, new VoucherLineCommand(null, setup.Expense, 100m)), Cancellation).ConfigureAwait(true);
+            await AssertRuleAsync("treasury.approval_required", () => treasury.PostAsync(s.CompanyA, s.BranchA1, big.Id, s.Actor,
+                new(PetraERP.Application.Common.ConcurrencyToken.FromBytes(big.RowVersion), "thr-big"), Cancellation)).ConfigureAwait(true);
+            context.ChangeTracker.Clear();
+            var approved = await treasury.ApproveAsync(s.CompanyA, s.BranchA1, big.Id, s.Actor,
+                new(PetraERP.Application.Common.ConcurrencyToken.FromBytes(big.RowVersion), "اعتماد المبلغ الكبير"), Cancellation).ConfigureAwait(true);
+            context.ChangeTracker.Clear();
+            Assert.Equal(VoucherStatus.Posted, (await treasury.PostAsync(s.CompanyA, s.BranchA1, big.Id, s.Actor,
+                new(PetraERP.Application.Common.ConcurrencyToken.FromBytes(approved.RowVersion), "thr-big-2"), Cancellation).ConfigureAwait(true)).Status);
+
+            // One-step save-and-process: the company posts automatically; a ManualOnly pattern still holds its vouchers.
+            var options = new PetraERP.Infrastructure.CompanyOptions.SqlCompanyOptionsService(context);
+            var year = await context.FiscalYears.AsNoTracking().Where(y => y.CompanyId == s.CompanyA).Select(y => y.Id).FirstAsync(Cancellation).ConfigureAwait(true);
+            var current = await options.GetAsync(s.CompanyA, Cancellation).ConfigureAwait(true);
+            await options.SaveAsync(s.CompanyA, year, s.Actor, current.Policy with { DocumentPostingMode = PetraERP.Application.CompanyOptions.DocumentPostingMode.ApproveAndPost },
+                current.Version, "ترحيل آلي للاختبار", Cancellation).ConfigureAwait(true);
+            context.ChangeTracker.Clear();
+            var auto = await PublishedPaymentPatternAsync(patterns, scope, s.BranchA1, "PA", setup, fixture.CashId, null).ConfigureAwait(true);
+            var manual = await PublishedPaymentPatternAsync(patterns, scope, s.BranchA1, "PM", setup, fixture.CashId,
+                new PatternVoucherPolicy { PostingMode = VoucherPostingMode.ManualOnly }).ConfigureAwait(true);
+            var purchases = new PetraERP.Infrastructure.Purchases.SqlPurchaseInvoiceService(context, patterns, TimeProvider.System);
+            var processing = new PetraERP.Infrastructure.DocumentProcessing.SqlDocumentSaveAndProcessService(
+                Service(context), purchases, options, context, null, TimeProvider.System, treasury);
+            var permissions = new PetraERP.Application.DocumentProcessing.DocumentProcessingPermissions(true, true);
+
+            var autoResult = await processing.CreateVoucherAsync(s.CompanyA, s.BranchA1, s.Actor, permissions,
+                PaymentOn(setup, auto, date, new VoucherLineCommand(null, setup.Expense, 10m)), false, new("sp-auto"), Cancellation).ConfigureAwait(true);
+            Assert.Equal(PetraERP.Application.DocumentProcessing.DocumentProcessingOutcome.Posted, autoResult.Outcome);
+            var manualResult = await processing.CreateVoucherAsync(s.CompanyA, s.BranchA1, s.Actor, permissions,
+                PaymentOn(setup, manual, date, new VoucherLineCommand(null, setup.Expense, 10m)), false, new("sp-manual"), Cancellation).ConfigureAwait(true);
+            Assert.NotEqual(PetraERP.Application.DocumentProcessing.DocumentProcessingOutcome.Posted, manualResult.Outcome);
+            Assert.False(manualResult.PostingApplied);
+            Assert.Null(manualResult.JournalEntryId);
+
+            // Manual posting of the held voucher is still available through the post action.
+            context.ChangeTracker.Clear();
+            var held = await treasury.GetAsync(s.CompanyA, s.BranchA1, manualResult.DocumentId, Cancellation).ConfigureAwait(true);
+            Assert.Equal(VoucherStatus.Draft, held.Status);
+            Assert.Equal(VoucherStatus.Posted, (await treasury.PostAsync(s.CompanyA, s.BranchA1, held.Id, s.Actor,
+                new(PetraERP.Application.Common.ConcurrencyToken.FromBytes(held.RowVersion), "sp-manual-post"), Cancellation).ConfigureAwait(true)).Status);
         }
     }
 

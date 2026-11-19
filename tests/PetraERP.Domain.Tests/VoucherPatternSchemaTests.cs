@@ -137,6 +137,33 @@ public class VoucherPatternSchemaTests
         Assert.Null(VoucherPatternRules.CheckLineFields(new PatternConfiguration(), false, false));
     }
 
+    [Theory]
+    [InlineData(false, null, 1, false)]  // approval not required at all
+    [InlineData(true, null, 1, true)]    // no threshold: every document
+    [InlineData(true, "50", 49.9999, false)]
+    [InlineData(true, "50", 50, true)]   // the threshold itself needs approval
+    [InlineData(true, "50", 5000, true)]
+    public void ApprovalIsRequiredOnlyWhenThePatternAsksAndTheAmountReachesTheThreshold(bool requires, string? threshold, double amount, bool expected)
+    {
+        var config = new PatternConfiguration
+        {
+            ApprovalPolicy = new PatternApprovalPolicy { RequiresApproval = requires, ThresholdAmount = threshold is null ? null : decimal.Parse(threshold, System.Globalization.CultureInfo.InvariantCulture) },
+        };
+        Assert.Equal(expected, VoucherPatternRules.ApprovalRequired(config, (decimal)amount));
+        if (!requires) Assert.False(VoucherPatternRules.ApprovalRequired(config, 1_000_000m));
+    }
+
+    [Fact]
+    public void ManualOnlyPostingIsStoredAndAnUndefinedModeIsRefused()
+    {
+        var normalized = PatternAccountRoles.Normalize(BusinessOperationKind.CashPayment,
+            new PatternConfiguration { Voucher = new PatternVoucherPolicy { PostingMode = VoucherPostingMode.ManualOnly } });
+        Assert.Equal(VoucherPostingMode.ManualOnly, normalized.Voucher!.PostingMode);
+        Assert.Equal(VoucherPostingMode.InheritFromCompany, VoucherPatternRules.Effective(new PatternConfiguration()).PostingMode);
+        Assert.Equal(VoucherPatternRules.FormUnsupported, CodeOf(() => PatternAccountRoles.Normalize(BusinessOperationKind.CashPayment,
+            new PatternConfiguration { Voucher = new PatternVoucherPolicy { PostingMode = (VoucherPostingMode)9 } })));
+    }
+
     [Fact]
     public void OptionsTheServerDoesNotEnforceYetCannotBeStored()
     {

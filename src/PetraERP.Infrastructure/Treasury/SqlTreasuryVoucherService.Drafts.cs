@@ -250,6 +250,14 @@ public sealed partial class SqlTreasuryVoucherService
             throw new BusinessRuleException("treasury.voucher_date_cutoff", "The pattern froze vouchers dated on or before its cut-off date.", "voucherDateUtc");
     }
 
+    public async Task<PatternVoucherPolicy> GetVoucherPatternPolicyAsync(Guid companyId, Guid patternRevisionId, CancellationToken cancellationToken = default)
+    {
+        var json = await context.PatternRevisions.AsNoTracking().Where(r => r.Id == patternRevisionId && r.Pattern!.CompanyId == companyId)
+            .Select(r => r.ConfigurationJson).SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false)
+            ?? throw new ResourceNotFoundException("PatternRevision");
+        return VoucherPatternRules.Effective(JsonSerializer.Deserialize<PatternConfiguration>(json) ?? new());
+    }
+
     /// <summary>Same rule for an existing voucher, read through the revision it was saved with.</summary>
     private async Task EnforceStoredCutoffAsync(VoucherRow voucher, CancellationToken cancellationToken)
     {

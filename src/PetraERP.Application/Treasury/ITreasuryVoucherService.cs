@@ -114,6 +114,10 @@ public interface ITreasuryVoucherService
 
     Task<VoucherDetailResult> GetAsync(Guid companyId, Guid branchId, Guid voucherId, CancellationToken cancellationToken = default);
 
+    /// <summary>The voucher settings (defaults filled in) of the revision a voucher was saved with; used by the one-step save-and-process path.</summary>
+    Task<PetraERP.Domain.Patterns.PatternVoucherPolicy> GetVoucherPatternPolicyAsync(Guid companyId, Guid patternRevisionId,
+        CancellationToken cancellationToken = default);
+
     Task<VoucherDetailResult> CreateDraftAsync(Guid companyId, Guid branchId, Guid userId, SaveVoucherCommand command,
         CancellationToken cancellationToken = default);
 

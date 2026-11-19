@@ -56,7 +56,7 @@ public sealed partial class SqlTreasuryVoucherService
                 var fiscalYear = await RequireOpenPeriodAsync(companyId, date, cancellationToken).ConfigureAwait(false);
                 if(validation.Prepared.Count>0)
                     await VerifyTreasuryAsync(companyId,branchId,userId,PetraERP.Application.Security.PermissionCatalog.TreasuryVouchersAllocate,cancellationToken).ConfigureAwait(false);
-                if(validation.Configuration.ApprovalPolicy.RequiresApproval && voucher.Status!=(byte)VoucherStatus.Approved)
+                if(VoucherPatternRules.ApprovalRequired(validation.Configuration, voucher.Amount) && voucher.Status!=(byte)VoucherStatus.Approved)
                     throw SettlementError("approval_required","النمط يتطلب اعتماد السند قبل ترحيله","This pattern requires voucher approval before posting.");
 
                 var revision = await context.PatternRevisions.AsNoTracking().SingleAsync(r => r.Id == voucher.PatternRevisionId, cancellationToken).ConfigureAwait(false);
